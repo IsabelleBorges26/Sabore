@@ -1,0 +1,762 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Scratch Pad
+meta:
+  id: wrk_scratchpad
+  created: 1756466003799
+  modified: 1756466003799
+  description: ""
+collection:
+  - name: "Biblioteca "
+    meta:
+      id: fld_227de1ede83d4703a4663c41ae8c3b01
+      created: 1756466427061
+      modified: 1756466427061
+      sortKey: -1756466427061
+      description: ""
+    children:
+      - name: Usuários
+        meta:
+          id: fld_1afd4b3c3ee64c9c8e785f72cd4c16e5
+          created: 1756466481513
+          modified: 1756466481513
+          sortKey: -1756466481513
+          description: ""
+      - name: Livros
+        meta:
+          id: fld_edfbc60571884fd393ff28a538878467
+          created: 1756476809751
+          modified: 1756476809751
+          sortKey: -1756476809751
+          description: ""
+  - name: Aplicativo de Músicas
+    meta:
+      id: fld_75143cdbf91243e2b42eac1c7051efad
+      created: 1757073988115
+      modified: 1757074123159
+      sortKey: -1757073988115
+      description: ""
+    children:
+      - name: Usuários
+        meta:
+          id: fld_42c2148924454bf8bd1e0b7967bfe9d5
+          created: 1757074039583
+          modified: 1757074039583
+          sortKey: -1757074039583
+          description: ""
+      - name: Músicas
+        meta:
+          id: fld_66bd264b406a465baada3b86d75729d3
+          created: 1757074067962
+          modified: 1757074067962
+          sortKey: -1757074067962
+          description: ""
+      - name: Playlists
+        meta:
+          id: fld_2a3253cce9fe4eedbd96794d23035040
+          created: 1757074080484
+          modified: 1757074233126
+          sortKey: -1757074080484
+          description: ""
+      - name: Playlists Músicas
+        meta:
+          id: fld_fb81a9c2561f4456aad8b95af955f0dd
+          created: 1757074115873
+          modified: 1757074115873
+          sortKey: -1757074115873
+          description: ""
+  - name: Loja da Isa
+    meta:
+      id: fld_70007b4bb3b64de19d17b63e95a5d5df
+      created: 1758282891796
+      modified: 1758282891796
+      sortKey: -1758282891796
+      description: ""
+    children:
+      - name: Clientes
+        meta:
+          id: fld_aa69693c8d654ecea931ec985fd06120
+          created: 1758282945711
+          modified: 1758282945711
+          sortKey: -1758282945711
+          description: ""
+      - name: Produtos
+        meta:
+          id: fld_f736d53cf7054961ab936a814ccca18e
+          created: 1758282962060
+          modified: 1758282962060
+          sortKey: -1758282962060
+          description: ""
+      - name: Pedidos
+        meta:
+          id: fld_bf85bc8677c54409bf7cc331f2556b20
+          created: 1758282971450
+          modified: 1758283288746
+          sortKey: -1758282971450
+          description: ""
+  - name: Locadora
+    meta:
+      id: fld_86a8cc9013bb43a291e7a1f659be92f1
+      created: 1758893268471
+      modified: 1758893268471
+      sortKey: -1758893268471
+      description: ""
+    children:
+      - name: Filmes
+        meta:
+          id: fld_ac84913f6c1e449c852747c1d93a0f91
+          created: 1759232143943
+          modified: 1759232143943
+          sortKey: -1759232143943
+          description: ""
+      - name: Clientes
+        meta:
+          id: fld_95299dc082c242a58f42134608700d86
+          created: 1759232175704
+          modified: 1759232175704
+          sortKey: -1759232175704
+          description: ""
+      - name: Locações
+        meta:
+          id: fld_eed4953543154e7d86dab86424702cf1
+          created: 1759239805243
+          modified: 1759239805243
+          sortKey: -1759239805243
+          description: ""
+  - name: CineMigas
+    meta:
+      id: fld_32b8381a473f4914803457d665999e7f
+      created: 1759511378275
+      modified: 1759511378275
+      sortKey: -1759511378275
+      description: ""
+    children:
+      - name: Ingressos
+        meta:
+          id: fld_f257e7c302ab426cac52b8361452a394
+          created: 1759511404540
+          modified: 1759511404540
+          sortKey: -1759511404540
+          description: ""
+  - name: Teste
+    meta:
+      id: fld_e1202faedb5f400191f959b8923c84c6
+      created: 1760703076206
+      modified: 1760703076206
+      sortKey: -1760703076206
+      description: ""
+  - name: Clínica Vida
+    meta:
+      id: fld_25faa89ffb424b3caf35c52c557112b3
+      created: 1762522917538
+      modified: 1762523004284
+      sortKey: -1762522917538
+      description: ""
+    children:
+      - name: Adiministradores
+        meta:
+          id: fld_c3840843b3c847b39273b9ece8ab51bd
+          created: 1762523226831
+          modified: 1762525436861
+          sortKey: -1762523226831
+          description: ""
+  - name: Estúdio de Tatuagens
+    meta:
+      id: fld_88b9ada45d72420da0e8a9aba3fbf290
+      created: 1763129202837
+      modified: 1763129607713
+      sortKey: -1763129202837
+      description: ""
+    children:
+      - name: Agendamentos
+        meta:
+          id: fld_e1dc53290dfb46b389c5678814364694
+          created: 1763129225568
+          modified: 1763129225568
+          sortKey: -1763129225568
+          description: ""
+      - name: Clientes
+        meta:
+          id: fld_dea34e58726648e8b1e3897d10f06601
+          created: 1763129363649
+          modified: 1763129367834
+          sortKey: -1763129225668
+          description: ""
+      - name: Tatuadores
+        meta:
+          id: fld_47315e362ff84bf89dbd101e685de262
+          created: 1763129613622
+          modified: 1763129676248
+          sortKey: -1763129226268
+          description: ""
+      - name: Relatorios
+        meta:
+          id: fld_784b2782b6ad48b8931e5829d1270b63
+          created: 1764327154661
+          modified: 1764327154661
+          sortKey: -1764327154661
+          description: ""
+  - name: Reservas Biblioteca
+    meta:
+      id: fld_f7fb703177df4a49b8f49182c40bf468
+      created: 1764331702614
+      modified: 1764331702614
+      sortKey: -1764331702614
+      description: ""
+    children:
+      - name: Salas
+        meta:
+          id: fld_bd19f0469a7c4d79b3dc230a42ffd7b3
+          created: 1764331731086
+          modified: 1764331731086
+          sortKey: -1764331731086
+          description: ""
+      - name: Alunos
+        meta:
+          id: fld_b9695bc1aa6d44b080ab77a43b0d580b
+          created: 1764331844841
+          modified: 1764331844841
+          sortKey: -1764331725576.5
+          description: ""
+      - name: Reservas
+        meta:
+          id: fld_81de8861eb394415bfe9b023bac82263
+          created: 1764331872078
+          modified: 1764331872078
+          sortKey: -1764331714095.25
+          description: ""
+  - name: Controle de Oficinas
+    meta:
+      id: fld_d68eb452285c4dc9a62819bfe4e94e88
+      created: 1764354503490
+      modified: 1764354606972
+      sortKey: -1764329428637.5
+      description: ""
+    children:
+      - name: Alunos
+        meta:
+          id: fld_9fe9e0c87ee14ef08da2f89fcde3a12b
+          created: 1764354652877
+          modified: 1764354652877
+          sortKey: -1764354652877
+          description: ""
+      - name: Inscrições
+        meta:
+          id: fld_1331e0433dbb4558bfd8e884d7d7820a
+          created: 1764355173401
+          modified: 1764355173401
+          sortKey: -1764355173401
+          description: ""
+      - name: Oficina
+        meta:
+          id: fld_3f3c68abfa8e4608889687759fe32492
+          created: 1764356217575
+          modified: 1764356217575
+          sortKey: -1764343191981.5
+          description: ""
+  - name: Alunos
+    meta:
+      id: fld_cc757bbd2b0640f49b1442ac24e207f7
+      created: 1764354547368
+      modified: 1764354555730
+      sortKey: -1763729315737.25
+      description: ""
+  - name: Alunos
+    meta:
+      id: fld_daa5277f704e4f8e901318512ee9963c
+      created: 1764354580456
+      modified: 1764354600984
+      sortKey: -1764029372187.375
+      description: ""
+  - name: Testee
+    meta:
+      id: fld_07cd7157970e4c668715a78001849ea3
+      created: 1770396363038
+      modified: 1770396363038
+      sortKey: -1770396363038
+      description: ""
+  - name: Escola
+    meta:
+      id: fld_b9426877ba8d479290e72b881da758e2
+      created: 1771010454322
+      modified: 1772221941366
+      sortKey: -1771303352123.5
+      description: ""
+    children:
+      - name: Turmas
+        meta:
+          id: fld_40b8fb80ac4e4c2db20edef30a110625
+          created: 1771011876642
+          modified: 1771012378856
+          sortKey: -1771010995471.5
+          description: ""
+      - name: Alunos
+        meta:
+          id: fld_1cd81b009bfe4417b048d2e0593378bb
+          created: 1771012307638
+          modified: 1771012368003
+          sortKey: -1771012307638
+          description: ""
+  - name: Aula 4 - Locadora de Veículos
+    meta:
+      id: fld_56ecf8d007e64313aab3934b035a0e7d
+      created: 1772210341209
+      modified: 1772210352750
+      sortKey: -1772210341209
+      description: ""
+    children:
+      - name: Carros
+        meta:
+          id: fld_fa138a2eb1f34115b15afc977c5c318f
+          created: 1772210341210
+          modified: 1772210341210
+          sortKey: -1772210341210
+          description: ""
+      - name: Clientes
+        meta:
+          id: fld_125ce1cf33a244538100dae64eac7d79
+          created: 1772210341216
+          modified: 1772217504766
+          sortKey: -1772210341216
+          description: ""
+  - name: Saboré
+    meta:
+      id: fld_946a1e5f3128458bbfad1d27024c1ef9
+      created: 1773253820153
+      modified: 1773253820153
+      sortKey: -1773253820153
+      description: ""
+    children:
+      - name: Usuários
+        meta:
+          id: fld_a5ee05072ed64d32b27b9b2269154abb
+          created: 1773253855292
+          modified: 1773253855292
+          sortKey: -1773253855292
+          description: ""
+        children:
+          - url: http://localhost:3000/usuarios/cadastrar
+            name: Cadastrar
+            meta:
+              id: req_442ae0a3b4a740fa919f87212a90e34f
+              created: 1773253861625
+              modified: 1773255097961
+              isPrivate: false
+              description: ""
+              sortKey: -1773253861625
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "nome": "Gaby",
+                  "email": "gaby@email.com",
+                  "senha": "123456"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.3.1
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/usuarios/listar
+            name: Listar
+            meta:
+              id: req_1fd0fbbbeee54f1983c8bab14ab663fb
+              created: 1773255514211
+              modified: 1773255514211
+              isPrivate: false
+              description: ""
+              sortKey: -1773254302999
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/usuarios/buscar/1
+            name: Buscar
+            meta:
+              id: req_9ef747b140e140bcb81595ac8359544b
+              created: 1773255548372
+              modified: 1773255644415
+              isPrivate: false
+              description: ""
+              sortKey: -1773254523736
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/usuarios/atualizar/1
+            name: Atualizar
+            meta:
+              id: req_a46923f09eab4bbbae8e582776d86e39
+              created: 1773255555787
+              modified: 1773255555787
+              isPrivate: false
+              description: ""
+              sortKey: -1773254654385.25
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                	{
+                		"nome": "Isabelle Borges",
+                		"email": "isa@email.com",
+                		"senha": "123456"
+                	}
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/usuarios/excluir/2
+            name: Excluir
+            meta:
+              id: req_e389caeca9aa40e2a52cdca533e55997
+              created: 1773255562526
+              modified: 1773255562526
+              isPrivate: false
+              description: ""
+              sortKey: -1773254699529.125
+            method: DELETE
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: Receitas
+        meta:
+          id: fld_b3cd3472ef6741a9bf6c92e4ec3f713d
+          created: 1773255273103
+          modified: 1773255273103
+          sortKey: -1773255273103
+          description: ""
+        children:
+          - url: http://localhost:3000/receitas/buscar/1
+            name: Buscar
+            meta:
+              id: req_0b2ae7c4fc4d457bbebbd968846fd10a
+              created: 1772210341212
+              modified: 1773255580722
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276857
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/receitas/atualizar/1
+            name: Atualizar
+            meta:
+              id: req_c6859dc6e3a74907ad35265b5b4f244e
+              created: 1772210341214
+              modified: 1773255802554
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276807
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "titulo": "Macarronada",
+                  "descricao": "Macarronada com molho rose",
+                  "modoPreparo": "Cozinhar o macarrão"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/receitas/excluir/2
+            name: Excluir
+            meta:
+              id: req_a5a9ae86126940b4964d8693a7c959c8
+              created: 1772210341215
+              modified: 1773255687002
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276957
+            method: DELETE
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/receitas/listar
+            name: Listar
+            meta:
+              id: req_d039285223c741dc9a9a9f128f3b2206
+              created: 1773254744373
+              modified: 1773255537050
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276757
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/receitas/cadastrar
+            name: Cadastrar
+            meta:
+              id: req_2f3b9fdcb0d04b428768428f046c56ae
+              created: 1773255276657
+              modified: 1773255879577
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276657
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "titulo": "Frango",
+                  "descricao": "Macarronada com milho",
+                  "modoPreparo": "Cozinhar o frango e misturar com milho",
+                  "usuarioId": 1
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: "Ingredientes "
+        meta:
+          id: fld_90b3c80318d44368bb17cf95f8845578
+          created: 1773255948826
+          modified: 1773255948826
+          sortKey: -1773254564197.5
+          description: ""
+        children:
+          - url: http://localhost:3000/ingredientes/buscar/1
+            name: Buscar
+            meta:
+              id: req_d64f2764128b4cf0828286430f8fed01
+              created: 1773255948827
+              modified: 1773256394304
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276857
+            method: GET
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/ingredientes/atualizar/2
+            name: Atualizar
+            meta:
+              id: req_2770a7efb2244a568d82d57388296e2c
+              created: 1773255948828
+              modified: 1773256307253
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276807
+            method: PUT
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "nome": "Macarrão Gravatinha"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/ingredientes/excluir/2
+            name: Excluir
+            meta:
+              id: req_199c83416f024e708c0fe3132e427091
+              created: 1773255948829
+              modified: 1773255961590
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276957
+            method: DELETE
+            body:
+              mimeType: application/json
+              text: ""
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/ingredientes/listar
+            name: Listar
+            meta:
+              id: req_50e4e91ab6af4f86a87c04f7b21a248c
+              created: 1773255948830
+              modified: 1773255972993
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276757
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: http://localhost:3000/ingredientes/cadastrar
+            name: Cadastrar
+            meta:
+              id: req_b6cd49217f614750babd11d3078887d7
+              created: 1773255948830
+              modified: 1773256275376
+              isPrivate: false
+              description: ""
+              sortKey: -1773255276657
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "nome": "Macarrão"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_99d30891da4bdcebc63947a8fc17f076de878684
+    created: 1756466036788
+    modified: 1756466036788
+environments:
+  name: Base Environment
+  meta:
+    id: env_99d30891da4bdcebc63947a8fc17f076de878684
+    created: 1756466036611
+    modified: 1756466036611
+    isPrivate: false
