@@ -11,7 +11,9 @@
 ---
 
 ## 🔗 Protótipo do Projeto
-👉 [Acessar Protótipo](https://www.figma.com/design/STeCd0bLjcCH4FIV7BQxJ0/sabore-app?node-id=0-1&p=f&t=z7Vxc29WRW5d1fGz-0)
+👉 [Mobile](https://www.figma.com/design/STeCd0bLjcCH4FIV7BQxJ0/sabore-app?node-id=0-1&p=f&t=z7Vxc29WRW5d1fGz-0)
+
+👉 [Web]([https://www.figma.com/design/STeCd0bLjcCH4FIV7BQxJ0/sabore-app?node-id=0-1&p=f&t=z7Vxc29WRW5d1fGz-0](https://www.figma.com/site/b5sFyYgmdOPMu0yvFW8A3x/Untitled?node-id=0-1&t=9vwfFGVx2FZqU0mb-1))
 
 ---
 
