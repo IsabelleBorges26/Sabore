@@ -5,7 +5,8 @@
 - Maria Eduarda Urbano  
 - Gabrielly Souza  
 - Enzo Toniato  
-- Davi Moratório  
+- Davi Moratório
+- Mirella Brolezi
 
 ---
 
