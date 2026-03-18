@@ -1,12 +1,19 @@
 # 🍽️ SABORÉ - TCC Projeto em Grupo
 
 ## 👥 Integrantes
-- Isabelle Borges  
-- Maria Eduarda Urbano  
-- Gabrielly Souza  
-- Enzo Toniato  
-- Davi Moratório
-- Mirella Brolezi
+- 👩‍💻 Isabelle Borges → [GitHub](https://github.com/IsabelleBorges26)
+- 👩‍💻 Maria Eduarda Urbano → [GitHub](https://github.com/mariaeduardaurbano)
+- 👩‍💻 Gabrielly Souza → [GitHub](https://github.com/gabsouza05)
+- 👩‍💻 Mirella Brolezi → [GitHub](https://github.com/MIRELLA-02)
+- 👨‍💻 Enzo Toniato → [GitHub](https://github.com/EnzoToniato567)
+- 👨‍💻 Davi Moratório → [GitHub](https://github.com/davi-lm7)
+
+---
+
+## 🔗 Protótipo do Projeto
+👉 [Mobile](https://www.figma.com/design/STeCd0bLjcCH4FIV7BQxJ0/sabore-app?node-id=0-1&p=f&t=z7Vxc29WRW5d1fGz-0)
+
+👉 [Web]([https://www.figma.com/design/STeCd0bLjcCH4FIV7BQxJ0/sabore-app?node-id=0-1&p=f&t=z7Vxc29WRW5d1fGz-0](https://www.figma.com/site/b5sFyYgmdOPMu0yvFW8A3x/Untitled?node-id=0-1&t=9vwfFGVx2FZqU0mb-1))
 
 ---
 
