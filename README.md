@@ -4,7 +4,7 @@
 - 👩‍💻 Isabelle Borges → [GitHub](https://github.com/IsabelleBorges26)
 - 👩‍💻 Maria Eduarda Urbano → [GitHub](https://github.com/mariaeduardaurbano)
 - 👩‍💻 Gabrielly Souza → [GitHub](https://github.com/gabsouza05)
-- 👩‍💻 Mirella Brolezi → [GitHub](https://github.com/mirella_brolezi)
+- 👩‍💻 Mirella Brolezi → [GitHub](https://github.com/MIRELLA-02)
 - 👨‍💻 Enzo Toniato → [GitHub](https://github.com/EnzoToniato567)
 - 👨‍💻 Davi Moratório → [GitHub](https://github.com/davi-lm7)
 
