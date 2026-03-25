@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Poiret+One&family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #0f2f2a, #17443c);
+    color: white;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 30px;
+}
+
+.logo {
+    font-family: 'Poiret One', cursive;
+}
+
+.principal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+}
+
+.card {
+    background-color: rgba(255,255,255,0.08);
+    width: 320px;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+.card h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #cfd8d6;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px;
+    width: 100%;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-criar {
+    background-color: #f08c8c;
+    color: white;
+}
+
+.btn-criar:hover {
+    background-color: #ffaaaa;
+}
+
+.texto {
+    margin-top: 10px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.texto a {
+    color: #ffdede;
+    text-decoration: none;
+}
