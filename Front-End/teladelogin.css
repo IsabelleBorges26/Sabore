@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Poiret+One&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #0f2f2a, #17443c);
+    color: white;
+}
+
+.principal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+}
+
+.card {
+    background-color: rgba(255,255,255,0.08);
+    width: 300px;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+h2 {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #cfd8d6;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+button {
+    margin-top: 15px;
+    padding: 10px;
+    width: 100%;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-entrar,
+.btn-criar {
+    background-color: #f08c8c;
+    color: white;
+}
+
+.btn-entrar:hover,
+.btn-criar:hover {
+    background-color: #ffaaaa;
+}
+
+.texto {
+    font-size: 14px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.texto a {
+    color: #ffdede;
+    text-decoration: none;
+}
