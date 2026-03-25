@@ -17,39 +17,6 @@ const gerarLink = async (req, res) => {
     res.status(201).json(item);
 };
 
-const listar = async (req, res) => {
-    const usuarioId = req.usuario.id;
-    
-    const lista = await prisma.compartilhamento.findMany({
-        where: { usuarioId }
-    });
-
-    res.status(200).json(lista);
-};
-
-const buscar = async (req, res) => {
-    const { token } = req.params;
-    
-    const item = await prisma.compartilhamento.findUnique({
-        where: { token }
-    });
-
-    res.status(200).json(item);
-};
-
-const desativar = async (req, res) => {
-    const { id } = req.params;
-    
-    const item = await prisma.compartilhamento.delete({
-        where: { id: Number(id) }
-    });
-
-    res.status(200).json(item);
-};
-
 module.exports = {
-    gerarLink,
-    listar,
-    buscar,
-    desativar
+    gerarLink
 };

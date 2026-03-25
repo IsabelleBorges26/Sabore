@@ -1,45 +1,121 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plano {
+  FREE
+  PRO
 }
 
 model Usuario {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  email     String   @unique
-  senha     String
-  receitas  Receita[]
+  id                        Int                       @id @default(autoincrement())
+  nome                      String
+  email                     String                    @unique
+  senha                     String
+  foto                      String?
+  plano                     Plano                     @default(FREE)
+  createdAt                 DateTime                  @default(now()) // createdAt armazena data e hora 
+  updatedAt                 DateTime                  @updatedAt
+  receitas                  Receita[]
+  favoritos                 Favorito[]
+  avaliacoes                Avaliacao[]
+  ingredientesDisponiveis   IngredienteDisponivel[]
 }
 
 model Receita {
-  id           Int           @id @default(autoincrement())
-  titulo       String
-  descricao    String
-  modoPreparo  String
-  usuarioId    Int
-  usuario      Usuario       @relation(fields: [usuarioId], references: [id])
-  ingredientes ReceitaIngrediente[]
+  id                Int                      @id @default(autoincrement())
+  titulo            String
+  descricao         String?
+  modoPreparo       String
+  tempoPreparo      Int?
+  publica           Boolean                  @default(false)
+  imagem            String?
+  dificuldade       String?
+  criadaPorIA       Boolean                  @default(false)
+  rascunho          Boolean                  @default(false)
+  linkImportacao    String?
+  usuarioId         Int
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  usuario           Usuario                  @relation(fields: [usuarioId], references: [id])
+  ingredientes      ReceitaIngrediente[]
+  categorias        ReceitaCategoria[]
+  favoritos         Favorito[]
+  avaliacoes        Avaliacao[]
 }
 
 model Ingrediente {
-  id        Int                  @id @default(autoincrement())
-  nome      String
-  receitas  ReceitaIngrediente[]
+  id                        Int                       @id @default(autoincrement())
+  nome                      String                    @unique
+  receitas                  ReceitaIngrediente[]
+  disponivelPara            IngredienteDisponivel[]
 }
 
 model ReceitaIngrediente {
   id            Int         @id @default(autoincrement())
+  quantidade    String
   receitaId     Int
   ingredienteId Int
-  receita       Receita     @relation(fields: [receitaId], references: [id])
-  ingrediente   Ingrediente @relation(fields: [ingredienteId], references: [id])
+  receita       Receita     @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  ingrediente   Ingrediente @relation(fields: [ingredienteId], references: [id], onDelete: Cascade)
+  
+  @@unique([receitaId, ingredienteId])
+}
+
+model Favorito {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int
+  receitaId     Int
+  createdAt     DateTime @default(now())
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  receita       Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  
+  @@unique([usuarioId, receitaId])
+}
+
+model Avaliacao {
+  id            Int      @id @default(autoincrement())
+  nota          Int
+  comentario    String?
+  usuarioId     Int
+  receitaId     Int
+  createdAt     DateTime @default(now())
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  receita       Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  
+  @@unique([usuarioId, receitaId])
+}
+
+model Categoria {
+  id            Int                 @id @default(autoincrement())
+  nome          String              @unique
+  receitas      ReceitaCategoria[]
+}
+
+model ReceitaCategoria {
+  id            Int         @id @default(autoincrement())
+  receitaId     Int
+  categoriaId   Int
+  receita       Receita     @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  categoria     Categoria   @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  
+  @@unique([receitaId, categoriaId])
+}
+
+model IngredienteDisponivel {
+  id            Int         @id @default(autoincrement())
+  usuarioId     Int
+  ingredienteId Int
+  usuario       Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ingrediente   Ingrediente @relation(fields: [ingredienteId], references: [id], onDelete: Cascade)
+  
+  @@unique([usuarioId, ingredienteId])
 }

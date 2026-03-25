@@ -7,13 +7,13 @@ const cadastrar = async (req, res) => {
         data
     });
 
-    res.json(item).status(201).end();
+    res.status(201).json(item);
 };
 
 const listar = async (req, res) => {
     const lista = await prisma.ingrediente.findMany();
 
-    res.json(lista).status(200).end();
+    res.status(200).json(lista);
 };
 
 const buscar = async (req, res) => {
@@ -35,7 +35,7 @@ const atualizar = async (req, res) => {
         data: dados
     });
 
-    res.json(item).status(200).end();
+    res.status(200).json(item);
 };
 
 const excluir = async (req, res) => {
@@ -45,7 +45,7 @@ const excluir = async (req, res) => {
         where: { id: Number(id) }
     });
 
-    res.json(item).status(200).end();
+    res.status(200).json(item);
 };
 
 module.exports = {
@@ -54,4 +54,4 @@ module.exports = {
     buscar,
     atualizar,
     excluir
-}
+};
