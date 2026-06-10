@@ -12,24 +12,36 @@ const listarPlanos = async (req, res) => {
 const verificar = async (req, res) => {
     const usuarioId = req.usuario.id;
     
-    const item = await prisma.usuario.findUnique({
-        where: { id: usuarioId },
-        select: { plano: true, planoExpiraEm: true }
-    });
+    try {
+        const item = await prisma.usuario.findUnique({
+            where: { id: usuarioId },
+            select: { plano: true }
+        });
 
-    res.status(200).json(item);
+        res.status(200).json(item);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao verificar plano.", detalhe: error.message });
+    }
 };
 
 const atualizar = async (req, res) => {
     const usuarioId = req.usuario.id;
-    const dados = req.body;
+    const { plano } = req.body;
     
-    const item = await prisma.usuario.update({
-        where: { id: usuarioId },
-        data: dados
-    });
+    if (!plano || (plano !== "FREE" && plano !== "PRO")) {
+        return res.status(400).json({ erro: "O plano especificado é inválido. Escolha entre FREE ou PRO." });
+    }
 
-    res.status(200).json(item);
+    try {
+        const item = await prisma.usuario.update({
+            where: { id: usuarioId },
+            data: { plano }
+        });
+
+        res.status(200).json(item);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao atualizar plano.", detalhe: error.message });
+    }
 };
 
 module.exports = {

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — SABORÉ</title>
+  <link rel="icon" type="image/png" href="../assets/LOGO SABORÉ.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<div class="bg">
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-content">
+      <a href="../inicial/index.html" class="brand">
+        <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ" class="brand-logo-img">
+      </a>
+    </div>
+
+    <div class="left-hero">
+      <div class="left-tagline">Bem-vindo de volta</div>
+      <h1 class="left-title">Sua cozinha<br>te <em>esperava</em>.</h1>
+      <p class="left-desc">Acesse suas receitas, livros e coleções. Continue de onde parou e descubra novas inspirações culinárias.</p>
+
+      <div class="mini-mockup">
+        <div class="mini-header">
+          <div class="mini-avatar">A</div>
+          <div>
+            <div class="mini-info-name">Ana Lima</div>
+            <div class="mini-info-sub">Usuária PRO · ativa há 6 meses</div>
+          </div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="mini-stat-num">87</div>
+            <div class="mini-stat-label">Receitas</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-num">12</div>
+            <div class="mini-stat-label">Livros</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-num">34</div>
+            <div class="mini-stat-label">Favoritos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-footer">
+      <div class="trust-item">🔒 Dados seguros</div>
+      <div class="trust-item">⚡ Acesso instantâneo</div>
+      <div class="trust-item">☁️ Sincronizado</div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="form-card">
+      <div class="form-top">
+        <div class="form-greeting">👋 Olá, de volta!</div>
+        <h2 class="form-title">Entrar na<br>sua conta</h2>
+        <p class="form-sub">Não tem conta? <a href="../cadastro/index.html">Criar conta grátis →</a></p>
+      </div>
+
+      <div class="field-group">
+        <div class="field">
+          <label for="email">E-mail</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+          </div>
+        </div>
+        <div class="field">
+          <label for="senha">Senha</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔑</span>
+            <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password">
+            <button class="password-toggle" id="togglePassword" type="button">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="remember">
+          <span class="checkbox-label">Lembrar de mim</span>
+        </label>
+        <a href="#" class="forgot-link">Esqueci a senha</a>
+      </div>
+
+      <button class="btn-submit" id="btnLogin">
+        Entrar na conta
+      </button>
+
+      <div class="divider">
+        <span class="divider-text">ou continue com</span>
+      </div>
+
+      <div class="social-login">
+        <button class="btn-social">
+          <img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google
+        </button>
+      </div>
+
+      <div class="form-footer">
+        <a href="../inicial/index.html">← Voltar ao início</a>
+        ·
+        <a href="#">Privacidade</a>
+        ·
+        <a href="#">Termos</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,34 +1,84 @@
 const prisma = require("../data/prisma");
 
 const listarPublicas = async (req, res) => {
-    const lista = await prisma.receita.findMany({
-        where: { publica: true }
-    });
-
-    res.status(200).json(lista);
+    try {
+        const lista = await prisma.receita.findMany({
+            where: { publica: true },
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                }
+            }
+        });
+        res.status(200).json(lista);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao listar receitas públicas.", detalhe: error.message });
+    }
 };
 
 const listarPorCategoria = async (req, res) => {
     const { categoria } = req.params;
     
-    const lista = await prisma.receita.findMany({
-        where: { 
-            publica: true,
-            categoria: categoria
-        }
-    });
+    try {
+        const lista = await prisma.receita.findMany({
+            where: { 
+                publica: true,
+                categorias: {
+                    some: {
+                        categoria: {
+                            nome: {
+                                equals: categoria
+                            }
+                        }
+                    }
+                }
+            },
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                }
+            }
+        });
 
-    res.status(200).json(lista);
+        res.status(200).json(lista);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao listar receitas por categoria.", detalhe: error.message });
+    }
 };
 
 const buscar = async (req, res) => {
     const { id } = req.params;
     
-    const item = await prisma.receita.findUnique({
-        where: { id: Number(id) }
-    });
+    try {
+        const item = await prisma.receita.findUnique({
+            where: { id: Number(id) },
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                }
+            }
+        });
 
-    res.status(200).json(item);
+        if (!item) {
+            return res.status(404).json({ erro: "Receita não encontrada." });
+        }
+
+        res.status(200).json(item);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao buscar receita.", detalhe: error.message });
+    }
 };
 
 module.exports = {

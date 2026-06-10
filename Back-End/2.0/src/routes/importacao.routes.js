@@ -1,11 +1,11 @@
 const express = require("express");
-
 const router = express.Router();
+const authMiddleware = require("../middlewares/auth");
 
 const { 
-    cadastrar
+    importar
 } = require("../controllers/importacao.controllers");
 
-router.post("/importar", cadastrar);
+router.post("/importar", authMiddleware, importar);
 
 module.exports = router;

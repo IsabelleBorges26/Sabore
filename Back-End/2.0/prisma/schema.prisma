@@ -28,6 +28,8 @@ model Usuario {
   favoritos                 Favorito[]
   avaliacoes                Avaliacao[]
   ingredientesDisponiveis   IngredienteDisponivel[]
+  livros                    Livro[]
+  compartilhamentos        Compartilhamento[]
 }
 
 model Receita {
@@ -43,13 +45,16 @@ model Receita {
   rascunho          Boolean                  @default(false)
   linkImportacao    String?
   usuarioId         Int
+  livroId           Int?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
-  usuario           Usuario                  @relation(fields: [usuarioId], references: [id])
+  usuario           Usuario                  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  livro             Livro?                   @relation(fields: [livroId], references: [id], onDelete: Cascade)
   ingredientes      ReceitaIngrediente[]
   categorias        ReceitaCategoria[]
   favoritos         Favorito[]
   avaliacoes        Avaliacao[]
+  compartilhamentos Compartilhamento[]
 }
 
 model Ingrediente {
@@ -118,4 +123,26 @@ model IngredienteDisponivel {
   ingrediente   Ingrediente @relation(fields: [ingredienteId], references: [id], onDelete: Cascade)
   
   @@unique([usuarioId, ingredienteId])
+}
+
+model Livro {
+  id         Int       @id @default(autoincrement())
+  titulo     String
+  emoji      String    @default("fa-solid fa-book")
+  tag        String    @default("Pessoal")
+  usuarioId  Int
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  receitas   Receita[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Compartilhamento {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique
+  receitaId  Int
+  usuarioId  Int
+  createdAt  DateTime @default(now())
+  receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }

@@ -1,56 +1,400 @@
 const prisma = require("../data/prisma");
 
+const parseIngredient = (str) => {
+    const cleanStr = str.trim();
+    // Regular expression to match quantities and units at the beginning
+    const match = cleanStr.match(/^(\d+(?:\/\d+)?(?:\.\d+)?\s*(?:g|ml|kg|xícara|xícaras|colher|colheres|dente|dentes|folha|folhas|unidade|unidades|fatia|fatias|copo|copos|lata|latas|colher de sopa|colheres de sopa|colher de chá|colheres de chá)?)\s+(.+)$/i);
+    if (match) {
+        return { quantidade: match[1].trim(), nome: match[2].trim() };
+    }
+    return { quantidade: "", nome: cleanStr };
+};
+
+const formatRecipe = (recipe) => {
+    return {
+        id: recipe.id,
+        title: recipe.titulo,
+        description: recipe.descricao,
+        difficulty: recipe.dificuldade || "Fácil",
+        time: recipe.tempoPreparo || 0,
+        public: recipe.publica,
+        image: recipe.imagem || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=400&q=80",
+        criadaPorIA: recipe.criadaPorIA,
+        rascunho: recipe.rascunho,
+        linkImportacao: recipe.linkImportacao,
+        livroId: recipe.livroId,
+        author: recipe.usuario.nome,
+        authorAvatar: recipe.usuario.foto || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+        category: recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
+        categories: recipe.categorias.map(rc => rc.categoria.nome),
+        ingredients: recipe.ingredientes.map(ri => {
+            if (ri.quantidade) {
+                return `${ri.quantidade} ${ri.ingrediente.nome}`;
+            }
+            return ri.ingrediente.nome;
+        }),
+        steps: recipe.modoPreparo ? recipe.modoPreparo.split("\n") : []
+    };
+};
+
 const cadastrar = async (req, res) => {
-    const data = req.body;
+    const usuarioId = req.usuario.id;
+    const { 
+        titulo, 
+        descricao, 
+        modoPreparo, 
+        steps, // Front-end might send steps as array
+        tempoPreparo, 
+        time, // Front-end might send time
+        publica, 
+        public: frontendPublic, // Front-end might send public
+        imagem, 
+        image, // Front-end might send image
+        dificuldade, 
+        criadaPorIA, 
+        rascunho, 
+        linkImportacao, 
+        livroId,
+        ingredients, // Array of strings
+        ingredientes, // Array of strings
+        categories, // Array of strings
+        categorias // Array of strings
+    } = req.body;
 
-    const item = await prisma.receita.create({
-        data
-    });
+    if (!titulo) {
+        return res.status(400).json({ erro: "O título da receita é obrigatório." });
+    }
 
-    res.status(201).json(item);
+    // Unify frontend fields
+    const finalSteps = steps || (modoPreparo ? [modoPreparo] : []);
+    const prepStepsString = Array.isArray(finalSteps) ? finalSteps.join("\n") : (modoPreparo || "");
+    const finalTime = time !== undefined ? Number(time) : (tempoPreparo !== undefined ? Number(tempoPreparo) : 15);
+    const finalPublic = frontendPublic !== undefined ? Boolean(frontendPublic) : Boolean(publica);
+    const finalImage = image || imagem || null;
+    const finalIngredients = ingredients || ingredientes || [];
+    const finalCategories = categories || categorias || [];
+
+    try {
+        // Create the recipe inside a transaction
+        const result = await prisma.$transaction(async (tx) => {
+            const recipe = await tx.receita.create({
+                data: {
+                    titulo,
+                    descricao: descricao || "",
+                    modoPreparo: prepStepsString,
+                    tempoPreparo: finalTime,
+                    publica: finalPublic,
+                    imagem: finalImage,
+                    dificuldade: dificuldade || "Fácil",
+                    criadaPorIA: Boolean(criadaPorIA),
+                    rascunho: Boolean(rascunho),
+                    linkImportacao: linkImportacao || null,
+                    usuarioId,
+                    livroId: livroId ? Number(livroId) : null
+                }
+            });
+
+            // Handle ingredients
+            for (const ingStr of finalIngredients) {
+                const parsed = parseIngredient(ingStr);
+                
+                // Find or create ingredient
+                const ingrediente = await tx.ingrediente.upsert({
+                    where: { nome: parsed.nome.toLowerCase() },
+                    update: {},
+                    create: { nome: parsed.nome.toLowerCase() }
+                });
+
+                // Link to recipe
+                await tx.receitaIngrediente.create({
+                    data: {
+                        quantidade: parsed.quantidade,
+                        receitaId: recipe.id,
+                        ingredienteId: ingrediente.id
+                    }
+                });
+            }
+
+            // Handle categories
+            for (const catStr of finalCategories) {
+                const catNameClean = catStr.trim();
+                const categoria = await tx.categoria.upsert({
+                    where: { nome: catNameClean },
+                    update: {},
+                    create: { nome: catNameClean }
+                });
+
+                await tx.receitaCategoria.create({
+                    data: {
+                        receitaId: recipe.id,
+                        categoriaId: categoria.id
+                    }
+                });
+            }
+
+            return recipe;
+        });
+
+        // Retrieve full populated recipe to return
+        const fullRecipe = await prisma.receita.findUnique({
+            where: { id: result.id },
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                }
+            }
+        });
+
+        res.status(201).json(formatRecipe(fullRecipe));
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao cadastrar receita.", detalhe: error.message });
+    }
 };
 
 const listar = async (req, res) => {
-    const lista = await prisma.receita.findMany();
+    const usuarioId = req.usuario.id;
+    const { livroId } = req.query;
 
-    res.status(200).json(lista);
+    try {
+        const filters = { usuarioId };
+        if (livroId) {
+            filters.livroId = Number(livroId);
+        }
+
+        const receitas = await prisma.receita.findMany({
+            where: filters,
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                }
+            },
+            orderBy: { createdAt: "desc" }
+        });
+
+        res.status(200).json(receitas.map(formatRecipe));
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao listar receitas.", detalhe: error.message });
+    }
+};
+
+const listarPublicas = async (req, res) => {
+    try {
+        const receitas = await prisma.receita.findMany({
+            where: { publica: true },
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                }
+            },
+            orderBy: { createdAt: "desc" }
+        });
+
+        res.status(200).json(receitas.map(formatRecipe));
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao listar receitas públicas.", detalhe: error.message });
+    }
 };
 
 const buscar = async (req, res) => {
     const { id } = req.params;
-    
-    const item = await prisma.receita.findUnique({
-        where: { id: Number(id) }
-    });
 
-    res.status(200).json(item);
+    try {
+        const recipe = await prisma.receita.findUnique({
+            where: { id: Number(id) },
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                }
+            }
+        });
+
+        if (!recipe) {
+            return res.status(404).json({ erro: "Receita não encontrada." });
+        }
+
+        res.status(200).json(formatRecipe(recipe));
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao buscar receita.", detalhe: error.message });
+    }
 };
 
 const atualizar = async (req, res) => {
     const { id } = req.params;
-    const dados = req.body;
-    
-    const item = await prisma.receita.update({
-        where: { id: Number(id) },
-        data: dados
-    });
+    const usuarioId = req.usuario.id;
+    const { 
+        titulo, 
+        descricao, 
+        modoPreparo, 
+        steps,
+        tempoPreparo, 
+        time,
+        publica, 
+        public: frontendPublic,
+        imagem, 
+        image,
+        dificuldade, 
+        livroId,
+        ingredients,
+        ingredientes,
+        categories,
+        categorias
+    } = req.body;
 
-    res.status(200).json(item);
+    try {
+        // Verify owner
+        const existing = await prisma.receita.findUnique({
+            where: { id: Number(id) }
+        });
+
+        if (!existing) {
+            return res.status(404).json({ erro: "Receita não encontrada." });
+        }
+
+        if (existing.usuarioId !== usuarioId) {
+            return res.status(403).json({ erro: "Acesso negado. Você não é o dono desta receita." });
+        }
+
+        const finalSteps = steps || (modoPreparo ? [modoPreparo] : undefined);
+        const prepStepsString = Array.isArray(finalSteps) ? finalSteps.join("\n") : modoPreparo;
+        const finalTime = time !== undefined ? Number(time) : (tempoPreparo !== undefined ? Number(tempoPreparo) : undefined);
+        const finalPublic = frontendPublic !== undefined ? Boolean(frontendPublic) : (publica !== undefined ? Boolean(publica) : undefined);
+        const finalImage = image || imagem;
+        const finalIngredients = ingredients || ingredientes;
+        const finalCategories = categories || categorias;
+
+        const updated = await prisma.$transaction(async (tx) => {
+            const dataToUpdate = {};
+            if (titulo) dataToUpdate.titulo = titulo;
+            if (descricao !== undefined) dataToUpdate.descricao = descricao;
+            if (prepStepsString !== undefined) dataToUpdate.modoPreparo = prepStepsString;
+            if (finalTime !== undefined) dataToUpdate.tempoPreparo = finalTime;
+            if (finalPublic !== undefined) dataToUpdate.publica = finalPublic;
+            if (finalImage !== undefined) dataToUpdate.imagem = finalImage;
+            if (dificuldade) dataToUpdate.dificuldade = dificuldade;
+            if (livroId !== undefined) dataToUpdate.livroId = livroId ? Number(livroId) : null;
+
+            const r = await tx.receita.update({
+                where: { id: Number(id) },
+                data: dataToUpdate
+            });
+
+            // Update ingredients if provided
+            if (finalIngredients) {
+                // Delete existing ones
+                await tx.receitaIngrediente.deleteMany({
+                    where: { receitaId: r.id }
+                });
+
+                for (const ingStr of finalIngredients) {
+                    const parsed = parseIngredient(ingStr);
+                    const ingrediente = await tx.ingrediente.upsert({
+                        where: { nome: parsed.nome.toLowerCase() },
+                        update: {},
+                        create: { nome: parsed.nome.toLowerCase() }
+                    });
+
+                    await tx.receitaIngrediente.create({
+                        data: {
+                            quantidade: parsed.quantidade,
+                            receitaId: r.id,
+                            ingredienteId: ingrediente.id
+                        }
+                    });
+                }
+            }
+
+            // Update categories if provided
+            if (finalCategories) {
+                await tx.receitaCategoria.deleteMany({
+                    where: { receitaId: r.id }
+                });
+
+                for (const catStr of finalCategories) {
+                    const catNameClean = catStr.trim();
+                    const categoria = await tx.categoria.upsert({
+                        where: { nome: catNameClean },
+                        update: {},
+                        create: { nome: catNameClean }
+                    });
+
+                    await tx.receitaCategoria.create({
+                        data: {
+                            receitaId: r.id,
+                            categoriaId: categoria.id
+                        }
+                    });
+                }
+            }
+
+            return r;
+        });
+
+        const fullRecipe = await prisma.receita.findUnique({
+            where: { id: updated.id },
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                }
+            }
+        });
+
+        res.status(200).json(formatRecipe(fullRecipe));
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao atualizar receita.", detalhe: error.message });
+    }
 };
 
 const excluir = async (req, res) => {
     const { id } = req.params;
-    
-    const item = await prisma.receita.delete({
-        where: { id: Number(id) }
-    });
+    const usuarioId = req.usuario.id;
 
-    res.status(200).json(item);
+    try {
+        const recipe = await prisma.receita.findUnique({
+            where: { id: Number(id) }
+        });
+
+        if (!recipe) {
+            return res.status(404).json({ erro: "Receita não encontrada." });
+        }
+
+        if (recipe.usuarioId !== usuarioId) {
+            return res.status(403).json({ erro: "Acesso negado. Você não é o dono desta receita." });
+        }
+
+        await prisma.receita.delete({
+            where: { id: Number(id) }
+        });
+
+        res.status(200).json({ mensagem: "Receita excluída com sucesso." });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao excluir receita.", detalhe: error.message });
+    }
 };
 
 module.exports = {
     cadastrar,
     listar,
+    listarPublicas,
     buscar,
     atualizar,
     excluir

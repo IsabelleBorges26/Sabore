@@ -19,6 +19,9 @@ const ingredienteDisponivelRoutes = require("./src/routes/ingredienteDisponivel.
 const geracaoIARoutes = require("./src/routes/geracaoIA.routes");
 const importacaoRoutes = require("./src/routes/importacao.routes");
 const compartilhamentoRoutes = require("./src/routes/compartilhamento.routes");
+const livrosRoutes = require("./src/routes/livros.routes");
+const planosRoutes = require("./src/routes/planos.routes");
+const bibliotecasRoutes = require("./src/routes/bibliotecas.routes");
 
 app.use("/usuarios", usuariosRoutes);
 app.use("/receitas", receitasRoutes);
@@ -31,6 +34,9 @@ app.use("/ingredientes-disponiveis", ingredienteDisponivelRoutes);
 app.use("/ia", geracaoIARoutes);
 app.use("/importacao", importacaoRoutes);
 app.use("/compartilhamento", compartilhamentoRoutes);
+app.use("/livros", livrosRoutes);
+app.use("/planos", planosRoutes);
+app.use("/bibliotecas", bibliotecasRoutes);
 
 const porta = process.env.PORT_APP || 3000;
 

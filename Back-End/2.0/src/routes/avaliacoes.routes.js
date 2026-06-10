@@ -1,19 +1,17 @@
 const express = require("express");
-
 const router = express.Router();
+const authMiddleware = require("../middlewares/auth");
 
 const { 
     cadastrar, 
     listar, 
     buscar, 
-    atualizar, 
     excluir 
 } = require("../controllers/avaliacoes.controllers");
 
-router.post("/cadastrar", cadastrar);
+router.post("/cadastrar", authMiddleware, cadastrar);
 router.get("/listar", listar);
 router.get("/buscar/:id", buscar);
-router.put("/atualizar/:id", atualizar);
-router.delete("/excluir/:id", excluir);
+router.delete("/excluir/:id", authMiddleware, excluir);
 
 module.exports = router;
