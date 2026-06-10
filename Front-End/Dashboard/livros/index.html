@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SABORÉ — Meus Livros de Receitas</title>
+  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="dashboard-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../../inicial/index.html" class="logo-area">
+          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
+        </a>
+        <p class="sidebar-slogan">Saboreie novas possibilidades</p>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="#" class="menu-item active" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
+        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
+        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
+        <a href="../home/index.html#ia-foto" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
+        <a href="../home/index.html#importar" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
+        <a href="../home/index.html#favoritas" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
+        <a href="../home/index.html#perfil" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
+        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
+        <a href="../home/index.html#config" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
+      </nav>
+
+      <!-- Sidebar Footer User Status (Conditional) -->
+      <div class="sidebar-footer-promo">
+        <div class="promo-card-compact">
+          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="promo-info">
+            <h4>Libere a cozinha!</h4>
+            <p>Tenha recursos ilimitados</p>
+            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar PRO</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+      
+      <!-- NAVBAR -->
+      <header class="navbar">
+        <div class="navbar-left">
+          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+          <div class="nav-welcome-text">
+            <h2>Meus Livros <i class="fa-solid fa-book-bookmark" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
+            <p>Organize suas criações e coleções</p>
+          </div>
+        </div>
+
+        <div class="navbar-center">
+          <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="global-search" placeholder="Pesquisar nos meus livros de receitas...">
+            <span class="search-shortcut">Ctrl K</span>
+          </div>
+        </div>
+
+        <div class="navbar-right">
+          <button class="nav-action-btn" id="notifications-btn" title="Notificações">
+            <i class="fa-solid fa-bell"></i>
+            <span class="badge-dot"></span>
+          </button>
+          <button class="nav-action-btn" id="settings-btn" title="Configurações">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+          
+          <div class="user-profile-badge" id="profile-dropdown-trigger">
+            <div class="user-avatar-wrap">
+              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" alt="Avatar Davi" class="user-avatar">
+              <span class="user-status-dot online"></span>
+            </div>
+            <div class="user-meta">
+              <span class="user-name">Davi</span>
+              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>
+            </div>
+            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD BODY (SCROLLABLE) -->
+      <div class="dashboard-body">
+        
+        <!-- GRID SYSTEM -->
+        <div class="dashboard-grid">
+          
+          <!-- LEFT COLUMN (BOOKS ARCHIVE GRID) -->
+          <div class="main-column">
+            
+            <section class="card-section">
+              <div class="section-title-wrap">
+                <div class="title-details">
+                  <h3><i class="fa-solid fa-folder-open"></i> Suas Coleções</h3>
+                  <p class="section-desc-sub">Gerencie pastas de receitas organizadas por temas ou refeições.</p>
+                </div>
+                <button class="btn-primary-action" id="new-book-btn"><i class="fa-solid fa-plus"></i> Novo Livro</button>
+              </div>
+
+              <!-- FILTERS BAR -->
+              <div class="books-filters-bar">
+                <div class="filter-group">
+                  <button class="filter-tab-btn active" data-filter="all">Todos</button>
+                  <button class="filter-tab-btn" data-filter="Pessoal">Privados</button>
+                  <button class="filter-tab-btn" data-filter="Favorito">Favoritos</button>
+                  <button class="filter-tab-btn" data-filter="Público">Públicos</button>
+                  <button class="filter-tab-btn" data-filter="PRO">PRO</button>
+                </div>
+                <div class="sort-select-wrap">
+                  <label for="books-sort"><i class="fa-solid fa-arrow-down-wide-short"></i> Ordenar:</label>
+                  <select id="books-sort">
+                    <option value="name">Nome (A-Z)</option>
+                    <option value="recipes-desc" selected>Mais Receitas</option>
+                    <option value="recipes-asc">Menos Receitas</option>
+                  </select>
+                </div>
+              </div>
+              
+              <!-- GRID OF BOOK CARDS -->
+              <div class="books-grid-layout" id="books-grid-container">
+                <!-- Javascript will load books dynamically here -->
+              </div>
+            </section>
+
+          </div>
+
+          <!-- RIGHT COLUMN (BOOK DETAIL SIDEBAR DRAWER) -->
+          <div class="side-column">
+            
+            <div class="book-detail-panel" id="book-detail-panel">
+              <!-- Default Empty State -->
+              <div class="book-detail-empty" id="book-detail-empty">
+                <div class="empty-icon-glow">
+                  <i class="fa-solid fa-book-open"></i>
+                </div>
+                <h3>Explore sua Biblioteca</h3>
+                <p>Selecione um livro de receitas na grade para ver as receitas salvas, adicionar novas ou gerenciar a coleção.</p>
+              </div>
+
+              <!-- Selected Book Active State -->
+              <div class="book-detail-active hidden" id="book-detail-active">
+                <div class="detail-header-card">
+                  <div class="detail-book-glow"></div>
+                  <div class="detail-header-top">
+                    <div class="detail-book-cover" id="active-book-cover"><i class="fa-solid fa-book"></i></div>
+                    <div class="detail-header-info">
+                      <span class="book-badge" id="active-book-badge">Pessoal</span>
+                      <h3 id="active-book-title">Nome do Livro</h3>
+                      <p id="active-book-count">0 receitas</p>
+                    </div>
+                  </div>
+                  
+                  <div class="detail-actions">
+                    <button class="btn-detail-add" id="detail-add-recipe-btn"><i class="fa-solid fa-circle-plus"></i> Receita</button>
+                    <button class="btn-detail-delete" id="detail-delete-book-btn" title="Excluir livro"><i class="fa-solid fa-trash-can"></i> Excluir</button>
+                  </div>
+                </div>
+
+                <div class="detail-body">
+                  <div class="detail-recipes-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="recipe-search-input" placeholder="Buscar receita neste livro...">
+                  </div>
+
+                  <div class="detail-recipes-header">
+                    <h4>Pratos Salvos</h4>
+                  </div>
+
+                  <div class="detail-recipes-list" id="active-book-recipes-list">
+                    <!-- Recipes of the selected book will load here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ==================== OVERLAY MODALS ==================== -->
+
+  <!-- 1. ADD BOOK MODAL -->
+  <div class="modal-overlay" id="add-book-modal">
+    <div class="modal-card small-modal">
+      <button class="modal-close-btn" id="close-book-modal"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header-simple">
+        <h3>Criar Novo Livro de Receitas</h3>
+        <p>Organize suas coleções culinárias</p>
+      </div>
+      <form id="new-book-form" class="modal-simple-form">
+        <div class="form-group-simple">
+          <label for="book-title">Nome do Livro</label>
+          <input type="text" id="book-title" placeholder="Ex: Jantares Especiais, Lanches Rápidos..." required>
+        </div>
+        <div class="form-group-simple">
+          <label for="book-emoji-select">Ícone do Livro</label>
+          <select id="book-emoji-select">
+            <option value="fa-solid fa-mug-hot">Café / Matinal</option>
+            <option value="fa-solid fa-cake-candles">Doces / Sobremesas</option>
+            <option value="fa-solid fa-leaf">Saudável / Fit</option>
+            <option value="fa-solid fa-pizza-slice">Pizza / Massas</option>
+            <option value="fa-solid fa-bowl-food">Prato Feito / Jantar</option>
+            <option value="fa-solid fa-martini-glass-citrus">Bebidas / Drinks</option>
+            <option value="fa-solid fa-burger">Hambúrgueres / Fast Food</option>
+            <option value="fa-solid fa-fish">Peixes / Frutos do Mar</option>
+          </select>
+        </div>
+        <div class="form-group-simple">
+          <label for="book-visibility">Visibilidade</label>
+          <select id="book-visibility">
+            <option value="Pessoal">Privado (Apenas eu)</option>
+            <option value="Favorito">Favorito (Destaque no painel)</option>
+            <option value="Público">Público (Compartilhado com amigos)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary-modal-full">Criar Livro</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. ADD RECIPE MODAL -->
+  <div class="modal-overlay" id="add-recipe-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="close-recipe-modal"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div class="ai-inputs-view">
+        <div class="ai-header" style="margin-bottom: 24px;">
+          <span class="ai-tag"><i class="fa-solid fa-circle-plus"></i> Novo Prato</span>
+          <h2>Adicionar Receita Manualmente</h2>
+          <p>Adicione receitas na sua coleção para mantê-las salvas e organizadas.</p>
+        </div>
+        <form class="ai-generator-form" id="new-recipe-form">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="recipe-title-input"><i class="fa-solid fa-font"></i> Título da Receita</label>
+              <input type="text" id="recipe-title-input" placeholder="Ex: Risoto de Alho Poró" required>
+            </div>
+            
+            <div class="form-group flex-1">
+              <label for="recipe-time-input"><i class="fa-solid fa-clock"></i> Tempo (min)</label>
+              <input type="number" id="recipe-time-input" min="1" max="300" value="30" required>
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="recipe-difficulty-input"><i class="fa-solid fa-gauge-simple-high"></i> Dificuldade</label>
+              <select id="recipe-difficulty-input">
+                <option value="Fácil">Fácil</option>
+                <option value="Médio" selected>Médio</option>
+                <option value="Difícil">Difícil</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="recipe-category-input"><i class="fa-solid fa-tags"></i> Categoria / Diet</label>
+              <input type="text" id="recipe-category-input" placeholder="Ex: Almoço, Vegano, Sobremesa" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="recipe-ingredients-input"><i class="fa-solid fa-basket-shopping"></i> Ingredientes</label>
+            <textarea id="recipe-ingredients-input" rows="4" placeholder="Adicione os ingredientes, um por linha. Ex:
+- 1 xícara de arroz arbóreo
+- 1 colher de manteiga
+- 1 alho-poró picado" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="recipe-steps-input"><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</label>
+            <textarea id="recipe-steps-input" rows="5" placeholder="Passo a passo, um por linha. Ex:
+1. Refogue o alho-poró na manteiga.
+2. Adicione o arroz e misture bem.
+3. Despeje o caldo de legumes aos poucos mexendo sempre." required></textarea>
+          </div>
+          
+          <button type="submit" class="btn-generate-ai" style="background: var(--accent); box-shadow: 0 4px 15px rgba(224, 133, 122, 0.25);">
+            <span>Adicionar à Coleção</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. RECIPE DETAILS VIEW MODAL -->
+  <div class="modal-overlay" id="recipe-details-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div class="ai-recipe-result-view" id="recipe-detail-view-container">
+        <div class="recipe-result-header">
+          <span class="recipe-ai-badge" id="recipe-detail-badge"><i class="fa-solid fa-bookmark"></i> Coleção Pessoal</span>
+          <h2 id="recipe-detail-title">Nome do Prato</h2>
+          <div class="recipe-quick-tags">
+            <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="recipe-detail-time">35 min</span></span>
+            <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="recipe-detail-difficulty">Médio</span></span>
+            <span class="q-tag vegetarian-tag" id="recipe-detail-diet-tag">Vegano</span>
+          </div>
+        </div>
+
+        <div class="recipe-result-body">
+          <div class="recipe-ingredients-side">
+            <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
+            <ul id="recipe-detail-ingredients-list">
+              <!-- JS Filled -->
+            </ul>
+          </div>
+          
+          <div class="recipe-steps-side">
+            <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
+            <ol id="recipe-detail-steps-list">
+              <!-- JS Filled -->
+            </ol>
+          </div>
+        </div>
+
+        <div class="recipe-result-footer">
+          <button class="btn-primary-modal" id="recipe-detail-close-btn" style="width: 100%; text-align: center; display: block;">Fechar Receita</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. NOTIFICATIONS MODAL -->
+  <div class="modal-overlay" id="notifications-modal">
+    <div class="modal-card small-modal">
+      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header-simple">
+        <h3>Notificações</h3>
+        <p>Acompanhe suas novidades</p>
+      </div>
+      <div class="notifications-list">
+        <div class="notif-item unread">
+          <span class="notif-icon"><i class="fa-solid fa-star"></i></span>
+          <div class="notif-info">
+            <p><strong>Chef Saboré IA</strong> atualizou sua receita recomendada de Risoto de Cogumelos.</p>
+            <span class="notif-time">há 30 minutos</span>
+          </div>
+        </div>
+        <div class="notif-item">
+          <span class="notif-icon"><i class="fa-solid fa-user-group"></i></span>
+          <div class="notif-info">
+            <p><strong>Júlia</strong> curtiu o seu livro de receitas "Fitness".</p>
+            <span class="notif-time">há 5 horas</span>
+          </div>
+        </div>
+        <div class="notif-item">
+          <span class="notif-icon"><i class="fa-solid fa-gem"></i></span>
+          <div class="notif-info">
+            <p><strong>Plano PRO ativado!</strong> Agora você tem acesso a estatísticas detalhadas e geração ilimitada.</p>
+            <span class="notif-time">há 3 dias</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CELEBRATION UPGRADE MODAL -->
+  <div class="modal-overlay" id="celebration-modal">
+    <div class="celebration-card">
+      <div class="fireworks-canvas"></div>
+      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <h2>Parabéns, Davi! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>
+      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>
+      
+      <div class="pro-features-grid">
+        <div class="pro-feat-item">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <h4>IA Ilimitada</h4>
+        </div>
+        <div class="pro-feat-item">
+          <i class="fa-solid fa-video"></i>
+          <h4>Importar Links</h4>
+        </div>
+        <div class="pro-feat-item">
+          <i class="fa-solid fa-chart-pie"></i>
+          <h4>Estatísticas</h4>
+        </div>
+        <div class="pro-feat-item">
+          <i class="fa-solid fa-infinity"></i>
+          <h4>Livros Infinitos</h4>
+        </div>
+      </div>
+
+      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
