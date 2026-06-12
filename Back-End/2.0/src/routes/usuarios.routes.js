@@ -1,0 +1,25 @@
+const express = require("express");
+const router = express.Router();
+const authMiddleware = require("../middlewares/auth");
+
+const { 
+    cadastrar, 
+    login,
+    loginGoogle,
+    perfil,
+    listar, 
+    buscar, 
+    atualizar, 
+    excluir 
+} = require("../controllers/usuarios.controllers");
+
+router.post("/cadastrar", cadastrar);
+router.post("/login", login);
+router.post("/login-google", loginGoogle);
+router.get("/perfil", authMiddleware, perfil);
+router.get("/listar", listar);
+router.get("/buscar/:id", buscar);
+router.put("/atualizar/:id", authMiddleware, atualizar);
+router.delete("/excluir/:id", authMiddleware, excluir);
+
+module.exports = router;

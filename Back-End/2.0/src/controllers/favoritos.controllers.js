@@ -1,0 +1,132 @@
+const prisma = require("../data/prisma");
+
+const formatRecipe = (recipe) => {
+    return {
+        id: recipe.id,
+        title: recipe.titulo,
+        description: recipe.descricao,
+        difficulty: recipe.dificuldade || "Fácil",
+        time: recipe.tempoPreparo || 0,
+        public: recipe.publica,
+        image: recipe.imagem || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=400&q=80",
+        criadaPorIA: recipe.criadaPorIA,
+        rascunho: recipe.rascunho,
+        linkImportacao: recipe.linkImportacao,
+        livroId: recipe.livroId,
+        author: recipe.usuario.nome,
+        authorAvatar: recipe.usuario.foto || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+        category: recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
+        categories: recipe.categorias.map(rc => rc.categoria.nome),
+        ingredients: recipe.ingredientes.map(ri => {
+            if (ri.quantidade) {
+                return `${ri.quantidade} ${ri.ingrediente.nome}`;
+            }
+            return ri.ingrediente.nome;
+        }),
+        steps: recipe.modoPreparo ? recipe.modoPreparo.split("\n") : []
+    };
+};
+
+const cadastrar = async (req, res) => {
+    const usuarioId = req.usuario.id;
+    const { receitaId } = req.body;
+
+    if (!receitaId) {
+        return res.status(400).json({ erro: "O ID da receita é obrigatório." });
+    }
+
+    try {
+        const item = await prisma.favorito.upsert({
+            where: {
+                usuarioId_receitaId: {
+                    usuarioId,
+                    receitaId: Number(receitaId)
+                }
+            },
+            update: {},
+            create: {
+                usuarioId,
+                receitaId: Number(receitaId)
+            }
+        });
+
+        res.status(201).json(item);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao adicionar favorito.", detalhe: error.message });
+    }
+};
+
+const listar = async (req, res) => {
+    const usuarioId = req.usuario.id;
+
+    try {
+        const favoritos = await prisma.favorito.findMany({
+            where: { usuarioId },
+            include: {
+                receita: {
+                    include: {
+                        usuario: true,
+                        ingredientes: {
+                            include: { ingrediente: true }
+                        },
+                        categorias: {
+                            include: { categoria: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        const receitas = favoritos.map(f => formatRecipe(f.receita));
+        res.status(200).json(receitas);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao listar favoritos.", detalhe: error.message });
+    }
+};
+
+const buscar = async (req, res) => {
+    const { id } = req.params;
+    const usuarioId = req.usuario.id;
+
+    try {
+        const item = await prisma.favorito.findFirst({
+            where: {
+                receitaId: Number(id),
+                usuarioId
+            }
+        });
+        if (!item) {
+            return res.status(404).json({ erro: "Favorito não encontrado." });
+        }
+        res.status(200).json(item);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao buscar favorito.", detalhe: error.message });
+    }
+};
+
+const excluir = async (req, res) => {
+    const { id } = req.params; // ID of the recipe
+    const usuarioId = req.usuario.id;
+
+    try {
+        await prisma.favorito.delete({
+            where: {
+                usuarioId_receitaId: {
+                    usuarioId,
+                    receitaId: Number(id)
+                }
+            }
+        });
+
+        res.status(200).json({ mensagem: "Favorito excluído com sucesso." });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao excluir favorito.", detalhe: error.message });
+    }
+};
+
+module.exports = {
+    cadastrar,
+    listar,
+    buscar,
+    excluir
+};

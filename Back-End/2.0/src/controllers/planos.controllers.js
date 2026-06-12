@@ -1,0 +1,51 @@
+const prisma = require("../data/prisma");
+
+const listarPlanos = async (req, res) => {
+    const planos = [
+        { nome: 'FREE', preco: 0 },
+        { nome: 'PRO', preco: 19.90 }
+    ];
+    
+    res.status(200).json(planos);
+};
+
+const verificar = async (req, res) => {
+    const usuarioId = req.usuario.id;
+    
+    try {
+        const item = await prisma.usuario.findUnique({
+            where: { id: usuarioId },
+            select: { plano: true }
+        });
+
+        res.status(200).json(item);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao verificar plano.", detalhe: error.message });
+    }
+};
+
+const atualizar = async (req, res) => {
+    const usuarioId = req.usuario.id;
+    const { plano } = req.body;
+    
+    if (!plano || (plano !== "FREE" && plano !== "PRO")) {
+        return res.status(400).json({ erro: "O plano especificado é inválido. Escolha entre FREE ou PRO." });
+    }
+
+    try {
+        const item = await prisma.usuario.update({
+            where: { id: usuarioId },
+            data: { plano }
+        });
+
+        res.status(200).json(item);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao atualizar plano.", detalhe: error.message });
+    }
+};
+
+module.exports = {
+    verificar,
+    atualizar,
+    listarPlanos
+};

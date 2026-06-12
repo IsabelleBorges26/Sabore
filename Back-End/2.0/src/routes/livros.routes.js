@@ -1,0 +1,10 @@
+const express = require("express");
+const router = express.Router();
+const authMiddleware = require("../middlewares/auth");
+const { listar, cadastrar, excluir } = require("../controllers/livros.controllers");
+
+router.get("/listar", authMiddleware, listar);
+router.post("/cadastrar", authMiddleware, cadastrar);
+router.delete("/excluir/:id", authMiddleware, excluir);
+
+module.exports = router;
