@@ -2,6 +2,13 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // ─── LOAD PERSISTED AVATAR ───
+  const savedAvatar = localStorage.getItem('sabore_user_avatar');
+  if (savedAvatar) {
+    const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
+    userAvatars.forEach(img => img.src = savedAvatar);
+  }
+
   // ─── USER STATE MANAGEMENT ───
   let userState = {
     isPro: false,

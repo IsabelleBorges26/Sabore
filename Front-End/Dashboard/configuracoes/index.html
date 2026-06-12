@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SABORÉ — Configurações</title>
+  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="dashboard-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../../inicial/index.html" class="logo-area">
+          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
+        </a>
+        <p class="sidebar-slogan">Saboreie novas possibilidades</p>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
+        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
+        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
+        <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
+        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
+        <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
+        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
+        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
+        <a href="#" class="menu-item active" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
+      </nav>
+
+      <!-- Sidebar Footer User Status (Conditional) -->
+      <div class="sidebar-footer-promo">
+        <div class="promo-card-compact">
+          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="promo-info">
+            <h4>Libere a cozinha!</h4>
+            <p>Tenha recursos ilimitados</p>
+            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar PRO</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+      
+      <!-- NAVBAR -->
+      <header class="navbar">
+        <div class="navbar-left">
+          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+          <div class="nav-welcome-text">
+            <h2>Configurações <i class="fa-solid fa-gear" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
+            <p>Personalize sua conta, preferências de IA e visual</p>
+          </div>
+        </div>
+
+        <div class="navbar-right">
+          <button class="nav-action-btn" id="notifications-btn" title="Notificações">
+            <i class="fa-solid fa-bell"></i>
+            <span class="badge-dot"></span>
+          </button>
+          <button class="nav-action-btn" id="settings-btn" title="Configurações">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+          
+          <div class="user-profile-badge" id="profile-dropdown-trigger">
+            <div class="user-avatar-wrap">
+              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" alt="Avatar Davi" class="user-avatar">
+              <span class="user-status-dot online"></span>
+            </div>
+            <div class="user-meta">
+              <span class="user-name">Davi</span>
+              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>
+            </div>
+            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD BODY (SCROLLABLE) -->
+      <div class="dashboard-body">
+        
+        <div class="config-grid">
+          
+          <!-- LEFT COLUMN: ACCOUNT & AI PREFERENCES -->
+          <div class="config-column-main">
+            
+            <!-- SECTION 1: PERFIL DA CONTA -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <h3><i class="fa-solid fa-circle-user"></i> Perfil da Conta</h3>
+                <p>Gerencie seus dados principais de acesso</p>
+              </div>
+              <div class="config-card-body">
+                <div class="input-row">
+                  <div class="input-group">
+                    <label for="profile-name">Nome Completo</label>
+                    <div class="input-field-wrap">
+                      <span class="field-icon"><i class="fa-solid fa-user"></i></span>
+                      <input type="text" id="profile-name" value="Davi Moratorio">
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <label for="profile-email">E-mail</label>
+                    <div class="input-field-wrap">
+                      <span class="field-icon"><i class="fa-solid fa-envelope"></i></span>
+                      <input type="email" id="profile-email" value="davi.moratorio@sabore.com.br">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="password-change-section">
+                  <h4>Alterar Senha</h4>
+                  <div class="input-row">
+                    <div class="input-group">
+                      <label for="current-password">Senha Atual</label>
+                      <div class="input-field-wrap">
+                        <span class="field-icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="current-password" placeholder="••••••••">
+                      </div>
+                    </div>
+                    <div class="input-group">
+                      <label for="new-password">Nova Senha</label>
+                      <div class="input-field-wrap">
+                        <span class="field-icon"><i class="fa-solid fa-key"></i></span>
+                        <input type="password" id="new-password" placeholder="Mínimo 8 caracteres">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: PREFERÊNCIAS DA IA -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <h3><i class="fa-solid fa-robot"></i> Preferências do Assistente IA</h3>
+                <p>Personalize as respostas e recomendações geradas pelo Saboré</p>
+              </div>
+              <div class="config-card-body">
+                <div class="input-row">
+                  <div class="input-group">
+                    <label for="default-difficulty">Dificuldade Culinária Padrão</label>
+                    <div class="input-field-wrap">
+                      <span class="field-icon"><i class="fa-solid fa-gauge-simple"></i></span>
+                      <select id="default-difficulty">
+                        <option value="all">Qualquer Dificuldade</option>
+                        <option value="easy">Fácil</option>
+                        <option value="medium" selected>Médio</option>
+                        <option value="hard">Difícil</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="input-group">
+                    <label for="default-servings">Rendimento Padrão (Porções)</label>
+                    <div class="input-field-wrap">
+                      <span class="field-icon"><i class="fa-solid fa-users"></i></span>
+                      <select id="default-servings">
+                        <option value="1">1 Porção</option>
+                        <option value="2" selected>2 Porções</option>
+                        <option value="4">4 Porções</option>
+                        <option value="6">6 Porções</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dietary-preferences-wrap">
+                  <label class="section-label-small">Restrições Alimentares Ativas</label>
+                  <p class="section-desc-small">Selecione para filtrar automaticamente receitas recomendadas</p>
+                  <div class="diets-checkbox-grid">
+                    <label class="custom-checkbox-wrap">
+                      <input type="checkbox" id="diet-vegan">
+                      <span class="checkbox-box"></span>
+                      <span class="checkbox-text">Vegano</span>
+                    </label>
+                    <label class="custom-checkbox-wrap">
+                      <input type="checkbox" id="diet-vegetarian" checked>
+                      <span class="checkbox-box"></span>
+                      <span class="checkbox-text">Vegetariano</span>
+                    </label>
+                    <label class="custom-checkbox-wrap">
+                      <input type="checkbox" id="diet-gluten">
+                      <span class="checkbox-box"></span>
+                      <span class="checkbox-text">Sem Glúten</span>
+                    </label>
+                    <label class="custom-checkbox-wrap">
+                      <input type="checkbox" id="diet-lactose">
+                      <span class="checkbox-box"></span>
+                      <span class="checkbox-text">Sem Lactose</span>
+                    </label>
+                    <label class="custom-checkbox-wrap">
+                      <input type="checkbox" id="diet-lowcarb">
+                      <span class="checkbox-box"></span>
+                      <span class="checkbox-text">Low Carb</span>
+                    </label>
+                    <label class="custom-checkbox-wrap">
+                      <input type="checkbox" id="diet-keto">
+                      <span class="checkbox-box"></span>
+                      <span class="checkbox-text">Cetogênica</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: APPARANCE, NOTIFICATIONS & DANGER ZONE -->
+          <div class="config-column-side">
+            
+            <!-- SECTION 3: APARÊNCIA E TEMA -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <h3><i class="fa-solid fa-palette"></i> Aparência e Tema</h3>
+                <p>Personalize as cores e efeitos visuais</p>
+              </div>
+              <div class="config-card-body">
+                <div class="input-group">
+                  <label for="theme-selector">Paleta de Cores (Tema)</label>
+                  <div class="input-field-wrap">
+                    <span class="field-icon"><i class="fa-solid fa-paint-roller"></i></span>
+                    <select id="theme-selector">
+                      <option value="obsidian" selected>Obsidian Dark (Padrão)</option>
+                      <option value="emerald">Emerald Forest</option>
+                      <option value="rosegold">Rose Gold Culinário</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="switch-row">
+                  <div class="switch-info">
+                    <h4>Efeitos de Brilho Neon</h4>
+                    <p>Ativa o brilho nos cards e títulos</p>
+                  </div>
+                  <label class="switch-toggle">
+                    <input type="checkbox" id="neon-glow-toggle" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 4: NOTIFICAÇÕES -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <h3><i class="fa-solid fa-bell"></i> Notificações</h3>
+                <p>Gerencie como deseja ser alertado</p>
+              </div>
+              <div class="config-card-body">
+                <div class="switch-row">
+                  <div class="switch-info">
+                    <h4>Recomendações Diárias</h4>
+                    <p>Alertas de novas receitas do Chef IA</p>
+                  </div>
+                  <label class="switch-toggle">
+                    <input type="checkbox" id="notif-daily" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <div class="switch-row">
+                  <div class="switch-info">
+                    <h4>Newsletter Semanal</h4>
+                    <p>Dicas culinárias e criações da comunidade</p>
+                  </div>
+                  <label class="switch-toggle">
+                    <input type="checkbox" id="notif-weekly">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 5: DANGER ZONE -->
+            <div class="config-card danger-card">
+              <div class="config-card-header">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> Zona de Perigo</h3>
+                <p>Ações permanentes e avançadas</p>
+              </div>
+              <div class="config-card-body">
+                <button class="btn-danger-outline" id="btn-reset-cache"><i class="fa-solid fa-arrows-rotate"></i> Limpar Dados Locais</button>
+                <p class="danger-desc">Reseta as receitas geradas e fotos de perfil salvas em cache.</p>
+                
+                <button class="btn-danger-filled" id="btn-delete-account"><i class="fa-solid fa-user-slash"></i> Desativar Conta</button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- SAVE ACTIONS BAR -->
+        <div class="config-actions-bar">
+          <button class="btn-save-settings" id="btn-save-settings"><i class="fa-solid fa-floppy-disk"></i> Salvar Configurações</button>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ==================== OVERLAY MODALS ==================== -->
+
+  <!-- 1. NOTIFICATIONS MODAL -->
+  <div class="modal-overlay" id="notifications-modal">
+    <div class="modal-card small-modal">
+      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header-simple">
+        <h3>Notificações</h3>
+        <p>Acompanhe suas novidades</p>
+      </div>
+      <div class="notifications-list">
+        <div class="notif-item unread">
+          <span class="notif-icon"><i class="fa-solid fa-star"></i></span>
+          <div class="notif-info">
+            <p><strong>Chef Saboré IA</strong> atualizou sua receita recomendada de Risoto de Cogumelos.</p>
+            <span class="notif-time">há 30 minutos</span>
+          </div>
+        </div>
+        <div class="notif-item">
+          <span class="notif-icon"><i class="fa-solid fa-user-group"></i></span>
+          <div class="notif-info">
+            <p><strong>Júlia</strong> curtiu o seu livro de receitas "Fitness".</p>
+            <span class="notif-time">há 5 horas</span>
+          </div>
+        </div>
+        <div class="notif-item">
+          <span class="notif-icon"><i class="fa-solid fa-gem"></i></span>
+          <div class="notif-info">
+            <p><strong>Plano PRO ativado!</strong> Agora você tem acesso a estatísticas detalhadas e geração ilimitada.</p>
+            <span class="notif-time">há 3 dias</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CELEBRATION UPGRADE MODAL -->
+  <div class="modal-overlay" id="celebration-modal">
+    <div class="celebration-card">
+      <div class="fireworks-canvas"></div>
+      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <h2>Parabéns, Davi! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>
+      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>
+      
+      <div class="pro-features-grid">
+        <div class="pro-feat-item">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <h4>IA Ilimitada</h4>
+        </div>
+        <div class="pro-feat-item">
+          <i class="fa-solid fa-video"></i>
+          <h4>Importar Links</h4>
+        </div>
+        <div class="pro-feat-item">
+          <i class="fa-solid fa-chart-pie"></i>
+          <h4>Estatísticas</h4>
+        </div>
+        <div class="pro-feat-item">
+          <i class="fa-solid fa-infinity"></i>
+          <h4>Livros Infinitos</h4>
+        </div>
+      </div>
+
+      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ — Explorar Receitas</title>
+  <title>SABORÉ — Receitas Favoritas</title>
   <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -24,11 +24,11 @@
       <nav class="sidebar-menu">
         <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
         <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
-        <a href="#" class="menu-item active" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
+        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
         <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
         <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
         <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
-        <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
+        <a href="#" class="menu-item active" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
         <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
         <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
@@ -55,16 +55,8 @@
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
           <div class="nav-welcome-text">
-            <h2>Explorar <i class="fa-solid fa-compass" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
-            <p>Descubra e inspire-se com a comunidade</p>
-          </div>
-        </div>
-
-        <div class="navbar-center">
-          <div class="search-bar">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="global-search" placeholder="Pesquisar receitas, chefs ou ingredientes da comunidade...">
-            <span class="search-shortcut">Ctrl K</span>
+            <h2>Favoritas <i class="fa-solid fa-heart" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
+            <p>Suas receitas preferidas salvas em um só lugar</p>
           </div>
         </div>
 
@@ -94,130 +86,120 @@
       <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
         
-        <!-- GRID SYSTEM -->
-        <div class="dashboard-grid">
-          
-          <!-- LEFT COLUMN (EXPLORE MAIN WORKSPACE) -->
-          <div class="main-column">
-            
-            <!-- DISCOVERY HERO BANNER -->
-            <section class="explore-hero-card">
-              <div class="explore-hero-glow"></div>
-              <div class="explore-hero-content">
-                <span class="explore-hero-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> Tendências Culinárias</span>
-                <h2>Descubra seu próximo prato favorito</h2>
-                <p>Navegue pelas melhores receitas criadas e compartilhadas por cozinheiros profissionais e amadores da comunidade Saboré.</p>
-              </div>
-            </section>
-
-            <!-- EXPLORE CATEGORIES (CAROUSEL TRACK) -->
-            <section class="card-section">
-              <div class="section-title-wrap">
-                <h3><i class="fa-solid fa-tags"></i> Categorias Populares</h3>
-              </div>
-              <div class="categories-scroll-carousel" id="categories-carousel-list">
-                <!-- Javascript will load categories here -->
-              </div>
-            </section>
-
-            <!-- DYNAMIC RECIPES GRID (PINTEREST INSPIRED FEED) -->
-            <section class="card-section">
-              <div class="section-title-wrap" style="margin-bottom: 8px;">
-                <div class="title-details">
-                  <h3><i class="fa-solid fa-fire"></i> Receitas em Destaque</h3>
-                  <p class="section-desc-sub" style="margin-top: 2px;">O que a comunidade está cozinhando e curtindo ultimamente.</p>
-                </div>
-                
-                <div class="explore-feed-controls">
-                  <button class="feed-filter-btn active" data-feed="all">Tudo</button>
-                  <button class="feed-filter-btn" data-feed="fit">Saudável</button>
-                  <button class="feed-filter-btn" data-feed="vegetariano">Vegetariano</button>
-                  <button class="feed-filter-btn" data-feed="doce">Doces</button>
-                  <button class="feed-filter-btn" data-feed="facil">Fáceis</button>
-                </div>
-              </div>
-
-              <div class="explore-recipes-grid" id="explore-recipes-container">
-                <!-- Recipes Loaded Dynamically by script.js -->
-              </div>
-            </section>
-
-            <!-- CHEF SPOTLIGHT (NETFLIX STYLE ROW) -->
-            <section class="card-section">
-              <div class="section-title-wrap">
-                <div class="title-details">
-                  <h3><i class="fa-solid fa-award"></i> Chefs em Destaque</h3>
-                  <p class="section-desc-sub" style="margin-top: 2px;">Cozinheiros talentosos que você precisa seguir e acompanhar.</p>
-                </div>
-              </div>
-              <div class="chefs-scroll-row" id="chefs-spotlight-container">
-                <!-- Chefs Loaded Dynamically by script.js -->
-              </div>
-            </section>
-
+        <!-- FAVORITES SECTION HEADER -->
+        <section class="card-section">
+          <div class="section-title-wrap">
+            <div class="title-details">
+              <h3><i class="fa-solid fa-folder-heart"></i> Coleção de Favoritas</h3>
+              <p class="section-desc-sub" style="margin-top: 2px;">Você possui <strong id="favorites-count-label">6</strong> receitas salvas como favoritas.</p>
+            </div>
           </div>
 
-          <!-- RIGHT COLUMN (WIDGET PANELS) -->
-          <div class="side-column">
-            
-            <!-- POPULAR HASHTAGS TAG CLOUD -->
-            <section class="widget-card">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-hashtag"></i> Hashtags em Alta</h3>
-              </div>
-              <div class="tag-cloud-container" id="popular-tags-cloud">
-                <!-- Javascript loads tags -->
-              </div>
-            </section>
-
-            <!-- WEEKLY CHALLENGE WIDGET -->
-            <section class="weekly-challenge-card">
-              <div class="challenge-glow"></div>
-              <div class="challenge-content">
-                <div class="challenge-badge"><i class="fa-solid fa-trophy"></i> DESAFIO DA SEMANA</div>
-                <h3>Receita de Inverno ❄️</h3>
-                <p>Crie e compartilhe um prato quente ou bebida cremosa e ganhe a insígnia de **Chef Invernal**!</p>
-                <div class="challenge-stats">
-                  <span><i class="fa-solid fa-user-group"></i> 2.4k cozinhando</span>
-                  <span><i class="fa-solid fa-thumbs-up"></i> 142 receitas</span>
-                </div>
-                <button class="btn-challenge-action" id="challenge-join-btn">Participar do Desafio</button>
-              </div>
-            </section>
-
-            <!-- COMMUNITY STATS -->
-            <section class="widget-card">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-chart-line"></i> Atividade Saboré</h3>
-              </div>
-              <div class="timeline-activity-list">
-                <div class="timeline-item">
-                  <div class="timeline-dot"></div>
-                  <div class="timeline-desc">
-                    <p><strong>Carlos</strong> acabou de postar <em>"Risoto de Limão Siciliano"</em></p>
-                    <span>há 2 min</span>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-dot"></div>
-                  <div class="timeline-desc">
-                    <p><strong>Mariana</strong> atingiu <em>500 seguidores</em> em seu perfil</p>
-                    <span>há 15 min</span>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-dot"></div>
-                  <div class="timeline-desc">
-                    <p><strong>Davi</strong> (você) salvou <em>Salada César Fit</em></p>
-                    <span>há 2 horas</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
+          <!-- FILTERS TABS BAR -->
+          <div class="favorites-filters-bar">
+            <button class="filter-tab-btn active" data-filter="all">Todas</button>
+            <button class="filter-tab-btn" data-filter="Café da Manhã">Café da Manhã</button>
+            <button class="filter-tab-btn" data-filter="Almoço">Almoço</button>
+            <button class="filter-tab-btn" data-filter="Jantar">Jantar</button>
+            <button class="filter-tab-btn" data-filter="Sobremesa">Sobremesas</button>
+            <button class="filter-tab-btn" data-filter="Massa">Massas</button>
           </div>
 
-        </div>
+          <!-- FAVORITES GRID -->
+          <div class="recipes-grid" id="favorites-container">
+            
+            <article class="recipe-card" data-title="Lasanha de Berinjela" data-category="Almoço" data-id="1">
+              <div class="recipe-image-wrap">
+                <img src="https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=400&q=80" alt="Lasanha" class="recipe-img">
+                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
+              </div>
+              <div class="recipe-content-area">
+                <span class="recipe-category">Almoço</span>
+                <h4>Lasanha de Berinjela</h4>
+                <div class="recipe-meta-bottom">
+                  <span><i class="fa-regular fa-clock"></i> 45 min</span>
+                  <span class="recipe-difficulty easy">Fácil</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="recipe-card" data-title="Bolo de Cenoura Fit" data-category="Sobremesa" data-id="2">
+              <div class="recipe-image-wrap">
+                <img src="https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=400&q=80" alt="Bolo de Cenoura" class="recipe-img">
+                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
+              </div>
+              <div class="recipe-content-area">
+                <span class="recipe-category">Sobremesa</span>
+                <h4>Bolo de Cenoura Fit</h4>
+                <div class="recipe-meta-bottom">
+                  <span><i class="fa-regular fa-clock"></i> 35 min</span>
+                  <span class="recipe-difficulty medium">Médio</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="recipe-card" data-title="Omelete de Espinafre" data-category="Café da Manhã" data-id="3">
+              <div class="recipe-image-wrap">
+                <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=400&q=80" alt="Omelete" class="recipe-img">
+                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
+              </div>
+              <div class="recipe-content-area">
+                <span class="recipe-category">Café da Manhã</span>
+                <h4>Omelete de Espinafre</h4>
+                <div class="recipe-meta-bottom">
+                  <span><i class="fa-regular fa-clock"></i> 15 min</span>
+                  <span class="recipe-difficulty easy">Fácil</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="recipe-card" data-title="Salmão ao Molho de Maracujá" data-category="Jantar" data-id="4">
+              <div class="recipe-image-wrap">
+                <img src="https://images.unsplash.com/photo-1485921325814-a5add4c8c24e?auto=format&fit=crop&w=400&q=80" alt="Salmão" class="recipe-img">
+                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
+              </div>
+              <div class="recipe-content-area">
+                <span class="recipe-category">Jantar</span>
+                <h4>Salmão Grelhado</h4>
+                <div class="recipe-meta-bottom">
+                  <span><i class="fa-regular fa-clock"></i> 25 min</span>
+                  <span class="recipe-difficulty medium">Médio</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="recipe-card" data-title="Panqueca de Banana" data-category="Café da Manhã" data-id="5">
+              <div class="recipe-image-wrap">
+                <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=400&q=80" alt="Panqueca" class="recipe-img">
+                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
+              </div>
+              <div class="recipe-content-area">
+                <span class="recipe-category">Café da Manhã</span>
+                <h4>Panqueca de Banana</h4>
+                <div class="recipe-meta-bottom">
+                  <span><i class="fa-regular fa-clock"></i> 10 min</span>
+                  <span class="recipe-difficulty easy">Fácil</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="recipe-card" data-title="Nhoque de Batata Doce" data-category="Massa" data-id="6">
+              <div class="recipe-image-wrap">
+                <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=400&q=80" alt="Nhoque" class="recipe-img">
+                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
+              </div>
+              <div class="recipe-content-area">
+                <span class="recipe-category">Massa</span>
+                <h4>Nhoque de Batata Doce</h4>
+                <div class="recipe-meta-bottom">
+                  <span><i class="fa-regular fa-clock"></i> 50 min</span>
+                  <span class="recipe-difficulty hard">Difícil</span>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </section>
 
       </div>
 
@@ -232,17 +214,15 @@
     <div class="modal-card">
       <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>
       
-      <div class="ai-recipe-result-view" id="recipe-detail-view-container">
+      <div class="recipe-details-view" id="recipe-detail-view-container">
         <div class="recipe-result-header">
-          <div class="recipe-header-author-wrap">
-            <img src="" id="recipe-detail-author-avatar" alt="Chef Avatar" class="detail-author-img">
-            <span id="recipe-detail-author-name">Chef Name</span>
-          </div>
+          <span class="recipe-ai-badge"><i class="fa-solid fa-heart"></i> Receita Favorita</span>
           <h2 id="recipe-detail-title">Nome do Prato</h2>
+          
           <div class="recipe-quick-tags">
-            <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="recipe-detail-time">35 min</span></span>
-            <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="recipe-detail-difficulty">Médio</span></span>
-            <span class="q-tag vegetarian-tag" id="recipe-detail-diet-tag">Vegano</span>
+            <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="recipe-detail-time">30 min</span></span>
+            <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="recipe-detail-difficulty">Fácil</span></span>
+            <span class="q-tag vegetarian-tag" id="recipe-detail-diet-tag"><i class="fa-solid fa-leaf"></i> Vegetariano</span>
           </div>
         </div>
 
@@ -253,7 +233,7 @@
               <!-- JS Filled -->
             </ul>
           </div>
-          
+
           <div class="recipe-steps-side">
             <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
             <ol id="recipe-detail-steps-list">
@@ -263,28 +243,13 @@
         </div>
 
         <div class="recipe-result-footer">
-          <button class="btn-secondary-modal" id="recipe-detail-close-btn">Fechar</button>
-          <button class="btn-primary-modal" id="recipe-detail-save-btn"><i class="fa-solid fa-folder-plus"></i> Salvar no Livro</button>
+          <button class="btn-secondary-modal" id="recipe-detail-close-btn" style="width: 100%; text-align: center; display: block;">Fechar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 2. SAVE TO BOOK SELECTOR MODAL -->
-  <div class="modal-overlay" id="save-to-book-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Salvar no Livro de Receitas</h3>
-        <p>Escolha em qual coleção salvar esta receita:</p>
-      </div>
-      <div class="book-selection-list" id="save-book-options-container">
-        <!-- Javascript loads book items -->
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. NOTIFICATIONS MODAL -->
+  <!-- 2. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -318,7 +283,7 @@
     </div>
   </div>
 
-  <!-- 4. CELEBRATION UPGRADE MODAL -->
+  <!-- 3. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

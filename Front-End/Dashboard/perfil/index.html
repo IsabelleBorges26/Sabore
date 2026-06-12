@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ — Chef IA Culinário</title>
+  <title>SABORÉ — Perfil do Chef</title>
   <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -25,11 +25,11 @@
         <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
         <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
         <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
-        <a href="#" class="menu-item active" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
+        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
         <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
         <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
         <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
-        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
+        <a href="#" class="menu-item active" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
         <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
@@ -55,8 +55,8 @@
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
           <div class="nav-welcome-text">
-            <h2>Chef IA <i class="fa-solid fa-robot" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
-            <p>Seu assistente culinário pessoal inteligente</p>
+            <h2>Meu Perfil <i class="fa-solid fa-user" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
+            <p>Gerencie seus dados, preferências e criações</p>
           </div>
         </div>
 
@@ -86,118 +86,145 @@
       <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
         
-        <!-- SPLIT GRID CHAT INTERFACE -->
-        <div class="chef-chat-grid">
+        <!-- PROFILE GRID -->
+        <div class="perfil-grid">
           
-          <!-- LEFT PANEL: ASSISTANT SETUP CONTROLS -->
-          <div class="chef-setup-sidebar">
+          <!-- LEFT COLUMN: USER PRIMARY CARD -->
+          <div class="perfil-panel-left">
             
-            <!-- CONTROLS SETUP CARD -->
-            <div class="setup-widget">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-sliders"></i> Contexto do Chef</h3>
+            <div class="perfil-user-card">
+              <div class="user-card-glow"></div>
+              
+              <div class="avatar-container">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Foto de Perfil" class="large-user-avatar">
+                <div class="avatar-edit-overlay"><i class="fa-solid fa-camera"></i></div>
+                <input type="file" id="avatar-upload-input" accept="image/*" style="display: none;">
               </div>
               
-              <div class="setup-controls-form">
-                <div class="control-group">
-                  <label for="chef-restriction-select"><i class="fa-solid fa-leaf"></i> Restrição Alimentar</label>
-                  <select id="chef-restriction-select">
-                    <option value="none">Nenhuma restrição</option>
-                    <option value="vegano">Vegano</option>
-                    <option value="vegetariano">Vegetariano</option>
-                    <option value="lowcarb">Low Carb</option>
-                    <option value="glutenfree">Sem Glúten</option>
-                    <option value="fit">Fitness / Hipercalórico</option>
-                  </select>
-                </div>
-
-                <div class="control-group">
-                  <label for="chef-difficulty-select"><i class="fa-solid fa-gauge-simple-high"></i> Estilo de Preparo</label>
-                  <select id="chef-difficulty-select">
-                    <option value="all">Qualquer complexidade</option>
-                    <option value="easy">Prático & Fácil</option>
-                    <option value="medium">Refinado & Médio</option>
-                    <option value="hard">Gourmet & Elaborado</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- INGREDIENTS GELADEIRA TAG CLOUD -->
-            <div class="setup-widget">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-basket-shopping"></i> O que tem na geladeira?</h3>
-              </div>
-              <p class="setup-widget-desc">Adicione ingredientes que você quer aproveitar e a IA dará prioridade a eles.</p>
+              <h2>Davi Moratorio</h2>
+              <span class="plan-badge-large pro" id="profile-plan-badge">Saboré PRO</span>
               
-              <!-- Input field to add tags -->
-              <div class="tag-input-wrapper">
-                <input type="text" id="geladeira-input" placeholder="Ex: Frango, Tomate, Creme de leite...">
-                <button id="btn-add-geladeira-tag"><i class="fa-solid fa-plus"></i></button>
+              <!-- User stats rows -->
+              <div class="perfil-stats-row">
+                <div class="p-stat-item">
+                  <span class="p-stat-val">1.2k</span>
+                  <span class="p-stat-lbl">Seguidores</span>
+                </div>
+                <div class="p-stat-item">
+                  <span class="p-stat-val">342</span>
+                  <span class="p-stat-lbl">Seguindo</span>
+                </div>
+                <div class="p-stat-item">
+                  <span class="p-stat-val" id="profile-recipes-count">87</span>
+                  <span class="p-stat-lbl">Receitas</span>
+                </div>
               </div>
 
-              <!-- Tags container -->
-              <div class="geladeira-tags-container" id="geladeira-tags-cloud">
-                <!-- Javascript will load tags here -->
+              <!-- Biography Area -->
+              <div class="user-bio-area">
+                <p class="user-bio-text" id="user-bio-display">Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.</p>
+                
+                <!-- Editing inline form block -->
+                <div class="user-bio-edit-block hidden" id="bio-edit-block">
+                  <textarea id="bio-textarea" rows="3" maxlength="165"></textarea>
+                  <div class="edit-block-actions">
+                    <button class="btn-bio-cancel" id="btn-cancel-bio">Cancelar</button>
+                    <button class="btn-bio-save" id="btn-save-bio">Salvar</button>
+                  </div>
+                </div>
+                
+                <button class="btn-edit-profile" id="btn-edit-bio"><i class="fa-solid fa-pen"></i> Editar Biografia</button>
               </div>
-            </div>
 
-            <!-- SUGGESTION PROMPTS QUICK ACTION LINKS -->
-            <div class="setup-widget">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Sugestões Rápidas</h3>
+              <!-- Certifications Badges -->
+              <div class="certifications-wrap">
+                <div class="badge-cert">
+                  <i class="fa-solid fa-award"></i>
+                  <span>Chef IA Saboré Certificado</span>
+                </div>
+                <div class="badge-cert gold">
+                  <i class="fa-solid fa-crown"></i>
+                  <span>Mestre das Cozinhas</span>
+                </div>
               </div>
-              <div class="suggestion-prompts-list">
-                <button class="prompt-chip-btn" data-prompt="Sugira um jantar rápido e prático com os ingredientes salvos.">🍲 Jantar Rápido</button>
-                <button class="prompt-chip-btn" data-prompt="Como posso substituir ovos e manteiga em receitas de bolos?">🍰 Substitutos Saudáveis</button>
-                <button class="prompt-chip-btn" data-prompt="Me dê ideias de lanches saudáveis e ricos em proteínas para o pós-treino.">💪 Lanches Pós-Treino</button>
-                <button class="prompt-chip-btn" data-prompt="Quero criar um menu completo especial para um jantar romântico para dois.">🕯️ Jantar Especial</button>
-              </div>
+
             </div>
 
           </div>
 
-          <!-- RIGHT PANEL: CONVERSATIONAL STREAM & INPUT -->
-          <div class="chef-chat-panel">
+          <!-- RIGHT COLUMN: PREFERENCES & CREATIONS -->
+          <div class="perfil-panel-right">
             
-            <!-- CHAT HEADER -->
-            <div class="chat-header">
-              <div class="chef-status-wrap">
-                <div class="chef-avatar-indicator">
-                  <i class="fa-solid fa-robot"></i>
-                  <span class="online-indicator"></span>
-                </div>
-                <div class="chef-status-info">
-                  <h4>Chef Saboré IA</h4>
-                  <p>Online • Pronto para cozinhar</p>
-                </div>
+            <!-- PREFERENCES WIDGET -->
+            <div class="setup-widget">
+              <div class="widget-header">
+                <h3><i class="fa-solid fa-heart"></i> Suas Preferências Culinárias</h3>
               </div>
-              <button class="btn-clear-chat" id="clear-chat-btn" title="Limpar conversa"><i class="fa-solid fa-trash-arrow-up"></i></button>
-            </div>
-
-            <!-- MESSAGES CONTAINER -->
-            <div class="chat-messages-container" id="chat-messages-container">
-              <!-- Initial Greeting Message -->
-              <div class="message-bubble assistant">
-                <div class="bubble-content">
-                  <p>Olá, Davi! Sou o seu **Chef Saboré IA** pessoal. 🍲</p>
-                  <p>Estou pronto para ajudar você na cozinha. Você pode me dizer quais ingredientes tem na geladeira, pedir uma receita específica ou tirar dúvidas sobre técnicas culinárias. Como posso te ajudar hoje?</p>
-                </div>
-                <span class="message-time">agora</span>
-              </div>
-            </div>
-
-            <!-- INPUT BAR AREA -->
-            <div class="chat-input-wrapper">
+              <p class="setup-widget-desc">A IA do Saboré utiliza estas tags para recomendar e priorizar receitas que combinem com o seu gosto pessoal.</p>
               
-              <!-- Typing Indicator (Hidden by default) -->
-              <div class="typing-indicator hidden" id="typing-indicator">
-                <span></span><span></span><span></span>
+              <!-- Tag cloud container -->
+              <div class="pref-tags-container" id="pref-tags-container">
+                <!-- Javascript will load tags -->
               </div>
+              
+              <!-- Add inline preference tags form -->
+              <div class="pref-tag-input-wrap">
+                <input type="text" id="add-pref-input" placeholder="Ex: Low Carb, Vegano, Sobremesas...">
+                <button id="btn-add-pref"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
 
-              <div class="chat-input-bar">
-                <textarea id="chat-textarea" placeholder="Pergunte ao Chef IA ou descreva o que quer cozinhar..." rows="1"></textarea>
-                <button id="chat-send-btn" title="Enviar mensagem"><i class="fa-solid fa-paper-plane"></i></button>
+            <!-- MY CREATIONS SECTION -->
+            <div class="setup-widget">
+              <div class="widget-header">
+                <h3><i class="fa-solid fa-utensils"></i> Minhas Criações</h3>
+              </div>
+              <p class="setup-widget-desc">Receitas que você elaborou manualmente e salvou nas coleções do Saboré:</p>
+              
+              <div class="creations-grid">
+                
+                <article class="creation-card">
+                  <div class="creation-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80" alt="Smoothie">
+                    <span class="creation-category">Fitness</span>
+                  </div>
+                  <div class="creation-info">
+                    <h4>Smoothie de Cacau & Aveia</h4>
+                    <div class="creation-meta">
+                      <span><i class="fa-regular fa-clock"></i> 5 min</span>
+                      <span><i class="fa-solid fa-gauge-simple"></i> Fácil</span>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="creation-card">
+                  <div class="creation-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=300&q=80" alt="Crepioca">
+                    <span class="creation-category">Saudável</span>
+                  </div>
+                  <div class="creation-info">
+                    <h4>Crepioca Fit ao Pesto</h4>
+                    <div class="creation-meta">
+                      <span><i class="fa-regular fa-clock"></i> 12 min</span>
+                      <span><i class="fa-solid fa-gauge-simple"></i> Fácil</span>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="creation-card">
+                  <div class="creation-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=300&q=80" alt="Bolo">
+                    <span class="creation-category">Lanches</span>
+                  </div>
+                  <div class="creation-info">
+                    <h4>Bolo Integral de Banana</h4>
+                    <div class="creation-meta">
+                      <span><i class="fa-regular fa-clock"></i> 40 min</span>
+                      <span><i class="fa-solid fa-gauge-simple"></i> Fácil</span>
+                    </div>
+                  </div>
+                </article>
+
               </div>
             </div>
 
@@ -213,21 +240,7 @@
 
   <!-- ==================== OVERLAY MODALS ==================== -->
 
-  <!-- 1. SAVE TO BOOK SELECTOR MODAL -->
-  <div class="modal-overlay" id="save-to-book-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Salvar no Livro de Receitas</h3>
-        <p>Escolha em qual coleção salvar esta receita:</p>
-      </div>
-      <div class="book-selection-list" id="save-book-options-container">
-        <!-- Javascript loads book items -->
-      </div>
-    </div>
-  </div>
-
-  <!-- 2. NOTIFICATIONS MODAL -->
+  <!-- 1. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -261,7 +274,7 @@
     </div>
   </div>
 
-  <!-- 3. CELEBRATION UPGRADE MODAL -->
+  <!-- 2. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

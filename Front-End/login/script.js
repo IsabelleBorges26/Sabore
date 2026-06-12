@@ -53,7 +53,7 @@ try {
     toggleBtn.addEventListener('click', () => {
       const isPassword = passwordInput.type === 'password';
       passwordInput.type = isPassword ? 'text' : 'password';
-      toggleBtn.textContent = isPassword ? '🙈' : '👁';
+      toggleBtn.innerHTML = isPassword ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
     });
   }
 
@@ -98,7 +98,7 @@ try {
   if (btnGoogle) {
     btnGoogle.addEventListener('click', () => {
       const provider = new firebase.auth.GoogleAuthProvider();
-      btnGoogle.innerHTML = '<span>⟳</span> Conectando...';
+      btnGoogle.innerHTML = '<span><i class="fa-solid fa-circle-notch fa-spin"></i></span> Conectando...';
       btnGoogle.disabled = true;
 
       auth.signInWithPopup(provider)

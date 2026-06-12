@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Entrar — SABORÉ</title>
   <link rel="icon" type="image/png" href="../assets/LOGO SABORÉ.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -58,9 +59,9 @@
     </div>
 
     <div class="left-footer">
-      <div class="trust-item">🔒 Dados seguros</div>
-      <div class="trust-item">⚡ Acesso instantâneo</div>
-      <div class="trust-item">☁️ Sincronizado</div>
+      <div class="trust-item"><i class="fa-solid fa-lock" style="margin-right: 6px; color: var(--accent);"></i> Dados seguros</div>
+      <div class="trust-item"><i class="fa-solid fa-bolt" style="margin-right: 6px; color: var(--secondary);"></i> Acesso instantâneo</div>
+      <div class="trust-item"><i class="fa-solid fa-cloud" style="margin-right: 6px; color: rgba(242,244,243,0.6);"></i> Sincronizado</div>
     </div>
   </div>
 
@@ -68,7 +69,7 @@
   <div class="right-panel">
     <div class="form-card">
       <div class="form-top">
-        <div class="form-greeting">👋 Olá, de volta!</div>
+        <div class="form-greeting"><i class="fa-solid fa-face-smile" style="color: var(--secondary); margin-right: 6px;"></i> Olá, de volta!</div>
         <h2 class="form-title">Entrar na<br>sua conta</h2>
         <p class="form-sub">Não tem conta? <a href="../cadastro/index.html">Criar conta grátis →</a></p>
       </div>
@@ -77,16 +78,16 @@
         <div class="field">
           <label for="email">E-mail</label>
           <div class="input-wrap">
-            <span class="input-icon">✉️</span>
+            <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
             <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
           </div>
         </div>
         <div class="field">
           <label for="senha">Senha</label>
           <div class="input-wrap">
-            <span class="input-icon">🔑</span>
+            <span class="input-icon"><i class="fa-solid fa-key"></i></span>
             <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password">
-            <button class="password-toggle" id="togglePassword" type="button">👁</button>
+            <button class="password-toggle" id="togglePassword" type="button"><i class="fa-solid fa-eye"></i></button>
           </div>
         </div>
       </div>
