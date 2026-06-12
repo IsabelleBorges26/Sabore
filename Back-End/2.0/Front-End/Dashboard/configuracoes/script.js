@@ -2,6 +2,13 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Verify authentication session
+  const user = api.getUser();
+  if (!user) {
+    window.location.href = "../../login/index.html";
+    return;
+  }
+
   // ─── LOAD PERSISTED AVATAR ───
   const savedAvatar = localStorage.getItem('sabore_user_avatar');
   if (savedAvatar) {
@@ -343,6 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Sua conta foi desativada temporariamente. Redirecionando para a página inicial...');
         location.href = '../../inicial/index.html';
       }
+    });
+  }
+
+  const profileTrigger = document.getElementById('profile-dropdown-trigger');
+  if (profileTrigger) {
+    profileTrigger.addEventListener('click', () => {
+      window.location.href = '../perfil/index.html';
     });
   }
 

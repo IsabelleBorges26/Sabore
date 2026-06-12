@@ -240,14 +240,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const shortcutPhotoBtn = document.getElementById('shortcut-photo-btn');
   const actionPhotoTriggers = [qaPhotoBtn, shortcutPhotoBtn];
   actionPhotoTriggers.forEach(btn => {
-    if (btn) btn.addEventListener('click', () => openModal('photo-modal'));
+    if (btn) btn.addEventListener('click', () => {
+      window.location.href = '../iaFotos/index.html';
+    });
   });
 
   const qaImportBtn = document.getElementById('qa-import-video');
   const shortcutVideoBtn = document.getElementById('shortcut-video-btn');
   const actionVideoTriggers = [qaImportBtn, shortcutVideoBtn];
   actionVideoTriggers.forEach(btn => {
-    if (btn) btn.addEventListener('click', () => openModal('video-modal'));
+    if (btn) btn.addEventListener('click', () => {
+      window.location.href = '../importVideo/index.html';
+    });
   });
 
   const notifBtn = document.getElementById('notifications-btn');
@@ -259,7 +263,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const settingsBtn = document.getElementById('settings-btn');
-  if (settingsBtn) settingsBtn.addEventListener('click', () => alert('Configurações do sistema simuladas com sucesso!'));
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      window.location.href = '../configuracoes/index.html';
+    });
+  }
+
+  const profileTrigger = document.getElementById('profile-dropdown-trigger');
+  if (profileTrigger) {
+    profileTrigger.addEventListener('click', () => {
+      window.location.href = '../perfil/index.html';
+    });
+  }
 
   // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');

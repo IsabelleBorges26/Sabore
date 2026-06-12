@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middlewares/auth");
-const { gerar } = require("../controllers/geracaoIA.controllers");
+const { gerar, analisarFoto, gerarReceitaFoto } = require("../controllers/geracaoIA.controllers");
 
 router.post("/gerar", authMiddleware, gerar);
+router.post("/analisar-foto", authMiddleware, analisarFoto);
+router.post("/gerar-receita-foto", authMiddleware, gerarReceitaFoto);
 
 module.exports = router;

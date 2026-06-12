@@ -2,11 +2,18 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Verify authentication session
+  const user = api.getUser();
+  if (!user) {
+    window.location.href = "../../login/index.html";
+    return;
+  }
+
   // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
-    bio: 'Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.',
-    preferences: ['Fitness', 'Sem Glúten', 'Low Carb', 'Sobremesas', 'Massas']
+    bio: localStorage.getItem('sabore_user_bio') || 'Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.',
+    preferences: localStorage.getItem('sabore_user_preferences') ? JSON.parse(localStorage.getItem('sabore_user_preferences')) : ['Fitness', 'Sem Glúten', 'Low Carb', 'Sobremesas', 'Massas']
   };
 
   // ─── DYNAMIC CUSTOM CURSOR ───
@@ -172,10 +179,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Settings mock action
   const settingsBtn = document.getElementById('settings-btn');
   if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => alert('Configurações simuladas com sucesso!'));
+    settingsBtn.addEventListener('click', () => {
+      window.location.href = '../configuracoes/index.html';
+    });
   }
 
   // ─── UPGRADE CELEBRATION PROCESS ───
@@ -203,6 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSaveBio = document.getElementById('btn-save-bio');
 
   if (btnEditBio && bioDisplay && editBlock && bioTextarea) {
+    // Set initial persisted bio
+    bioDisplay.textContent = userState.bio;
+
     btnEditBio.addEventListener('click', () => {
       bioDisplay.classList.add('hidden');
       btnEditBio.classList.add('hidden');
@@ -221,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const newBio = bioTextarea.value.trim();
       if (newBio) {
         userState.bio = newBio;
+        localStorage.setItem('sabore_user_bio', newBio);
         bioDisplay.textContent = newBio;
       }
       editBlock.classList.add('hidden');
@@ -266,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!userState.preferences.includes(text)) {
       userState.preferences.push(text);
+      localStorage.setItem('sabore_user_preferences', JSON.stringify(userState.preferences));
       renderPrefTags();
     }
     addPrefInput.value = '';
@@ -273,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function removePreferenceTag(name) {
     userState.preferences = userState.preferences.filter(t => t !== name);
+    localStorage.setItem('sabore_user_preferences', JSON.stringify(userState.preferences));
     renderPrefTags();
   }
 

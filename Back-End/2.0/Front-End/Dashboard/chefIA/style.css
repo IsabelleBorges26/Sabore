@@ -1272,3 +1272,41 @@ a {
     padding: 12px 14px;
   }
 }
+
+/* ─── NUTRITIONAL TABLE & DESCRIPTION ─── */
+.chat-recipe-description {
+  font-size: 0.8rem;
+  color: rgba(242, 244, 243, 0.9);
+  line-height: 1.5;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.nutritional-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background: rgba(27, 43, 39, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.nutritional-table tr:nth-child(even) {
+  background: rgba(242, 244, 243, 0.02);
+}
+
+.nutritional-table td {
+  padding: 8px 12px;
+  font-size: 0.76rem;
+  color: rgba(242, 244, 243, 0.8);
+  border-bottom: 1px solid rgba(242, 244, 243, 0.05);
+}
+
+.nutritional-table tr:first-child td {
+  font-weight: 700;
+  color: var(--secondary);
+  border-bottom: 1px solid rgba(240, 213, 182, 0.15);
+  background: rgba(27, 43, 39, 0.6);
+}

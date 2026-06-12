@@ -1,118 +1,321 @@
 const prisma = require("../data/prisma");
 
-const mockRecipesDatabase = [
-    {
-        title: 'Frango com Brócolis ao Limão e Alho',
-        ingredients: ['Peito de Frango (500g, em cubos)', 'Brócolis (1 maço, picado)', 'Limão Siciliano (suco e raspas)', 'Dentes de Alho (3 unidades)', 'Azeite de Oliva', 'Sal e Pimenta'],
-        steps: [
-            'Aqueça o azeite em uma frigideira grande e doure os cubos de frango por 8 minutos até cozinharem por completo.',
-            'Retire o frango e, na mesma frigideira, adicione o alho picado e o brócolis. Refogue por 5 minutos com um pingo de água.',
-            'Volte o frango para a panela, adicione o suco do limão siciliano, as raspas e ajuste o sal e pimenta.',
-            'Mexa bem por 2 minutos para incorporar todos os sabores e sirva imediatamente.'
-        ],
-        time: 20,
-        difficulty: 'Fácil',
-        diet: 'fit'
-    },
-    {
-        title: 'Omelete de Queijo Cremosa com Ervas',
-        ingredients: ['Ovos Frescos (3 unidades)', 'Queijo Parmesão Ralado (50g)', 'Manteiga (1 colher de sopa)', 'Cebolinha picada', 'Sal e Pimenta'],
-        steps: [
-            'Bata os ovos em uma tigela com garfo até espumar levemente. Tempere com sal e pimenta.',
-            'Aqueça a frigideira antiaderente em fogo médio e derreta a manteiga.',
-            'Adicione os ovos batidos e mexa as bordas em direção ao centro para criar camadas cremosas.',
-            'Quando estiver quase firme mas ainda úmido no centro, espalhe o queijo e a cebolinha picada.',
-            'Dobre a omelete ao meio e deslize suavemente para o prato.'
-        ],
-        time: 10,
-        difficulty: 'Fácil',
-        diet: 'none'
-    },
-    {
-        title: 'Brownie de Caneca IA',
-        ingredients: ['Chocolate em Pó (2 colheres de sopa)', 'Farinha de Trigo (2 colheres de sopa)', 'Açúcar (1.5 colheres de sopa)', 'Leite (2 colheres de sopa)', 'Manteiga Derretida (1 colher de sopa)'],
-        steps: [
-            'Em uma caneca apta para micro-ondas, junte todos os ingredientes secos e misture bem.',
-            'Adicione o leite e a manteiga derretida. Mexa até obter uma massa homogênea.',
-            'Leve ao micro-ondas em potência alta por cerca de 60 a 70 segundos.',
-            'Deixe esfriar por 2 minutos (ele termina de assar fora do micro-ondas) e delicie-se!'
-        ],
-        time: 5,
-        difficulty: 'Fácil',
-        diet: 'vegetarian'
-    },
-    {
-        title: 'Shakshuka de Queijo e Tomates',
-        ingredients: ['Ovos (3 unidades)', 'Tomates Pelados (1 lata)', 'Cebola picada (1/2 unidade)', 'Queijo Parmesão ou Feta (80g)', 'Páprica defumada', 'Sal e Azeite'],
-        steps: [
-            'Refogue a cebola picada no azeite até murchar. Adicione a páprica defumada e misture.',
-            'Despeje os tomates pelados na frigideira e amasse com uma colher. Deixe reduzir em fogo baixo por 8 minutos.',
-            'Faça três pequenas cavidades no molho e quebre um ovo dentro de cada uma.',
-            'Salpique o queijo por cima de todo o prato, tampe a panela e cozinhe por 5 minutos até os ovos firmarem no ponto desejado.',
-            'Finalize com salsinha fresca e coma direto da panela com pão italiano.'
-        ],
-        time: 25,
-        difficulty: 'Fácil',
-        diet: 'vegetariano'
+
+// System Prompt for Recipe Generation
+const systemPrompt = `Você é o Chef Saboré IA, um assistente culinário pessoal inteligente.
+O usuário enviará uma solicitação de receita ou ingredientes, juntamente com o seu perfil e histórico.
+Sua tarefa é gerar uma receita perfeitamente adequada que respeite as restrições e preferências alimentares do usuário, adaptando sua comunicação de forma inteligente.
+
+Você DEVE responder EXCLUSIVAMENTE com um objeto JSON válido, sem qualquer texto adicional antes ou depois. Não use blocos de código de markdown. Não use \`\`\`json no início nem \`\`\` no fim. Retorne apenas o JSON bruto.
+
+O JSON gerado deve seguir exatamente a seguinte estrutura:
+{
+  "title": "Nome da Receita",
+  "description": "Texto em Markdown contendo a introdução do Chef com tom adaptado, seguido de uma tabela nutricional detalhada (Calorias, Proteínas, Carboidratos, Gorduras) formatada como tabela em Markdown (| Macro | Quantidade |), e dicas adicionais baseadas no perfil do usuário.",
+  "ingredients": ["Ingrediente 1 com quantidade", "Ingrediente 2 com quantidade", ...],
+  "steps": ["Passo 1 do modo de preparo", "Passo 2 do modo de preparo", ...],
+  "time": tempo_em_minutos_como_numero,
+  "difficulty": "Fácil" ou "Médio" ou "Difícil",
+  "category": "Categoria da receita (ex: Fit, Sobremesa, Vegano, Massas, etc.)"
+}`;
+
+// Robust parser function for LLM JSON output
+function parseJSONRecipe(text) {
+    text = text.trim();
+    
+    // Check if it's wrapped in markdown JSON code block
+    const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (match) {
+        text = match[1].trim();
     }
-];
+    
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        // If JSON.parse fails, try to extract first '{' to last '}'
+        const start = text.indexOf('{');
+        const end = text.lastIndexOf('}');
+        if (start !== -1 && end !== -1 && end > start) {
+            const potentialJson = text.substring(start, end + 1);
+            try {
+                return JSON.parse(potentialJson);
+            } catch (innerErr) {
+                console.error("Inner JSON parsing failed:", innerErr);
+            }
+        }
+        throw e;
+    }
+}
 
 const gerar = async (req, res) => {
-    const { prompt, ingredients, maxTime, diet } = req.body;
+    const usuarioId = req.usuario.id;
+    const { prompt, ingredients, maxTime, diet, difficulty, servings, userBio, userPrefs } = req.body;
 
-    const searchStr = (prompt || ingredients || "").toLowerCase();
-    const limitTime = Number(maxTime) || 30;
+    // Fetch user context from database: Favorite recipes and books
+    let userFavorites = [];
+    let userBooks = [];
 
     try {
-        let matched = null;
+        const favoritos = await prisma.favorito.findMany({
+            where: { usuarioId },
+            include: {
+                receita: {
+                    select: {
+                        titulo: true,
+                        dificuldade: true,
+                        tempoPreparo: true
+                    }
+                }
+            }
+        });
+        userFavorites = favoritos.map(f => f.receita);
 
-        // Try to find a match in the mock database using keyword matching
-        for (const recipe of mockRecipesDatabase) {
-            const matches = recipe.ingredients.some(ing => searchStr.includes(ing.split(' ')[0].toLowerCase()));
-            if (matches) {
-                matched = { ...recipe };
-                break;
+        const livros = await prisma.livro.findMany({
+            where: { usuarioId },
+            select: {
+                titulo: true,
+                tag: true,
+                _count: {
+                    select: { receitas: true }
+                }
+            }
+        });
+        userBooks = livros;
+    } catch (dbErr) {
+        console.warn("[Chef IA] Falha ao consultar histórico do usuário no banco:", dbErr);
+    }
+
+    // Build the personalized context
+    let contextInstructions = "";
+    if (userFavorites.length > 0) {
+        contextInstructions += `\nReceitas Favoritas do Usuário:\n` + userFavorites.map(f => `- ${f.titulo} (${f.dificuldade || 'Fácil'}, ${f.tempoPreparo || 15} min)`).join("\n");
+    }
+    if (userBooks.length > 0) {
+        contextInstructions += `\nColeções/Livros de Receita do Usuário:\n` + userBooks.map(b => `- ${b.titulo} (Tag: ${b.tag}, contendo ${b._count.receitas} receitas)`).join("\n");
+    }
+    if (userBio) {
+        contextInstructions += `\nObjetivo/Biografia do Usuário: "${userBio}"`;
+    }
+    if (userPrefs) {
+        contextInstructions += `\nPreferências Culinárias: [${userPrefs}]`;
+    }
+
+    const userPrompt = `Quero uma receita baseada no seguinte pedido: "${prompt || 'Qualquer receita interessante'}".
+Ingredientes adicionais da minha geladeira para usar: [${ingredients || ''}].
+Tempo máximo de preparo: ${maxTime || 60} minutos.
+Restrição alimentar: ${diet || 'nenhuma'}.
+Dificuldade desejada: ${difficulty || 'Qualquer'}.
+Porções: ${servings || 2} porções.
+
+INFORMAÇÕES DE PREFERÊNCIAS E HISTÓRICO DO USUÁRIO:${contextInstructions || '\nNenhuma cadastrada ainda.'}
+
+Com base nestes dados do usuário, adapte sua comunicação e a receita criada:
+1. Analise se o usuário tem perfil de academia/hipertrofia, dieta light/saudável, vegetariana, intolerâncias ou se prefere receitas práticas. 
+2. Adapte o tom do texto do Chef (ex: empático, motivador esportivo, focado em nutrição funcional ou chef gourmet).
+3. Preencha o campo "description" com a apresentação do prato, seguido de uma tabela nutricional em formato Markdown contendo estimativas de macros (Calorias, Carboidratos, Proteínas, Gorduras) por porção, e conselhos de Chef baseados nas preferências do usuário.`;
+
+    const modelsToTry = [
+        "google/gemma-4-26b-a4b-it:free",
+        "openrouter/free"
+    ];
+
+    try {
+        // Dynamic import of OpenRouter SDK (CommonJS compatibility)
+        const { OpenRouter } = await import("@openrouter/sdk");
+        const openrouter = new OpenRouter({
+            apiKey: process.env.OPENROUTER_API_KEY
+        });
+
+        let content = null;
+        let lastError = null;
+
+        for (const model of modelsToTry) {
+            try {
+                console.log(`[Chef IA] Enviando requisição para o modelo ${model}...`);
+                const response = await openrouter.chat.send({
+                    chatRequest: {
+                        model: model,
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: userPrompt }
+                        ]
+                    }
+                });
+
+                content = response.choices[0]?.message?.content;
+                if (content) {
+                    console.log(`[Chef IA] Sucesso com o modelo ${model}!`);
+                    break;
+                }
+            } catch (err) {
+                console.warn(`[Chef IA] Erro com o modelo ${model}:`, err.message || err);
+                lastError = err;
             }
         }
 
-        if (!matched) {
-            // Create a smart custom recipe based on the prompt/ingredients
-            const cleanIngs = (ingredients || prompt || "Ingredientes")
-                .split(",")
-                .map(i => i.trim())
-                .filter(i => i.length > 0);
-
-            matched = {
-                title: `Mix Saudável de ${cleanIngs[0] || 'Ingredientes'}`,
-                ingredients: cleanIngs.map(k => `${k.charAt(0).toUpperCase() + k.slice(1)} (a gosto)`).concat(['Azeite de oliva', 'Sal e ervas a gosto']),
-                steps: [
-                    `Prepare e corte os ingredientes principais em pedaços pequenos.`,
-                    `Aqueça uma frigideira com um fio de azeite e doure os ingredientes preparados.`,
-                    `Adicione temperos secos, ervas finas e mexa bem.`,
-                    `Tampe para abafar por cerca de 10 minutos em fogo brando.`,
-                    `Sirva quente decorado com folhas frescas.`
-                ],
-                time: Math.min(limitTime, 15),
-                difficulty: 'Fácil',
-                diet: diet || 'none'
-            };
+        if (!content) {
+            throw new Error(lastError ? lastError.message : "Todos os modelos do OpenRouter falharam.");
         }
 
-        // Adjust constraints
-        if (matched.time > limitTime) {
-            matched.time = limitTime;
-        }
+        const recipe = parseJSONRecipe(content);
+        res.status(200).json(recipe);
 
-        if (diet && diet !== 'none') {
-            matched.diet = diet;
-        }
-
-        res.status(200).json(matched);
     } catch (error) {
-        res.status(500).json({ erro: "Erro ao gerar receita por IA.", detalhe: error.message });
+        console.error("[Chef IA] Erro ao gerar receita com IA:", error);
+        res.status(500).json({ 
+            erro: "Erro ao gerar receita por IA.", 
+            detalhe: error.message 
+        });
+    }
+};
+
+const analisarFoto = async (req, res) => {
+    const { image } = req.body;
+    if (!image) {
+        return res.status(400).json({ erro: "Imagem não fornecida." });
+    }
+
+    try {
+        const { OpenRouter } = await import("@openrouter/sdk");
+        const openrouter = new OpenRouter({
+            apiKey: process.env.OPENROUTER_API_KEY
+        });
+
+        console.log("[IA Vision] Enviando imagem para análise...");
+        const response = await openrouter.chat.send({
+            chatRequest: {
+                model: "meta-llama/llama-3.2-11b-vision-instruct:free",
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            {
+                                type: "text",
+                                text: `Analise esta imagem de comida. Identifique o prato principal e liste de 3 a 5 ingredientes principais visíveis com uma porcentagem estimada de confiança (ex: entre 80% e 99%).
+Retorne a resposta estritamente em formato JSON válido contendo os seguintes campos, sem blocos de código markdown adicionais:
+{
+  "title": "Nome da receita (ex: Pizza Margherita)",
+  "dishName": "Título do prato (ex: Pizza Margherita Identificada!)",
+  "detections": [
+    { "name": "Ingrediente 1", "percent": 98 },
+    { "name": "Ingrediente 2", "percent": 95 }
+  ]
+}`
+                            },
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: image
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content) {
+            throw new Error("Resposta vazia do OpenRouter");
+        }
+
+        // Robust JSON extraction using regex
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
+        }
+        const parsedData = JSON.parse(jsonMatch[0]);
+        res.status(200).json(parsedData);
+
+    } catch (error) {
+        console.error("[IA Vision] Erro ao analisar imagem:", error);
+        res.status(500).json({ 
+            erro: "Erro ao analisar imagem por IA.", 
+            detalhe: error.message 
+        });
+    }
+};
+
+const gerarReceitaFoto = async (req, res) => {
+    const { dishName, ingredientsList, diet, servings } = req.body;
+    if (!dishName || !ingredientsList) {
+        return res.status(400).json({ erro: "Nome do prato ou ingredientes ausentes." });
+    }
+
+    try {
+        const { OpenRouter } = await import("@openrouter/sdk");
+        const openrouter = new OpenRouter({
+            apiKey: process.env.OPENROUTER_API_KEY
+        });
+
+        const configRestrictionText = diet || "Nenhuma restrição";
+        const numServings = servings || "2";
+
+        console.log(`[IA Vision Recipe] Gerando receita para o prato: ${dishName}...`);
+        const response = await openrouter.chat.send({
+            chatRequest: {
+                model: "google/gemma-4-26b-a4b-it:free",
+                messages: [
+                    {
+                        role: "system",
+                        content: `Você é o Chef Saboré IA. Crie uma receita deliciosa com base no prato identificado e seus ingredientes.
+
+Preferências Culinárias do Usuário:
+- Restrições Alimentares: ${configRestrictionText}
+- Rendimento Desejado: ${numServings} porções
+
+Diretrizes Importantes:
+1. Respeite rigorosamente as restrições alimentares do usuário: ${configRestrictionText}.
+2. Ajuste a quantidade de ingredientes para render exatamente ${numServings} porções.
+3. NUNCA use ou envie asteriscos (*) ou blocos de crase (\`\`\`) no texto da receita (especialmente nos nomes dos ingredientes ou etapas).
+4. Retorne a resposta em formato JSON válido contendo exatamente a seguinte estrutura, sem explicações extras:
+{
+  "time": 30, (tempo de preparo em minutos como número)
+  "servings": 2, (porções como número)
+  "difficulty": "Fácil", (Fácil, Médio ou Difícil)
+  "diet": "vegetariano", (se aplicável: vegano, vegetariano, lowcarb, glutenfree, fit, ou "none")
+  "ingredients": [
+    "Ingrediente 1",
+    "Ingrediente 2"
+  ],
+  "steps": [
+    "Passo 1",
+    "Passo 2"
+  ]
+}`
+                    },
+                    {
+                        role: "user",
+                        content: `Gere a receita para o prato "${dishName}" que contém estes ingredientes principais detectados: ${ingredientsList.join(', ')}.`
+                    }
+                ]
+            }
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content) {
+            throw new Error("Resposta vazia do OpenRouter");
+        }
+
+        // Robust JSON extraction using regex
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
+        }
+        const parsedData = JSON.parse(jsonMatch[0]);
+        res.status(200).json(parsedData);
+
+    } catch (error) {
+        console.error("[IA Vision Recipe] Erro ao gerar receita a partir da foto:", error);
+        res.status(500).json({ 
+            erro: "Erro ao gerar receita por IA.", 
+            detalhe: error.message 
+        });
     }
 };
 
 module.exports = {
-    gerar
-};
+    gerar,
+    analisarFoto,
+    gerarReceitaFoto
+};

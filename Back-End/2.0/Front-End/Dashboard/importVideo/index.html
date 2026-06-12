@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ — Reconhecimento por Fotos com IA</title>
+  <title>SABORÉ — Importador de Receitas por Vídeo</title>
   <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -18,7 +18,7 @@
         <a href="../../inicial/index.html" class="logo-area">
           <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
         </a>
-        <p class="sidebar-slogan">Saboreie novas possibilities</p>
+        <p class="sidebar-slogan">Saboreie novas possibilidades</p>
       </div>
 
       <nav class="sidebar-menu">
@@ -26,8 +26,8 @@
         <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
         <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
         <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
-        <a href="#" class="menu-item active" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
-        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
+        <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
+        <a href="../importVideo/index.html" class="menu-item active" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
         <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
         <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
         <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
@@ -55,8 +55,8 @@
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
           <div class="nav-welcome-text">
-            <h2>IA por Fotos <i class="fa-solid fa-camera" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
-            <p>Escaneie e identifique receitas a partir de imagens</p>
+            <h2>Importar Vídeo <i class="fa-solid fa-video" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
+            <p>Cole links do TikTok, Reels ou Shorts para extrair receitas</p>
           </div>
         </div>
 
@@ -86,76 +86,86 @@
       <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
         
-        <!-- IA PHOTOS GRID -->
-        <div class="ia-fotos-grid">
+        <!-- IMPORT VIDEO GRID -->
+        <div class="import-video-grid">
           
-          <!-- LEFT PANEL: UPLOAD & SCANNED PREVIEW -->
-          <div class="ia-panel-left">
+          <!-- LEFT PANEL: URL INPUT & PLAYER SIMULATION -->
+          <div class="video-panel-left">
             
+            <!-- CONTROLS SETUP CARD -->
             <div class="setup-widget">
               <div class="widget-header">
-                <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload da Imagem</h3>
+                <h3><i class="fa-solid fa-link"></i> Link do Vídeo</h3>
               </div>
+              <p class="setup-widget-desc">A inteligência artificial fará o escaneamento dos frames e transcreverá a fala do chef no vídeo.</p>
               
-              <!-- DRAG & DROP ZONE -->
-              <div class="upload-zone" id="photo-upload-zone">
-                <i class="fa-solid fa-camera-retro"></i>
-                <p class="zone-title">Arraste uma foto de comida aqui</p>
-                <p class="zone-subtitle">ou clique para selecionar do dispositivo</p>
-                <input type="file" id="photo-file-input" accept="image/*" class="hidden">
-              </div>
+              <form class="video-input-form" id="video-url-form">
+                <div class="url-input-wrapper">
+                  <div class="platform-icon-indicator" id="platform-icon"><i class="fa-solid fa-globe"></i></div>
+                  <input type="url" id="video-url-input" placeholder="Cole o link do TikTok, Instagram ou YouTube..." required>
+                  <button type="submit" id="btn-submit-url" title="Processar Vídeo"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+              </form>
+            </div>
 
-              <!-- PREVIEW & SCANNING INTERACTIVE AREA -->
-              <div class="scan-preview-container hidden" id="photo-preview-container">
-                <div class="image-wrapper">
-                  <img src="" id="photo-preview-img" alt="Preview da Receita">
+            <!-- SIMULATED VIDEO PLAYER -->
+            <div class="setup-widget" style="padding: 16px;">
+              <div class="player-wrapper" id="player-container">
+                <!-- Idle thumbnail showing standard background -->
+                <div class="player-idle-view" id="player-idle">
+                  <i class="fa-solid fa-video-slash"></i>
+                  <p>Nenhum vídeo carregado</p>
+                </div>
+
+                <!-- Active video display (hidden initially) -->
+                <div class="player-active-view hidden" id="player-active">
+                  <img src="" id="video-thumbnail-img" alt="Miniatura do Vídeo">
+                  <div class="play-btn-overlay"><i class="fa-solid fa-play"></i></div>
                   
-                  <!-- Scanning overlay laser line -->
+                  <!-- Scanning overlay line -->
                   <div class="scanner-line hidden" id="scanner-line"></div>
                   
-                  <!-- Bounding boxes will be dynamically added here -->
-                  <div class="bounding-boxes-container" id="bounding-boxes-container"></div>
-                </div>
-                
-                <div class="preview-actions">
-                  <button type="button" class="btn-remove-photo" id="remove-photo-btn">
-                    <i class="fa-solid fa-trash"></i> Remover Foto
-                  </button>
+                  <!-- Audio wave overlay tracker -->
+                  <div class="audio-wave-container hidden" id="audio-wave-container">
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- QUICK MOCK EXAMPLES -->
+            <!-- QUICK MOCK SOCIAL EXAMPLES -->
             <div class="setup-widget">
               <div class="widget-header">
-                <h3><i class="fa-solid fa-bolt"></i> Testar Exemplos Rápidos</h3>
+                <h3><i class="fa-solid fa-bolt"></i> Exemplos Rápidos</h3>
               </div>
-              <p class="setup-widget-desc">Clique em um dos pratos abaixo para simular o upload e análise instantaneamente:</p>
+              <p class="setup-widget-desc">Clique nos links abaixo para simular vídeos de receitas populares das redes sociais:</p>
               
-              <div class="mock-images-grid">
-                <button class="mock-img-btn" data-food="pizza" data-title="Pizza Margherita" data-img="https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?auto=format&fit=crop&w=600&q=80">
-                  <span class="mock-icon">🍕</span>
-                  <span class="mock-label">Pizza Margherita</span>
+              <div class="mock-links-list">
+                <button class="mock-link-item-btn" data-platform="tiktok" data-title="Macarrão Cremoso One-Pot" data-url="https://www.tiktok.com/@chef/video/7310558489" data-img="https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=600&q=80">
+                  <span class="platform-badge tiktok"><i class="fa-brands fa-tiktok"></i> TikTok</span>
+                  <span class="mock-link-title">Macarrão One-Pot de 15 min</span>
                 </button>
-                <button class="mock-img-btn" data-food="burger" data-title="Hambúrguer Gourmet" data-img="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80">
-                  <span class="mock-icon">🍔</span>
-                  <span class="mock-label">Burger & Fritas</span>
+                
+                <button class="mock-link-item-btn" data-platform="instagram" data-title="Bolo de Cenoura Fit" data-url="https://www.instagram.com/reel/C2F98hLuB3/" data-img="https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=600&q=80">
+                  <span class="platform-badge instagram"><i class="fa-brands fa-instagram"></i> Reels</span>
+                  <span class="mock-link-title">Bolo de Cenoura Fit com Chocolate</span>
                 </button>
-                <button class="mock-img-btn" data-food="salad" data-title="Salada César" data-img="https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=600&q=80">
-                  <span class="mock-icon">🥗</span>
-                  <span class="mock-label">Salada César</span>
-                </button>
-                <button class="mock-img-btn" data-food="sushi" data-title="Combinado de Sushi" data-img="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80">
-                  <span class="mock-icon">🍣</span>
-                  <span class="mock-label">Sushi Combo</span>
+                
+                <button class="mock-link-item-btn" data-platform="youtube" data-title="Suco Verde Detox" data-url="https://youtube.com/shorts/q8L9yR1p" data-img="https://images.unsplash.com/photo-1610970881699-44a5587caaec?auto=format&fit=crop&w=600&q=80">
+                  <span class="platform-badge youtube"><i class="fa-brands fa-youtube"></i> Shorts</span>
+                  <span class="mock-link-title">Suco Verde Detox Antioxidante</span>
                 </button>
               </div>
             </div>
 
           </div>
 
-          <!-- RIGHT PANEL: DETECTION RESULTS & RECIPE STREAM -->
-          <div class="ia-panel-right">
+          <!-- RIGHT PANEL: CONVERSION STATUS & RECIPE OUTPUT -->
+          <div class="video-panel-right">
             
             <div class="results-container-panel" id="results-container-panel">
               
@@ -163,58 +173,37 @@
               <div class="state-view state-idle" id="state-idle">
                 <div class="idle-content">
                   <div class="idle-circle-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                  <h3>Aguardando Imagem</h3>
-                  <p>Envie uma foto de ingredientes ou de um prato finalizado. A IA do Saboré irá escaneá-la para identificar ingredientes e estruturar a receita perfeita.</p>
+                  <h3>Extraia de Vídeos Sociais</h3>
+                  <p>Cole o link de um vídeo do TikTok, Instagram Reels ou YouTube Shorts na caixa ao lado. A inteligência artificial identificará os ingredientes no vídeo e transcreverá o passo a passo falado para você.</p>
                 </div>
               </div>
 
-              <!-- STATE 2: SCANNING -->
-              <div class="state-view state-scanning hidden" id="state-scanning">
-                <div class="scanning-content">
+              <!-- STATE 2: CONVERTING -->
+              <div class="state-view state-converting hidden" id="state-converting">
+                <div class="converting-content">
                   <div class="loader-spinner">
                     <div class="spinner-circle"></div>
-                    <div class="spinner-logo"><i class="fa-solid fa-camera"></i></div>
+                    <div class="spinner-logo"><i class="fa-solid fa-play"></i></div>
                   </div>
-                  <h3>Analisando a foto...</h3>
-                  <div class="scan-status-log" id="scan-status-log">
-                    <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo pixels da imagem...</p>
-                    <p class="status-line"><i class="fa-regular fa-circle"></i> Detectando contornos e formas...</p>
-                    <p class="status-line"><i class="fa-regular fa-circle"></i> Combinando com base de dados alimentícia...</p>
-                    <p class="status-line"><i class="fa-regular fa-circle"></i> Finalizando rótulos de confiança...</p>
+                  <h3>Processando Mídia...</h3>
+                  
+                  <div class="conversion-status-log" id="conversion-status-log">
+                    <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo metadados e baixando áudio/vídeo...</p>
+                    <p class="status-line"><i class="fa-regular fa-circle"></i> Transcrevendo fala do vídeo (Speech-to-Text)...</p>
+                    <p class="status-line"><i class="fa-regular fa-circle"></i> Analisando ingredientes mostrados nos frames...</p>
+                    <p class="status-line"><i class="fa-regular fa-circle"></i> Organizando porções, tempo e passo a passo...</p>
                   </div>
                 </div>
               </div>
 
-              <!-- STATE 3: DETECTED RESULTS -->
-              <div class="state-view state-results hidden" id="state-results">
-                <div class="results-header">
-                  <span class="detection-badge"><i class="fa-solid fa-circle-check"></i> Análise Concluída</span>
-                  <h2 id="detected-food-title">Pizza Margherita Identificada!</h2>
-                  <p>Encontramos os seguintes ingredientes e proporções na imagem:</p>
-                </div>
-
-                <div class="detection-results-list" id="detection-results-list">
-                  <!-- JS Filled confidence metrics -->
-                </div>
-
-                <div class="results-actions">
-                  <button class="btn-primary-action-full" id="btn-generate-recipe">
-                    <span>✨ Gerar Receita Completa com IA</span>
-                  </button>
-                  <button class="btn-secondary-action-full" id="btn-reset-scan">
-                    <i class="fa-solid fa-rotate-left"></i> Analisar Outra Imagem
-                  </button>
-                </div>
-              </div>
-
-              <!-- STATE 4: GENERATED RECIPE -->
+              <!-- STATE 3: RECIPE GENERATED -->
               <div class="state-view state-recipe hidden" id="state-recipe">
                 <div class="recipe-result-header">
-                  <span class="recipe-ai-badge"><i class="fa-solid fa-robot"></i> Receita Gerada por IA</span>
-                  <h2 id="result-recipe-title">Pizza Margherita Tradicional</h2>
+                  <span class="recipe-ai-badge" id="extracted-platform-badge"><i class="fa-brands fa-tiktok"></i> TikTok</span>
+                  <h2 id="result-recipe-title">Macarrão Cremoso One-Pot</h2>
                   
                   <div class="recipe-quick-tags">
-                    <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="result-recipe-time">30 min</span></span>
+                    <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="result-recipe-time">15 min</span></span>
                     <span class="q-tag"><i class="fa-solid fa-utensils"></i> <span id="result-recipe-servings">2 porções</span></span>
                     <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="result-recipe-difficulty">Fácil</span></span>
                     <span class="q-tag vegetarian-tag" id="result-recipe-diet-tag"><i class="fa-solid fa-leaf"></i> Vegetariano</span>
@@ -223,14 +212,14 @@
 
                 <div class="recipe-result-body">
                   <div class="recipe-ingredients-side">
-                    <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
+                    <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes Extraídos</h3>
                     <ul id="result-ingredients-list">
                       <!-- JS Filled -->
                     </ul>
                   </div>
 
                   <div class="recipe-steps-side">
-                    <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
+                    <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo Transcrito</h3>
                     <ol id="result-steps-list">
                       <!-- JS Filled -->
                     </ol>
@@ -238,7 +227,7 @@
                 </div>
 
                 <div class="recipe-result-footer">
-                  <button class="btn-secondary-modal" id="btn-back-to-results"><i class="fa-solid fa-chevron-left"></i> Voltar</button>
+                  <button class="btn-secondary-modal" id="btn-clear-recipe"><i class="fa-solid fa-rotate-left"></i> Limpar</button>
                   <button class="btn-primary-modal" id="save-recipe-btn"><i class="fa-solid fa-bookmark"></i> Salvar na Coleção</button>
                 </div>
               </div>
@@ -336,6 +325,7 @@
     </div>
   </div>
 
+  <script src="../../assets/js/api.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

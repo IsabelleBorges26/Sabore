@@ -167,10 +167,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Settings mock action
   const settingsBtn = document.getElementById('settings-btn');
   if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => alert('Configurações simuladas com sucesso!'));
+    settingsBtn.addEventListener('click', () => {
+      window.location.href = '../configuracoes/index.html';
+    });
+  }
+
+  const profileTrigger = document.getElementById('profile-dropdown-trigger');
+  if (profileTrigger) {
+    profileTrigger.addEventListener('click', () => {
+      window.location.href = '../perfil/index.html';
+    });
   }
 
   // ─── UPGRADE CELEBRATION PROCESS ───

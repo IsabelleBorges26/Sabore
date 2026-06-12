@@ -84,6 +84,28 @@ document.addEventListener('DOMContentLoaded', () => {
   userState.isPro = false; // Start free
   updatePlanUI();
 
+  // ─── LOAD INITIAL AI PREFERENCES FROM CONFIGURATIONS ───
+  const savedDifficulty = localStorage.getItem('sabore_ai_difficulty');
+  const chefDifficultySelect = document.getElementById('chef-difficulty-select');
+  if (savedDifficulty && chefDifficultySelect) {
+    chefDifficultySelect.value = savedDifficulty;
+  }
+
+  const chefRestrictionSelect = document.getElementById('chef-restriction-select');
+  if (chefRestrictionSelect) {
+    if (localStorage.getItem('sabore_diet_vegan') === 'true') {
+      chefRestrictionSelect.value = 'vegano';
+    } else if (localStorage.getItem('sabore_diet_vegetarian') === 'true') {
+      chefRestrictionSelect.value = 'vegetariano';
+    } else if (localStorage.getItem('sabore_diet_lowcarb') === 'true' || localStorage.getItem('sabore_diet_keto') === 'true') {
+      chefRestrictionSelect.value = 'lowcarb';
+    } else if (localStorage.getItem('sabore_diet_gluten') === 'true') {
+      chefRestrictionSelect.value = 'glutenfree';
+    } else {
+      chefRestrictionSelect.value = 'none';
+    }
+  }
+
   // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
@@ -221,12 +243,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── CHAT ENGINE & SIMULATIONS ───
+  // ─── CHAT ENGINE & OPENROUTER INTEGRATION ───
   const chatMessagesContainer = document.getElementById('chat-messages-container');
   const chatTextarea = document.getElementById('chat-textarea');
   const chatSendBtn = document.getElementById('chat-send-btn');
   const clearChatBtn = document.getElementById('clear-chat-btn');
   const typingIndicator = document.getElementById('typing-indicator');
+
+  const OPENROUTER_API_KEY = "";
+  const OPENROUTER_MODEL = "google/gemma-4-26b-a4b-it:free";
+  let chatHistory = [];
+
+  // Event delegation to capture save recipe button clicks
+  if (chatMessagesContainer) {
+    chatMessagesContainer.addEventListener('click', (e) => {
+      const saveBtn = e.target.closest('.btn-chat-save-recipe');
+      if (saveBtn) {
+        const recipeTitle = saveBtn.dataset.title;
+        const recipeTime = parseInt(saveBtn.dataset.time);
+        const recipeDifficulty = saveBtn.dataset.difficulty;
+        const recipeCategory = saveBtn.dataset.category;
+        
+        userState.selectedRecipeToSave = {
+          title: recipeTitle,
+          time: recipeTime,
+          difficulty: recipeDifficulty,
+          category: recipeCategory
+        };
+
+        renderBookSaveOptions();
+        openModal('save-to-book-modal');
+      }
+    });
+  }
 
   // Trigger Send on click
   if (chatSendBtn && chatTextarea) {
@@ -259,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (clearChatBtn && chatMessagesContainer) {
     clearChatBtn.addEventListener('click', () => {
       if (confirm('Deseja limpar o histórico da conversa com o Chef IA?')) {
+        chatHistory = [];
         chatMessagesContainer.innerHTML = `
           <div class="message-bubble assistant">
             <div class="bubble-content">
@@ -272,7 +322,215 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function handleUserMessage(msgText) {
+  async function streamOpenRouterResponse(messages, onChunk, onDone, onError) {
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": window.location.origin,
+          "X-Title": "Saboré Culinário"
+        },
+        body: JSON.stringify({
+          model: OPENROUTER_MODEL,
+          messages: messages,
+          stream: true
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop(); // keep last partial line
+
+        for (const line of lines) {
+          const cleanLine = line.trim();
+          if (!cleanLine) continue;
+          if (cleanLine === "data: [DONE]") continue;
+
+          if (cleanLine.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(cleanLine.substring(6));
+              const content = data.choices?.[0]?.delta?.content;
+              if (content) {
+                onChunk(content);
+              }
+            } catch (e) {
+              console.warn("Failed to parse chunk:", cleanLine, e);
+            }
+          }
+        }
+      }
+
+      if (buffer && buffer.startsWith("data: ")) {
+        try {
+          const data = JSON.parse(buffer.substring(6));
+          const content = data.choices?.[0]?.delta?.content;
+          if (content) {
+            onChunk(content);
+          }
+        } catch (e) {}
+      }
+
+      onDone();
+    } catch (error) {
+      onError(error);
+    }
+  }
+
+  function getSystemPrompt() {
+    const restrictionEl = document.getElementById('chef-restriction-select');
+    const difficultyEl = document.getElementById('chef-difficulty-select');
+    
+    const restriction = restrictionEl ? restrictionEl.options[restrictionEl.selectedIndex].text : "Nenhuma restrição";
+    const difficulty = difficultyEl ? difficultyEl.options[difficultyEl.selectedIndex].text : "Qualquer complexidade";
+    const ingredients = userState.geladeiraIngredients.join(', ') || "Nenhum ingrediente adicionado";
+
+    // Read ALL dietary restrictions saved in configurations (localStorage)
+    const activeDiets = [];
+    if (localStorage.getItem('sabore_diet_vegan') === 'true') activeDiets.push('Vegano');
+    if (localStorage.getItem('sabore_diet_vegetarian') === 'true') activeDiets.push('Vegetariano');
+    if (localStorage.getItem('sabore_diet_gluten') === 'true') activeDiets.push('Sem Glúten');
+    if (localStorage.getItem('sabore_diet_lactose') === 'true') activeDiets.push('Sem Lactose');
+    if (localStorage.getItem('sabore_diet_lowcarb') === 'true') activeDiets.push('Low Carb');
+    if (localStorage.getItem('sabore_diet_keto') === 'true') activeDiets.push('Cetogênica');
+
+    const configRestrictionText = activeDiets.length > 0 ? activeDiets.join(', ') : "Nenhuma restrição";
+    
+    // Read servings preference
+    const servings = localStorage.getItem('sabore_ai_servings') || "2";
+
+    return `Você é o Chef Saboré IA, um assistente culinário pessoal inteligente de alto nível da plataforma Saboré.
+Seu objetivo é ajudar o usuário com receitas, técnicas culinárias e substituições de ingredientes.
+
+Contexto Atual do Usuário (Configurações Gerais):
+- Restrições Alimentares Ativas: ${configRestrictionText}
+- Rendimento Padrão Desejado: ${servings} porções
+
+Contexto Selecionado na Página:
+- Filtro de Restrição: ${restriction}
+- Estilo de Preparo / Dificuldade Selecionada: ${difficulty}
+- Ingredientes Disponíveis na Geladeira: ${ingredients}
+
+DIRETRIZES DE RESPOSTA:
+1. Seja sempre amigável, entusiasmado, profissional e inspirador.
+2. Priorize o uso dos ingredientes listados na geladeira do usuário sempre que apropriado. Se não for apropriado ou se outros ingredientes essenciais forem necessários, mencione-os de forma clara.
+3. Respeite rigorosamente todas as restrições alimentares do usuário (tanto as das configurações: ${configRestrictionText}, quanto o filtro da página: ${restriction}).
+4. Ajuste a complexidade das receitas propostas ao estilo de preparo configurado.
+5. Ajuste a quantidade de ingredientes para render exatamente ${servings} porções por padrão.
+6. NUNCA envie ou use asteriscos (como * ou **) nas mensagens de chat normais. Se precisar destacar algo, use apenas formatação textual ou deixe o texto limpo.
+7. Sempre que sugerir uma receita detalhada completa, você DEVE formatá-la usando a tag personalizada estruturada <recipe> exatamente como abaixo, para que o sistema possa renderizar o card de receita premium.
+
+FORMATO DA TAG DE RECEITA:
+<recipe title="NOME_DA_RECEITA" time="TEMPO_EM_MINUTOS (ex: 20 min)" difficulty="DIFICULDADE (ex: Fácil, Médio, Difícil)" category="CATEGORIA (ex: Almoço, Jantar, Sobremesa, Lanche)">
+<ingredients>
+- Ingrediente 1
+- Ingrediente 2
+</ingredients>
+<instructions>
+1. Passo 1
+2. Passo 2
+</instructions>
+</recipe>
+
+ATENÇÃO:
+- NUNCA envolva a tag <recipe> (ou seus blocos internos) em blocos de código markdown (como crases \`\`\`xml ... \`\`\` ou \`\`\`html ... \`\`\`). Escreva a tag <recipe> diretamente no fluxo de texto.
+- Não coloque texto adicional ou tags adicionais de formatação dentro da tag <recipe> além dos blocos <ingredients> e <instructions>.
+- Qualquer introdução, explicação ou conversa informal deve ficar FORA da tag <recipe>.
+- Siga exatamente a sintaxe de atributos e fechamento das tags.
+`;
+  }
+
+  function formatResponseText(text) {
+    // 0. Preprocess: strip markdown code block ticks that wrap/enclose <recipe> tags
+    let formatted = text
+      .replace(/```(?:xml|html|json)?\s*(<recipe)/gi, '$1')
+      .replace(/(<\/recipe>)\s*```/gi, '$1');
+
+    // 1. Process standard recipe tags (fully closed)
+    formatted = formatted.replace(/<recipe\s+title="([^"]+)"\s+time="([^"]+)"\s+difficulty="([^"]+)"\s+category="([^"]+)">\s*<ingredients>([\s\S]*?)<\/ingredients>\s*<instructions>([\s\S]*?)<\/instructions>\s*<\/recipe>/gi, 
+      (match, title, time, difficulty, category, ingredients, instructions) => {
+        const ingListHtml = ingredients.trim().split('\n')
+          .map(line => {
+            const cleanLine = line.replace(/^\s*[-\*+]\s*/, '').trim();
+            return cleanLine ? `<li>${cleanLine}</li>` : '';
+          }).join('');
+          
+        const instListHtml = instructions.trim().split('\n')
+          .map(line => {
+            const cleanLine = line.replace(/^\s*\d+[\.\)]\s*/, '').trim();
+            return cleanLine ? `<li>${cleanLine}</li>` : '';
+          }).join('');
+
+        return `
+          <div class="chat-recipe-card">
+            <div class="chat-recipe-header">
+              <h4>${title}</h4>
+              <div class="chat-recipe-meta">
+                <span><i class="fa-regular fa-clock"></i> ${time}</span>
+                <span><i class="fa-solid fa-gauge-simple"></i> ${difficulty}</span>
+                <span><i class="fa-solid fa-utensils"></i> ${category}</span>
+              </div>
+            </div>
+            <div class="chat-recipe-section">
+              <h5>Ingredientes</h5>
+              <ul>
+                ${ingListHtml}
+              </ul>
+            </div>
+            <div class="chat-recipe-section">
+              <h5>Modo de Preparo</h5>
+              <ol>
+                ${instListHtml}
+              </ol>
+            </div>
+            <button class="btn-chat-save-recipe" data-title="${title}" data-time="${parseInt(time) || 0}" data-difficulty="${difficulty}" data-category="${category}">
+              <i class="fa-solid fa-folder-plus"></i> Salvar esta Receita
+            </button>
+          </div>
+        `;
+      });
+
+    // 2. Hide opening tags and block tags if they are incomplete or in progress so they don't leak as raw tags
+    formatted = formatted
+      .replace(/<recipe[^>]*>/gi, '')
+      .replace(/<\/recipe>/gi, '')
+      .replace(/<ingredients>/gi, '\nIngredientes:\n')
+      .replace(/<\/ingredients>/gi, '')
+      .replace(/<instructions>/gi, '\nModo de Preparo:\n')
+      .replace(/<\/instructions>/gi, '');
+
+    // 3. Parse markdown
+    let parsed;
+    if (window.marked && window.marked.parse) {
+      parsed = window.marked.parse(formatted);
+    } else {
+      parsed = formatted
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\n/g, '<br>');
+    }
+
+    // 4. Strip any remaining raw asterisks (*) from the final parsed HTML to avoid raw markdown leakage
+    return parsed.replace(/\*/g, '');
+  }
+
+  async function handleUserMessage(msgText) {
+    if (!msgText) return;
+
     // Append User message
     const timeStr = getCurrentTimeFormatted();
     const userBubble = document.createElement('div');
@@ -291,47 +549,74 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show Typing Indicator
     if (typingIndicator) typingIndicator.classList.remove('hidden');
 
-    // Wait and reply
-    setTimeout(() => {
+    // Create Assistant bubble
+    const assistantBubble = document.createElement('div');
+    assistantBubble.className = 'message-bubble assistant';
+    
+    // Initial empty state
+    const bubbleContent = document.createElement('div');
+    bubbleContent.className = 'bubble-content';
+    bubbleContent.innerHTML = '<p>...</p>';
+    assistantBubble.appendChild(bubbleContent);
+
+    const messageTime = document.createElement('span');
+    messageTime.className = 'message-time';
+    messageTime.textContent = getCurrentTimeFormatted();
+    assistantBubble.appendChild(messageTime);
+
+    chatMessagesContainer.appendChild(assistantBubble);
+
+    // Save user message to history
+    chatHistory.push({ role: "user", content: msgText });
+
+    // Build payload
+    const systemMessage = { role: "system", content: getSystemPrompt() };
+    const apiMessages = [systemMessage, ...chatHistory];
+
+    let fullResponse = "";
+
+    try {
+      await streamOpenRouterResponse(
+        apiMessages,
+        // onChunk
+        (chunk) => {
+          if (typingIndicator) typingIndicator.classList.add('hidden');
+          fullResponse += chunk;
+          bubbleContent.innerHTML = formatResponseText(fullResponse);
+          scrollToBottom();
+        },
+        // onDone
+        () => {
+          if (typingIndicator) typingIndicator.classList.add('hidden');
+          bubbleContent.innerHTML = formatResponseText(fullResponse);
+          chatHistory.push({ role: "assistant", content: fullResponse });
+          scrollToBottom();
+          updateCursorHoverListeners();
+        },
+        // onError
+        (error) => {
+          console.error("OpenRouter error:", error);
+          if (typingIndicator) typingIndicator.classList.add('hidden');
+          
+          const fallbackResponse = getMockChefResponse(msgText);
+          bubbleContent.innerHTML = fallbackResponse;
+          chatHistory.push({ role: "assistant", content: fallbackResponse });
+          
+          scrollToBottom();
+          updateCursorHoverListeners();
+        }
+      );
+    } catch (e) {
+      console.error("Critical chat error:", e);
       if (typingIndicator) typingIndicator.classList.add('hidden');
       
-      const assistantBubble = document.createElement('div');
-      assistantBubble.className = 'message-bubble assistant';
+      const fallbackResponse = getMockChefResponse(msgText);
+      bubbleContent.innerHTML = fallbackResponse;
+      chatHistory.push({ role: "assistant", content: fallbackResponse });
       
-      const responseHtml = getMockChefResponse(msgText);
-      assistantBubble.innerHTML = `
-        <div class="bubble-content">
-          ${responseHtml}
-        </div>
-        <span class="message-time">${getCurrentTimeFormatted()}</span>
-      `;
-
-      chatMessagesContainer.appendChild(assistantBubble);
-      
-      // Bind save buttons in bubble if any
-      const saveBtn = assistantBubble.querySelector('.btn-chat-save-recipe');
-      if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-          const recipeTitle = saveBtn.dataset.title;
-          const recipeTime = parseInt(saveBtn.dataset.time);
-          const recipeDifficulty = saveBtn.dataset.difficulty;
-          const recipeCategory = saveBtn.dataset.category;
-          
-          userState.selectedRecipeToSave = {
-            title: recipeTitle,
-            time: recipeTime,
-            difficulty: recipeDifficulty,
-            category: recipeCategory
-          };
-
-          renderBookSaveOptions();
-          openModal('save-to-book-modal');
-        });
-      }
-
       scrollToBottom();
       updateCursorHoverListeners();
-    }, 1500);
+    }
   }
 
   function scrollToBottom() {

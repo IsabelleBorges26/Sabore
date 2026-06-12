@@ -2,6 +2,13 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Verify authentication session
+  const user = api.getUser();
+  if (!user) {
+    window.location.href = "../../login/index.html";
+    return;
+  }
+
   // ─── LOAD PERSISTED AVATAR ───
   const savedAvatar = localStorage.getItem('sabore_user_avatar');
   if (savedAvatar) {
@@ -337,10 +344,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Settings mock action
   const settingsBtn = document.getElementById('settings-btn');
   if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => alert('Configurações simuladas com sucesso!'));
+    settingsBtn.addEventListener('click', () => {
+      window.location.href = '../configuracoes/index.html';
+    });
+  }
+
+  const profileTrigger = document.getElementById('profile-dropdown-trigger');
+  if (profileTrigger) {
+    profileTrigger.addEventListener('click', () => {
+      window.location.href = '../perfil/index.html';
+    });
   }
 
   // ─── UPGRADE CELEBRATION PROCESS ───
@@ -448,10 +463,89 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-
-  // ─── SCANNING SEQUENCE ───
+  // ─── SCANNING SEQUENCE & OPENROUTER VISION INTEGRATION ───
   const scannerLine = document.getElementById('scanner-line');
   const boundingBoxesContainer = document.getElementById('bounding-boxes-container');
+
+  let visionAnalysisPromise = null;
+
+  function resizeImageIfNeeded(dataUrl, maxWidth = 512, maxHeight = 512) {
+    return new Promise((resolve) => {
+      if (!dataUrl.startsWith('data:image/')) {
+        resolve(dataUrl);
+        return;
+      }
+
+      const img = new Image();
+      img.src = dataUrl;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width <= maxWidth && height <= maxHeight) {
+          resolve(dataUrl);
+          return;
+        }
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = () => {
+        resolve(dataUrl);
+      };
+    });
+  }
+
+  async function analyzeImageWithOpenRouter(imageUrl, onSuccess, onError) {
+    try {
+      const resizedUrl = await resizeImageIfNeeded(imageUrl);
+      const parsedData = await api.post("/ia/analisar-foto", { image: resizedUrl });
+      onSuccess(parsedData);
+    } catch (error) {
+      onError(error);
+    }
+  }
+
+  async function generateRecipeWithOpenRouter(dishName, ingredientsList, onSuccess, onError) {
+    try {
+      const activeDiets = [];
+      if (localStorage.getItem('sabore_diet_vegan') === 'true') activeDiets.push('Vegano');
+      if (localStorage.getItem('sabore_diet_vegetarian') === 'true') activeDiets.push('Vegetariano');
+      if (localStorage.getItem('sabore_diet_gluten') === 'true') activeDiets.push('Sem Glúten');
+      if (localStorage.getItem('sabore_diet_lactose') === 'true') activeDiets.push('Sem Lactose');
+      if (localStorage.getItem('sabore_diet_lowcarb') === 'true') activeDiets.push('Low Carb');
+      if (localStorage.getItem('sabore_diet_keto') === 'true') activeDiets.push('Cetogênica');
+
+      const configRestrictionText = activeDiets.length > 0 ? activeDiets.join(', ') : "Nenhuma restrição";
+      const servings = localStorage.getItem('sabore_ai_servings') || "2";
+
+      const parsedData = await api.post("/ia/gerar-receita-foto", {
+        dishName,
+        ingredientsList,
+        diet: configRestrictionText,
+        servings: servings
+      });
+      onSuccess(parsedData);
+    } catch (error) {
+      onError(error);
+    }
+  }
 
   function triggerPhotoScanner(foodType) {
     pageState.selectedDish = foodType;
@@ -480,6 +574,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Start OpenRouter vision analysis in parallel
+    visionAnalysisPromise = new Promise((resolve, reject) => {
+      analyzeImageWithOpenRouter(
+        previewImg.src,
+        (data) => resolve(data),
+        (err) => reject(err)
+      );
+    });
+
     // Animate scanning status steps (simulating heavy AI computation)
     let currentStep = 0;
     const stepInterval = setInterval(() => {
@@ -494,17 +597,43 @@ document.addEventListener('DOMContentLoaded', () => {
         logs[currentStep].querySelector('i').className = 'fa-solid fa-circle-notch fa-spin';
       } else {
         clearInterval(stepInterval);
-        finishScannerSequence(foodType);
+        
+        // Wait for OpenRouter promise to complete
+        visionAnalysisPromise.then((data) => {
+          // Generate simulated bounding boxes based on number of detections
+          const boundingBoxes = (data.detections || []).map((det, index) => {
+            return {
+              top: 20 + index * 10,
+              left: 15 + index * 12,
+              width: 40,
+              height: 30,
+              label: `${det.name} (${det.percent}%)`
+            };
+          });
+
+          const foodData = {
+            title: data.title || "Receita Sugerida",
+            dishName: data.dishName || "Prato Identificado!",
+            detections: data.detections || [],
+            boundingBoxes: boundingBoxes,
+            recipe: null
+          };
+
+          pageState.recipe = foodData;
+          finishScannerSequence(foodData);
+        }).catch((err) => {
+          console.warn("Vision analysis failed, falling back to mock database:", err);
+          const foodData = mockFoodDatabase[foodType] || mockFoodDatabase['generic'];
+          pageState.recipe = foodData;
+          finishScannerSequence(foodData);
+        });
       }
     }, 700);
   }
 
-  function finishScannerSequence(foodType) {
+  function finishScannerSequence(foodData) {
     pageState.isScanning = false;
     scannerLine.classList.add('hidden');
-
-    const foodData = mockFoodDatabase[foodType] || mockFoodDatabase['generic'];
-    pageState.recipe = foodData;
 
     // Render Bounding Boxes on the preview image
     renderBoundingBoxes(foodData.boundingBoxes);
@@ -597,6 +726,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const recipeLogs = logsLog.querySelectorAll('.status-line');
       let currentStep = 0;
+
+      const ingredientsList = pageState.recipe.detections.map(d => d.name);
+      
+      // Call OpenRouter in parallel to generate the recipe
+      const recipePromise = new Promise((resolve, reject) => {
+        generateRecipeWithOpenRouter(
+          pageState.recipe.title,
+          ingredientsList,
+          (recipe) => resolve(recipe),
+          (err) => reject(err)
+        );
+      });
       
       const recipeInterval = setInterval(() => {
         recipeLogs[currentStep].className = 'status-line done';
@@ -609,18 +750,48 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           clearInterval(recipeInterval);
           
-          // Restore scanner title and log content for next uploads
-          scanningTitle.textContent = "Analisando a foto...";
-          logsLog.innerHTML = `
-            <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo pixels da imagem...</p>
-            <p class="status-line"><i class="fa-regular fa-circle"></i> Detectando contornos e formas...</p>
-            <p class="status-line"><i class="fa-regular fa-circle"></i> Combinando com base de dados alimentícia...</p>
-            <p class="status-line"><i class="fa-regular fa-circle"></i> Finalizando rótulos de confiança...</p>
-          `;
+          recipePromise.then((recipeData) => {
+            pageState.recipe.recipe = recipeData;
 
-          // Show recipe results
-          scanningState.classList.add('hidden');
-          showRecipeOutput(pageState.recipe);
+            // Restore scanner title and log content for next uploads
+            scanningTitle.textContent = "Analisando a foto...";
+            logsLog.innerHTML = `
+              <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo pixels da imagem...</p>
+              <p class="status-line"><i class="fa-regular fa-circle"></i> Detectando contornos e formas...</p>
+              <p class="status-line"><i class="fa-regular fa-circle"></i> Combinando com base de dados alimentícia...</p>
+              <p class="status-line"><i class="fa-regular fa-circle"></i> Finalizando rótulos de confiança...</p>
+            `;
+
+            // Show recipe results
+            scanningState.classList.add('hidden');
+            showRecipeOutput(pageState.recipe);
+          }).catch((err) => {
+            console.warn("Recipe generation failed, falling back to mock recipe:", err);
+            
+            if (!pageState.recipe.recipe) {
+              pageState.recipe.recipe = {
+                time: 20,
+                servings: 2,
+                difficulty: "Fácil",
+                diet: "none",
+                ingredients: ingredientsList.map(i => `100g de ${i}`) || ["Ingredientes frescos a gosto"],
+                steps: ["Refogue os ingredientes.", "Grelhe a proteína.", "Tempere e sirva quente."]
+              };
+            }
+
+            // Restore scanner title and log content for next uploads
+            scanningTitle.textContent = "Analisando a foto...";
+            logsLog.innerHTML = `
+              <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo pixels da imagem...</p>
+              <p class="status-line"><i class="fa-regular fa-circle"></i> Detectando contornos e formas...</p>
+              <p class="status-line"><i class="fa-regular fa-circle"></i> Combinando com base de dados alimentícia...</p>
+              <p class="status-line"><i class="fa-regular fa-circle"></i> Finalizando rótulos de confiança...</p>
+            `;
+
+            // Show recipe results
+            scanningState.classList.add('hidden');
+            showRecipeOutput(pageState.recipe);
+          });
         }
       }, 650);
     });

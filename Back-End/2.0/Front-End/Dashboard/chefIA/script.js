@@ -130,10 +130,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Settings mock action
   const settingsBtn = document.getElementById('settings-btn');
   if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => alert('Configurações simuladas com sucesso!'));
+    settingsBtn.addEventListener('click', () => {
+      window.location.href = '../configuracoes/index.html';
+    });
+  }
+
+  const profileTrigger = document.getElementById('profile-dropdown-trigger');
+  if (profileTrigger) {
+    profileTrigger.addEventListener('click', () => {
+      window.location.href = '../perfil/index.html';
+    });
   }
 
   // ─── UPGRADE CELEBRATION PROCESS ───
@@ -298,11 +306,28 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       const difficulty = difficultySelect ? difficultyMap[difficultySelect.value] : 'Fácil';
 
+      // Load user configurations from localStorage
+      const activeDiets = [];
+      if (localStorage.getItem('sabore_diet_vegan') === 'true') activeDiets.push('Vegano');
+      if (localStorage.getItem('sabore_diet_vegetarian') === 'true') activeDiets.push('Vegetariano');
+      if (localStorage.getItem('sabore_diet_gluten') === 'true') activeDiets.push('Sem Glúten');
+      if (localStorage.getItem('sabore_diet_lactose') === 'true') activeDiets.push('Sem Lactose');
+      if (localStorage.getItem('sabore_diet_lowcarb') === 'true') activeDiets.push('Low Carb');
+      if (localStorage.getItem('sabore_diet_keto') === 'true') activeDiets.push('Cetogênica');
+
+      const userBio = localStorage.getItem('sabore_user_bio') || '';
+      const userPrefs = localStorage.getItem('sabore_user_preferences') ? JSON.parse(localStorage.getItem('sabore_user_preferences')) : [];
+      const servings = localStorage.getItem('sabore_ai_servings') || '2';
+
       const responseRecipe = await api.post("/ia/gerar", {
         prompt: msgText,
         ingredients: userState.geladeiraIngredients.join(", "),
         maxTime: 45,
-        diet: diet
+        diet: diet !== 'none' ? diet : (activeDiets.length > 0 ? activeDiets.join(', ') : 'none'),
+        difficulty: difficulty,
+        servings: servings,
+        userBio: userBio,
+        userPrefs: userPrefs.join(', ')
       });
 
       if (typingIndicator) typingIndicator.classList.add('hidden');
@@ -318,6 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const ingredientsLines = responseRecipe.ingredients.map(i => `<li>${i}</li>`).join('');
       const stepsLines = responseRecipe.steps.map(s => `<li>${s}</li>`).join('');
 
+      const rawDescription = responseRecipe.description || '';
+      const formattedDescription = parseMarkdown(rawDescription);
+      const descriptionSection = rawDescription ? `<div class="chat-recipe-description">${formattedDescription}</div>` : '';
+
       assistantBubble.innerHTML = `
         <div class="bubble-content">
           <p>Com certeza! Elaborei uma receita especial com base no seu pedido:</p>
@@ -330,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span><i class="fa-solid fa-utensils"></i> ${category}</span>
               </div>
             </div>
+            ${descriptionSection}
             <div class="chat-recipe-section">
               <h5>Ingredientes</h5>
               <ul>
@@ -361,7 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
             difficulty: diff,
             category: category,
             ingredients: responseRecipe.ingredients,
-            steps: responseRecipe.steps
+            steps: responseRecipe.steps,
+            description: rawDescription
           };
 
           renderBookSaveOptions();
@@ -426,6 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           await api.post("/receitas/cadastrar", {
             titulo: userState.selectedRecipeToSave.title,
+            descricao: userState.selectedRecipeToSave.description,
             tempoPreparo: userState.selectedRecipeToSave.time,
             modoPreparo: userState.selectedRecipeToSave.steps.join("\n"),
             dificuldade: userState.selectedRecipeToSave.difficulty,
@@ -482,6 +514,57 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error("Erro ao carregar dados do backend:", err);
     }
+  }
+
+  // ─── SIMPLE MARKDOWN PARSER FOR RECIPE DESCRIPTION & TABLES ───
+  function parseMarkdown(text) {
+    if (!text) return '';
+    let html = text;
+    
+    // Bold: **text**
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Line breaks: \n
+    html = html.replace(/\n/g, '<br>');
+    
+    // Table parser
+    const lines = html.split('<br>');
+    let inTable = false;
+    let tableHtml = '';
+    const outputLines = [];
+    
+    for (let line of lines) {
+      const cleanLine = line.trim();
+      if (cleanLine.startsWith('|')) {
+        const cells = cleanLine.split('|').map(c => c.trim()).filter((c, i, a) => i > 0 && i < a.length - 1);
+        if (cells.length > 0) {
+          // Check if separator like |---|---|
+          const isSeparator = cells.every(c => c.match(/^-+$/));
+          if (isSeparator) {
+            continue;
+          }
+          if (!inTable) {
+            inTable = true;
+            tableHtml = '<table class="nutritional-table">';
+          }
+          tableHtml += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+        }
+      } else {
+        if (inTable) {
+          inTable = false;
+          tableHtml += '</table>';
+          outputLines.push(tableHtml);
+          tableHtml = '';
+        }
+        outputLines.push(line);
+      }
+    }
+    if (inTable) {
+      tableHtml += '</table>';
+      outputLines.push(tableHtml);
+    }
+    
+    return outputLines.join('<br>');
   }
 
   // ─── INITIAL RENDERING CALLS ───
