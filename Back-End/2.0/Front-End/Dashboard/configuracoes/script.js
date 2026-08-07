@@ -1,22 +1,19 @@
-/* SABORÉ — Configurações Page Script */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Verify authentication session
   const user = api.getUser();
   if (!user) {
     window.location.href = "../../login/index.html";
     return;
   }
 
-  // ─── LOAD PERSISTED AVATAR ───
   const savedAvatar = localStorage.getItem('sabore_user_avatar');
   if (savedAvatar) {
     const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
     userAvatars.forEach(img => img.src = savedAvatar);
   }
 
-  // ─── THEME CONFIGURATIONS ───
   const themes = {
     obsidian: {
       '--dark': '#1B2B27',
@@ -48,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Load initial theme from localStorage
   const savedTheme = localStorage.getItem('sabore_theme') || 'obsidian';
   applyTheme(savedTheme);
   const themeSelector = document.getElementById('theme-selector');
@@ -59,12 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false
   };
 
-  // Load account profile values from localStorage
   const savedName = localStorage.getItem('sabore_user_name') || 'Davi Moratorio';
   const savedEmail = localStorage.getItem('sabore_user_email') || 'davi.moratorio@sabore.com.br';
   
@@ -74,14 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (nameInput) nameInput.value = savedName;
   if (emailInput) emailInput.value = savedEmail;
 
-  // Update navbar user name on load
   const navUserName = document.querySelector('.user-name');
   if (navUserName && savedName) {
-    // Show only first name in navbar
+    
     navUserName.textContent = savedName.split(' ')[0];
   }
 
-  // Load AI Preferences
   const savedDifficulty = localStorage.getItem('sabore_ai_difficulty') || 'medium';
   const savedServings = localStorage.getItem('sabore_ai_servings') || '2';
   
@@ -91,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (difficultySelect) difficultySelect.value = savedDifficulty;
   if (servingsSelect) servingsSelect.value = savedServings;
 
-  // Load diets checkboxes
   const dietCheckboxes = ['vegan', 'vegetarian', 'gluten', 'lactose', 'lowcarb', 'keto'];
   dietCheckboxes.forEach(diet => {
     const cb = document.getElementById(`diet-${diet}`);
@@ -103,26 +94,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Load toggle switches
-  const savedNeonGlow = localStorage.getItem('sabore_neon_glow') !== 'false'; // default true
+  const savedNeonGlow = localStorage.getItem('sabore_neon_glow') !== 'false'; 
   const neonGlowToggle = document.getElementById('neon-glow-toggle');
   if (neonGlowToggle) {
     neonGlowToggle.checked = savedNeonGlow;
   }
 
-  const savedNotifDaily = localStorage.getItem('sabore_notif_daily') !== 'false'; // default true
+  const savedNotifDaily = localStorage.getItem('sabore_notif_daily') !== 'false'; 
   const notifDailyToggle = document.getElementById('notif-daily');
   if (notifDailyToggle) {
     notifDailyToggle.checked = savedNotifDaily;
   }
 
-  const savedNotifWeekly = localStorage.getItem('sabore_notif_weekly') === 'true'; // default false
+  const savedNotifWeekly = localStorage.getItem('sabore_notif_weekly') === 'true'; 
   const notifWeeklyToggle = document.getElementById('notif-weekly');
   if (notifWeeklyToggle) {
     notifWeeklyToggle.checked = savedNotifWeekly;
   }
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -152,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
@@ -180,10 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  userState.isPro = false; // Start free
+  userState.isPro = false; 
   updatePlanUI();
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -199,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── MODALS TRIGGER SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -231,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Sidebar notifications click
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     notifBtn.addEventListener('click', () => {
@@ -241,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
 
@@ -257,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── TOAST SYSTEM ───
   function showToast(message) {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -272,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
     container.appendChild(toast);
     updateCursorHoverListeners();
 
-    // Remove toast after 3 seconds
     setTimeout(() => {
       toast.classList.add('removing');
       toast.addEventListener('animationend', () => {
@@ -281,26 +263,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
   }
 
-  // ─── SAVE SETTINGS CONTROLLER ───
   const saveBtn = document.getElementById('btn-save-settings');
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
-      // 1. Save Profile Details
+      
       const newName = nameInput ? nameInput.value.trim() : '';
       const newEmail = emailInput ? emailInput.value.trim() : '';
       if (newName) localStorage.setItem('sabore_user_name', newName);
       if (newEmail) localStorage.setItem('sabore_user_email', newEmail);
 
-      // Update navbar immediately
       if (navUserName && newName) {
         navUserName.textContent = newName.split(' ')[0];
       }
 
-      // 2. Save AI preferences
       if (difficultySelect) localStorage.setItem('sabore_ai_difficulty', difficultySelect.value);
       if (servingsSelect) localStorage.setItem('sabore_ai_servings', servingsSelect.value);
 
-      // 3. Save Dietary Restrictions
       dietCheckboxes.forEach(diet => {
         const cb = document.getElementById(`diet-${diet}`);
         if (cb) {
@@ -308,11 +286,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // 4. Save Theme & Glow
       if (themeSelector) localStorage.setItem('sabore_theme', themeSelector.value);
       if (neonGlowToggle) localStorage.setItem('sabore_neon_glow', neonGlowToggle.checked ? 'true' : 'false');
 
-      // 5. Save Notifications
       if (notifDailyToggle) localStorage.setItem('sabore_notif_daily', notifDailyToggle.checked ? 'true' : 'false');
       if (notifWeeklyToggle) localStorage.setItem('sabore_notif_weekly', notifWeeklyToggle.checked ? 'true' : 'false');
 
@@ -320,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── RESET CACHE DADOS LOCAIS ───
   const resetCacheBtn = document.getElementById('btn-reset-cache');
   if (resetCacheBtn) {
     resetCacheBtn.addEventListener('click', () => {
@@ -341,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+<<<<<<< HEAD
   // ─── LOGOUT FROM SETTINGS ───
   const logoutSettingsBtn = document.getElementById('btn-logout-settings');
   if (logoutSettingsBtn) {
@@ -355,6 +331,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── DELETE ACCOUNT ───
+=======
+>>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
   const deleteAccountBtn = document.getElementById('btn-delete-account');
   if (deleteAccountBtn) {
     deleteAccountBtn.addEventListener('click', () => {

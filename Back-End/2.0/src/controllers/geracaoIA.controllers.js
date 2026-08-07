@@ -1,6 +1,5 @@
 const prisma = require("../data/prisma");
 
-
 // System Prompt for Recipe Generation & Conversation
 const systemPrompt = `Você é o Chef Saboré IA, um assistente culinário pessoal inteligente e amigável.
 O usuário pode interagir com você de duas formas:
@@ -132,8 +131,8 @@ Diretrizes de resposta:
 
     try {
         // Dynamic import of OpenRouter SDK (CommonJS compatibility)
-        const { OpenRouter } = await import("@openrouter/sdk");
-        const openrouter = new OpenRouter({
+        const sdk = await import("@openrouter/sdk");
+        const openrouter = new sdk.OpenRouter({
             apiKey: process.env.OPENROUTER_API_KEY
         });
 
@@ -264,8 +263,8 @@ const analisarFoto = async (req, res) => {
         // ─── STEP 3: Gemma via OpenRouter — Structured analysis ───
         console.log("[IA Vision] Enviando para Gemma via OpenRouter...");
 
-        const { OpenRouter } = await import("@openrouter/sdk");
-        const openrouter = new OpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+        const sdk = await import("@openrouter/sdk");
+        const openrouter = new sdk.OpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
 
         let gemmaPrompt;
 
@@ -339,8 +338,8 @@ const gerarReceitaFoto = async (req, res) => {
     }
 
     try {
-        const { OpenRouter } = await import("@openrouter/sdk");
-        const openrouter = new OpenRouter({
+        const sdk = await import("@openrouter/sdk");
+        const openrouter = new sdk.OpenRouter({
             apiKey: process.env.OPENROUTER_API_KEY
         });
 
@@ -415,4 +414,4 @@ module.exports = {
     gerar,
     analisarFoto,
     gerarReceitaFoto
-};
+};

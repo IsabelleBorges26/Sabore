@@ -1,8 +1,7 @@
-/* SABORÉ — Explore Recipes Page Script */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
     selectedExploreRecipe: null,
@@ -31,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeTabFilter = 'all';
   let activeHashtagFilter = null;
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -61,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
@@ -92,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
   userState.isPro = false;
   updatePlanUI();
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -108,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── GLOBAL SEARCH ───
   const globalSearchInput = document.getElementById('global-search');
   if (globalSearchInput) {
     globalSearchInput.addEventListener('input', () => {
@@ -116,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Focus Search Shortcut
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
@@ -124,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── MODALS SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -159,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Sidebar notifications click
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     notifBtn.addEventListener('click', () => {
@@ -183,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
 
@@ -199,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── RENDER CATEGORIES CAROUSEL ───
   const categoriesContainer = document.getElementById('categories-carousel-list');
   function renderCategories() {
     if (!categoriesContainer) return;
@@ -220,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       tile.addEventListener('click', () => {
         if (activeCategoryFilter === cat.id) {
-          activeCategoryFilter = 'all'; // toggle off
+          activeCategoryFilter = 'all'; 
         } else {
           activeCategoryFilter = cat.id;
         }
@@ -233,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCursorHoverListeners();
   }
 
-  // ─── FEED CONTROL TABS ───
   const tabBtns = document.querySelectorAll('.feed-filter-btn');
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -244,7 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ─── RENDER RECIPES GRID ───
   const recipesContainer = document.getElementById('explore-recipes-container');
 
   function renderRecipes() {
@@ -254,12 +242,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchQuery = globalSearchInput ? globalSearchInput.value.toLowerCase().trim() : '';
 
     let filtered = userState.recipes.filter(rec => {
-      // 1. Search filter
+      
       const matchesSearch = rec.title.toLowerCase().includes(searchQuery) || 
                             rec.author.toLowerCase().includes(searchQuery) ||
                             rec.category.toLowerCase().includes(searchQuery);
 
-      // 2. Category Carousel Filter
       let matchesCategory = true;
       if (activeCategoryFilter !== 'all') {
         const queryVal = activeCategoryFilter.toLowerCase();
@@ -268,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
                           rec.diet.toLowerCase().includes(queryVal);
       }
 
-      // 3. Tab Filter
       let matchesTab = true;
       if (activeTabFilter === 'fit') {
         matchesTab = rec.diet.toLowerCase().includes('fit') || rec.diet.toLowerCase().includes('sem glúten');
@@ -280,7 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
         matchesTab = rec.difficulty === 'Fácil';
       }
 
-      // 4. Hashtag Filter
       let matchesHashtag = true;
       if (activeHashtagFilter) {
         matchesHashtag = rec.tags.includes(activeHashtagFilter);
@@ -329,7 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
-      // Favorite heart action
       const favBtn = card.querySelector('.favorite-toggle-btn');
       favBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -348,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // View details modal
       card.addEventListener('click', () => {
         openRecipeDetailsModal(rec);
       });
@@ -359,7 +342,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCursorHoverListeners();
   }
 
-  // ─── CHEFS SPOTLIGHT ROW ───
   const chefsContainer = document.getElementById('chefs-spotlight-container');
 
   function renderChefs() {
@@ -403,7 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return num + ' seguidores';
   }
 
-  // ─── WEEKLY CHALLENGE ───
   const joinBtn = document.getElementById('challenge-join-btn');
   if (joinBtn) {
     joinBtn.addEventListener('click', () => {
@@ -417,7 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── RENDER HASHTAGS TAG CLOUD ───
   const tagCloud = document.getElementById('popular-tags-cloud');
 
   function renderTags() {
@@ -435,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       chip.addEventListener('click', () => {
         if (activeHashtagFilter === tag) {
-          activeHashtagFilter = null; // deselect
+          activeHashtagFilter = null; 
         } else {
           activeHashtagFilter = tag;
         }
@@ -448,7 +428,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCursorHoverListeners();
   }
 
-  // ─── RECIPE DETAILS POPUP ───
   const detailAuthorAvatar = document.getElementById('recipe-detail-author-avatar');
   const detailAuthorName = document.getElementById('recipe-detail-author-name');
   const detailTitle = document.getElementById('recipe-detail-title');
@@ -470,7 +449,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     detailDietTag.textContent = rec.diet;
 
-    // Load ingredients
     detailIngredientsList.innerHTML = '';
     rec.ingredients.forEach(ing => {
       const li = document.createElement('li');
@@ -478,7 +456,6 @@ document.addEventListener('DOMContentLoaded', () => {
       detailIngredientsList.appendChild(li);
     });
 
-    // Load steps
     detailStepsList.innerHTML = '';
     rec.steps.forEach(step => {
       const li = document.createElement('li');
@@ -486,7 +463,6 @@ document.addEventListener('DOMContentLoaded', () => {
       detailStepsList.appendChild(li);
     });
 
-    // Reset and load rating
     selectedRating = 0;
     updateStarsUI(0);
     if (submitRatingBtn) submitRatingBtn.style.display = 'none';
@@ -499,13 +475,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStarsUI(existing.nota);
       }
     }).catch(err => {
-      console.error("Erro ao carregar avaliações da receita:", err);
     });
 
     openModal('recipe-details-modal');
   }
 
-  // ─── SAVE TO BOOK ROUTINE ───
   const saveOptionsContainer = document.getElementById('save-book-options-container');
 
   if (detailSaveBtn) {
@@ -619,11 +593,9 @@ document.addEventListener('DOMContentLoaded', () => {
       renderChefs();
       renderTags();
     } catch (err) {
-      console.error("Erro ao carregar dados:", err);
     }
   }
 
-  // ─── RATING SYSTEM ───
   let selectedRating = 0;
   const ratingStarsContainer = document.getElementById('recipe-rating-stars');
   const submitRatingBtn = document.getElementById('recipe-submit-rating');
@@ -674,7 +646,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── RUN COMPONENT INITIALIZATION ───
   renderCategories();
   initRatingSystem();
   loadInitialData();

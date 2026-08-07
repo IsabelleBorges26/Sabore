@@ -31,13 +31,13 @@ const api = {
             const response = await fetch(url, options);
             
             if (response.status === 401) {
-                // Unauthorized - clear token/user and redirect to login if not already there
+                
                 api.clearToken();
                 api.clearUser();
                 
                 const currentPath = window.location.pathname;
                 if (!currentPath.includes("/login/") && !currentPath.includes("/cadastro/") && !currentPath.endsWith("inicial/index.html") && !currentPath.endsWith("inicial/") && !currentPath.endsWith("Front-End/")) {
-                    // Find correct relative path to login
+                    
                     if (currentPath.includes("/Dashboard/")) {
                         window.location.href = "../../login/index.html";
                     } else {
@@ -56,7 +56,6 @@ const api = {
             
             return await response.json();
         } catch (error) {
-            console.error(`API Error on ${endpoint}:`, error);
             throw error;
         }
     },

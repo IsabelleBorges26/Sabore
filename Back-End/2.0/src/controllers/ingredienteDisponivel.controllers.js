@@ -11,14 +11,12 @@ const cadastrar = async (req, res) => {
     try {
         const cleanNome = nome.trim().toLowerCase();
 
-        // Find or create the basic Ingrediente
         const ingrediente = await prisma.ingrediente.upsert({
             where: { nome: cleanNome },
             update: {},
             create: { nome: cleanNome }
         });
 
-        // Link to user
         const item = await prisma.ingredienteDisponivel.upsert({
             where: {
                 usuarioId_ingredienteId: {
@@ -48,7 +46,6 @@ const listar = async (req, res) => {
             include: { ingrediente: true }
         });
 
-        // Capitalize names for frontend display consistency
         const nomes = lista.map(item => {
             const n = item.ingrediente.nome;
             return n.charAt(0).toUpperCase() + n.slice(1);

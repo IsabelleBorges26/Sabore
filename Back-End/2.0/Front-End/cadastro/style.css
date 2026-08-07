@@ -20,7 +20,6 @@ html, body {
   overflow: hidden;
 }
 
-/* ─── BACKGROUND ─── */
 .bg {
   position: fixed;
   inset: 0;
@@ -70,7 +69,6 @@ html, body {
   pointer-events: none;
 }
 
-/* ─── LAYOUT ─── */
 .page {
   position: relative;
   z-index: 1;
@@ -79,7 +77,6 @@ html, body {
   grid-template-columns: 1fr 1fr;
 }
 
-/* ─── RIGHT PANEL (form side - now on right) ─── */
 .right-panel {
   display: flex;
   align-items: center;
@@ -89,7 +86,6 @@ html, body {
   order: 2;
 }
 
-/* ─── LEFT PANEL ─── */
 .left-panel {
   display: flex;
   flex-direction: column;
@@ -176,7 +172,6 @@ html, body {
   margin-bottom: 40px;
 }
 
-/* ─── BENEFITS LIST ─── */
 .benefits-list {
   display: flex;
   flex-direction: column;
@@ -228,7 +223,6 @@ html, body {
 
 .left-footer-text span { color: var(--accent); }
 
-/* ─── FORM CARD ─── */
 .form-card {
   width: 100%;
   max-width: 440px;
@@ -281,7 +275,6 @@ html, body {
 
 .form-sub a:hover { opacity: 0.7; }
 
-/* ─── FIELDS ─── */
 .field-group {
   display: flex;
   flex-direction: column;
@@ -355,7 +348,6 @@ html, body {
 
 .password-toggle:hover { color: rgba(242,244,243,0.7); }
 
-/* ─── PASSWORD STRENGTH ─── */
 .password-strength {
   margin-top: 8px;
   display: flex;
@@ -388,7 +380,6 @@ html, body {
   min-width: 50px;
 }
 
-/* ─── TERMS ─── */
 .terms-wrap {
   margin-bottom: 24px;
 }
@@ -443,7 +434,6 @@ html, body {
 
 .checkbox-label a:hover { text-decoration: underline; }
 
-/* ─── SUBMIT ─── */
 .btn-submit {
   width: 100%;
   padding: 15px;
@@ -469,7 +459,6 @@ html, body {
 
 .btn-submit:active { transform: translateY(0); }
 
-/* ─── DIVIDER ─── */
 .divider {
   display: flex;
   align-items: center;
@@ -492,7 +481,6 @@ html, body {
   white-space: nowrap;
 }
 
-/* ─── SOCIAL ─── */
 .social-login {
   display: grid;
   grid-template-columns: 1fr;
@@ -531,7 +519,6 @@ html, body {
   transform: translateY(-2px);
 }
 
-/* ─── FOOTER ─── */
 .form-footer {
   text-align: center;
   margin-top: 20px;
@@ -548,7 +535,6 @@ html, body {
 
 .form-footer a:hover { color: var(--light); }
 
-/* ─── RESPONSIVE ─── */
 @media (max-width: 768px) {
   html, body { overflow: auto; }
   .page { grid-template-columns: 1fr; min-height: 100vh; }
@@ -557,7 +543,6 @@ html, body {
   .form-card { padding: 32px 24px; max-width: 100%; }
 }
 
-/* ─── CUSTOM CURSOR ─── */
 html, body {
   cursor: none !important;
 }
@@ -567,7 +552,7 @@ a, button, input, select, textarea, .social-btn, .plan-btn, .hamburger, [role="b
 }
 
 .custom-cursor {
-  width: 48px; /* Aumentado de 32px para 48px! */
+  width: 48px; 
   height: 48px;
   background-image: url('../assets/cursor mouse.png');
   background-size: contain;
@@ -578,11 +563,11 @@ a, button, input, select, textarea, .social-btn, .plan-btn, .hamburger, [role="b
   z-index: 10000;
   transform: translate(-50%, -50%);
   transition: width 0.2s, height 0.2s, transform 0.05s ease-out;
-  animation: cursorPulse 3s ease-in-out infinite; /* Nova animação de pulso elegante */
+  animation: cursorPulse 3s ease-in-out infinite; 
 }
 
 .custom-cursor.hover {
-  width: 68px; /* Aumentado de 48px para 68px! */
+  width: 68px; 
   height: 68px;
   filter: drop-shadow(0 0 10px var(--accent));
   animation: cursorHoverPulse 1.5s ease-in-out infinite;

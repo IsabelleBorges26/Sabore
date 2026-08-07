@@ -1,22 +1,19 @@
-/* SABORÉ — Reconhecimento por Fotos com IA Script */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Verify authentication session
   const user = api.getUser();
   if (!user) {
     window.location.href = "../../login/index.html";
     return;
   }
 
-  // ─── LOAD PERSISTED AVATAR ───
   const savedAvatar = localStorage.getItem('sabore_user_avatar');
   if (savedAvatar) {
     const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
     userAvatars.forEach(img => img.src = savedAvatar);
   }
 
-  // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
     selectedRecipeToSave: null,
@@ -36,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     recipe: null
   };
 
-  // Mock Database for the AI Image recognition
   const mockFoodDatabase = {
     pizza: {
       title: "Pizza Margherita Suprema",
@@ -224,7 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -254,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
@@ -282,10 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  userState.isPro = false; // Start free
+  userState.isPro = false; 
   updatePlanUI();
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -301,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── MODALS TRIGGER SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -334,7 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Sidebar notifications click
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     notifBtn.addEventListener('click', () => {
@@ -358,7 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
 
@@ -374,8 +364,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-
-  // ─── UPLOAD AND DRAG & DROP LOGIC ───
   const uploadZone = document.getElementById('photo-upload-zone');
   const fileInput = document.getElementById('photo-file-input');
   const previewContainer = document.getElementById('photo-preview-container');
@@ -416,7 +404,6 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadZone.classList.add('hidden');
       previewContainer.classList.remove('hidden');
 
-      // Trigger automatic scan on custom upload
       triggerPhotoScanner('generic');
     };
     reader.readAsDataURL(file);
@@ -434,36 +421,29 @@ document.addEventListener('DOMContentLoaded', () => {
     previewContainer.classList.add('hidden');
     uploadZone.classList.remove('hidden');
 
-    // Reset panels
     document.getElementById('state-idle').classList.remove('hidden');
     document.getElementById('state-scanning').classList.add('hidden');
     document.getElementById('state-results').classList.add('hidden');
     document.getElementById('state-recipe').classList.add('hidden');
 
-    // Clean bounding boxes
     document.getElementById('bounding-boxes-container').innerHTML = '';
     document.getElementById('scanner-line').classList.add('hidden');
   }
 
-
-  // ─── QUICK MOCK EXAMPLES TRIGGERS ───
   const mockButtons = document.querySelectorAll('.mock-img-btn');
   mockButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const foodType = btn.dataset.food;
       const imgSrc = btn.dataset.img;
-      
-      // Load mock image into preview
+
       previewImg.src = imgSrc;
       uploadZone.classList.add('hidden');
       previewContainer.classList.remove('hidden');
 
-      // Trigger scanning sequence for this food type
       triggerPhotoScanner(foodType);
     });
   });
 
-  // ─── SCANNING SEQUENCE & OPENROUTER VISION INTEGRATION ───
   const scannerLine = document.getElementById('scanner-line');
   const boundingBoxesContainer = document.getElementById('bounding-boxes-container');
 
@@ -550,20 +530,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function triggerPhotoScanner(foodType) {
     pageState.selectedDish = foodType;
     pageState.isScanning = true;
-    
-    // Clear previous boxes
+
     boundingBoxesContainer.innerHTML = '';
 
-    // Show scanner line
     scannerLine.classList.remove('hidden');
 
-    // Show scanning state in results panel
     document.getElementById('state-idle').classList.add('hidden');
     document.getElementById('state-scanning').classList.remove('hidden');
     document.getElementById('state-results').classList.add('hidden');
     document.getElementById('state-recipe').classList.add('hidden');
 
-    // Reset scanning logs text
     const logs = document.querySelectorAll('.status-line');
     logs.forEach((log, idx) => {
       log.className = 'status-line';
@@ -574,7 +550,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Start OpenRouter vision analysis in parallel
     visionAnalysisPromise = new Promise((resolve, reject) => {
       analyzeImageWithOpenRouter(
         previewImg.src,
@@ -583,24 +558,22 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     });
 
-    // Animate scanning status steps (simulating heavy AI computation)
     let currentStep = 0;
     const stepInterval = setInterval(() => {
-      // Mark current step as done
+      
       logs[currentStep].className = 'status-line done';
       logs[currentStep].querySelector('i').className = 'fa-solid fa-circle-check';
 
       currentStep++;
       if (currentStep < logs.length) {
-        // Mark next step as active
+        
         logs[currentStep].className = 'status-line active';
         logs[currentStep].querySelector('i').className = 'fa-solid fa-circle-notch fa-spin';
       } else {
         clearInterval(stepInterval);
-        
-        // Wait for OpenRouter promise to complete
+
         visionAnalysisPromise.then((data) => {
-          // Generate simulated bounding boxes based on number of detections
+          
           const boundingBoxes = (data.detections || []).map((det, index) => {
             return {
               top: 20 + index * 10,
@@ -622,7 +595,6 @@ document.addEventListener('DOMContentLoaded', () => {
           pageState.recipe = foodData;
           finishScannerSequence(foodData);
         }).catch((err) => {
-          console.warn("Vision analysis failed, falling back to mock database:", err);
           const foodData = mockFoodDatabase[foodType] || mockFoodDatabase['generic'];
           pageState.recipe = foodData;
           finishScannerSequence(foodData);
@@ -635,15 +607,12 @@ document.addEventListener('DOMContentLoaded', () => {
     pageState.isScanning = false;
     scannerLine.classList.add('hidden');
 
-    // Render Bounding Boxes on the preview image
     renderBoundingBoxes(foodData.boundingBoxes);
 
-    // Switch panels to results list
     document.getElementById('state-scanning').classList.add('hidden');
     const resultsState = document.getElementById('state-results');
     resultsState.classList.remove('hidden');
 
-    // Set title and confidence progress bars
     document.getElementById('detected-food-title').textContent = foodData.dishName;
 
     const listContainer = document.getElementById('detection-results-list');
@@ -663,7 +632,6 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       listContainer.appendChild(item);
 
-      // Trigger width fill with delay to animate smoothly
       setTimeout(() => {
         item.querySelector('.detection-bar-fill').style.width = det.percent + '%';
       }, 100);
@@ -675,7 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderBoundingBoxes(boxes) {
     boundingBoxesContainer.innerHTML = '';
     boxes.forEach((box, index) => {
-      // Delay box appearance slightly for visual pop
+      
       setTimeout(() => {
         const div = document.createElement('div');
         div.className = 'bounding-box';
@@ -690,7 +658,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Reset scan button handler
   const btnResetScan = document.getElementById('btn-reset-scan');
   if (btnResetScan) {
     btnResetScan.addEventListener('click', () => {
@@ -698,8 +665,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-
-  // ─── AI RECIPE GENERATOR ───
   const btnGenerateRecipe = document.getElementById('btn-generate-recipe');
   const btnBackToResults = document.getElementById('btn-back-to-results');
 
@@ -707,10 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnGenerateRecipe.addEventListener('click', () => {
       if (!pageState.recipe) return;
 
-      // Simulate a quick AI recipe rendering process
       document.getElementById('state-results').classList.add('hidden');
-      
-      // Temporarily reuse scanning view with recipe-specific steps
+
       const scanningState = document.getElementById('state-scanning');
       scanningState.classList.remove('hidden');
       
@@ -728,8 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let currentStep = 0;
 
       const ingredientsList = pageState.recipe.detections.map(d => d.name);
-      
-      // Call OpenRouter in parallel to generate the recipe
+
       const recipePromise = new Promise((resolve, reject) => {
         generateRecipeWithOpenRouter(
           pageState.recipe.title,
@@ -753,7 +715,6 @@ document.addEventListener('DOMContentLoaded', () => {
           recipePromise.then((recipeData) => {
             pageState.recipe.recipe = recipeData;
 
-            // Restore scanner title and log content for next uploads
             scanningTitle.textContent = "Analisando a foto...";
             logsLog.innerHTML = `
               <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo pixels da imagem...</p>
@@ -762,11 +723,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <p class="status-line"><i class="fa-regular fa-circle"></i> Finalizando rótulos de confiança...</p>
             `;
 
-            // Show recipe results
             scanningState.classList.add('hidden');
             showRecipeOutput(pageState.recipe);
           }).catch((err) => {
-            console.warn("Recipe generation failed, falling back to mock recipe:", err);
             
             if (!pageState.recipe.recipe) {
               pageState.recipe.recipe = {
@@ -779,7 +738,6 @@ document.addEventListener('DOMContentLoaded', () => {
               };
             }
 
-            // Restore scanner title and log content for next uploads
             scanningTitle.textContent = "Analisando a foto...";
             logsLog.innerHTML = `
               <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo pixels da imagem...</p>
@@ -788,7 +746,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <p class="status-line"><i class="fa-regular fa-circle"></i> Finalizando rótulos de confiança...</p>
             `;
 
-            // Show recipe results
             scanningState.classList.add('hidden');
             showRecipeOutput(pageState.recipe);
           });
@@ -801,13 +758,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const stateRecipe = document.getElementById('state-recipe');
     stateRecipe.classList.remove('hidden');
 
-    // Title and stats
     document.getElementById('result-recipe-title').textContent = foodData.title;
     document.getElementById('result-recipe-time').textContent = foodData.recipe.time + ' min';
     document.getElementById('result-recipe-servings').textContent = foodData.recipe.servings + (foodData.recipe.servings > 1 ? ' porções' : ' porção');
     document.getElementById('result-recipe-difficulty').textContent = foodData.recipe.difficulty;
 
-    // Diet badge
     const dietTag = document.getElementById('result-recipe-diet-tag');
     if (foodData.recipe.diet !== 'none') {
       dietTag.classList.remove('hidden');
@@ -816,7 +771,6 @@ document.addEventListener('DOMContentLoaded', () => {
       dietTag.classList.add('hidden');
     }
 
-    // Ingredients checklist
     const ingList = document.getElementById('result-ingredients-list');
     ingList.innerHTML = '';
     foodData.recipe.ingredients.forEach((ing, index) => {
@@ -833,7 +787,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ingList.appendChild(li);
     });
 
-    // Preparation steps
     const stepsList = document.getElementById('result-steps-list');
     stepsList.innerHTML = '';
     foodData.recipe.steps.forEach(step => {
@@ -852,8 +805,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-
-  // ─── SAVE TO BOOK DIALOG CONTROLLER ───
   const saveRecipeBtn = document.getElementById('save-recipe-btn');
   const saveOptionsContainer = document.getElementById('save-book-options-container');
 

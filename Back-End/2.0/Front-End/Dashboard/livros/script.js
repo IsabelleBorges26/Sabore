@@ -1,8 +1,7 @@
-/* SABORÉ — Recipe Books Dashboard Script */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
     selectedBookId: null,
@@ -10,10 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     recipes: {}
   };
 
-  // Active filter state
   let currentFilter = 'all';
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -43,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
@@ -71,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -87,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── GLOBAL SEARCH (FILTERS BOOKS LIST) ───
   const globalSearchInput = document.getElementById('global-search');
   if (globalSearchInput) {
     globalSearchInput.addEventListener('input', () => {
@@ -95,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Focus Search Shortcut
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
@@ -103,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── SORT AND FILTER TABS ───
   const filterBtns = document.querySelectorAll('.filter-tab-btn');
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -121,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── MODALS TRIGGER SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -157,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Sidebar notifications click
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     notifBtn.addEventListener('click', () => {
@@ -181,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
 
@@ -203,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── RENDER BOOKS (Pinterest/Spotify Grid) ───
   const booksContainer = document.getElementById('books-grid-container');
 
   function renderBooks() {
@@ -212,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const searchQuery = globalSearchInput ? globalSearchInput.value.toLowerCase().trim() : '';
 
-    // Filter books
     let filteredBooks = userState.books.filter(book => {
       const matchesSearch = book.title.toLowerCase().includes(searchQuery);
       
@@ -224,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return matchesSearch && matchesFilter;
     });
 
-    // Sort books
     const sortVal = sortSelect ? sortSelect.value : 'recipes-desc';
     filteredBooks.sort((a, b) => {
       if (sortVal === 'name') {
@@ -301,7 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCursorHoverListeners();
   }
 
-  // ─── BOOK DETAIL PANEL MANAGER ───
   const bookDetailEmpty = document.getElementById('book-detail-empty');
   const bookDetailActive = document.getElementById('book-detail-active');
   const activeBookCover = document.getElementById('active-book-cover');
@@ -321,16 +306,13 @@ document.addEventListener('DOMContentLoaded', () => {
     bookDetailEmpty.classList.add('hidden');
     bookDetailActive.classList.remove('hidden');
 
-    // Fetch recipes for this book from server
     try {
       const recipes = await api.get(`/receitas/listar?livroId=${bookId}`);
       userState.recipes[bookId] = recipes;
       book.count = recipes.length;
     } catch (err) {
-      console.error("Erro ao carregar receitas do livro:", err);
     }
 
-    // Fill Header
     activeBookCover.innerHTML = `<i class="${book.emoji}"></i>`;
     activeBookTitle.textContent = book.title;
     activeBookCount.textContent = book.count + (book.count === 1 ? ' receita salva' : ' receitas salvas');
@@ -426,7 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── ACTION: EXCLUIR LIVRO ───
   const deleteBookBtn = document.getElementById('detail-delete-book-btn');
   if (deleteBookBtn) {
     deleteBookBtn.addEventListener('click', async () => {
@@ -448,7 +429,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── ACTION: DYNAMIC BOOK CREATION ───
   const newBookBtnMain = document.getElementById('new-book-btn');
   const newBookForm = document.getElementById('new-book-form');
 
@@ -495,7 +475,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── ACTION: ADD RECIPE MANUALLY ───
   const detailAddRecipeBtn = document.getElementById('detail-add-recipe-btn');
   const newRecipeForm = document.getElementById('new-recipe-form');
 
@@ -537,10 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal('add-recipe-modal');
         newRecipeForm.reset();
 
-        // Refresh book detail to fetch new recipes
         showBookDetail(bookId);
-        
-        // Refresh book list to update counts
+
         const books = await api.get("/livros/listar");
         userState.books = books.map(b => ({
           id: b.id,
@@ -556,7 +533,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── DELETE RECIPE LOGIC ───
   async function deleteRecipeFromBook(bookId, recipeId) {
     try {
       await api.delete(`/receitas/excluir/${recipeId}`);
@@ -575,7 +551,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ─── RECIPE DETAILS POPUP VIEWER ───
   const recipeDetailTitle = document.getElementById('recipe-detail-title');
   const recipeDetailBadge = document.getElementById('recipe-detail-badge');
   const recipeDetailTime = document.getElementById('recipe-detail-time');
@@ -611,7 +586,6 @@ document.addEventListener('DOMContentLoaded', () => {
       recipeDetailSteps.appendChild(li);
     });
 
-    // Reset and load rating
     selectedRating = 0;
     updateStarsUI(0);
     if (submitRatingBtn) submitRatingBtn.style.display = 'none';
@@ -624,13 +598,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStarsUI(existing.nota);
       }
     }).catch(err => {
-      console.error("Erro ao carregar avaliações da receita:", err);
     });
 
     openModal('recipe-details-modal');
   }
 
-  // Load initial data from Back-End API
   async function loadInitialData() {
     const user = api.getUser();
     if (!user) {
@@ -659,13 +631,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }));
       renderBooks();
     } catch (err) {
-      console.error("Erro ao carregar livros:", err);
     }
   }
 
-
-
-  // ─── RATING SYSTEM ───
   let selectedRating = 0;
   const ratingStarsContainer = document.getElementById('recipe-rating-stars');
   const submitRatingBtn = document.getElementById('recipe-submit-rating');
@@ -716,7 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── INITIAL RENDERING CALLS ───
   initRatingSystem();
   loadInitialData();
   showEmptyState();

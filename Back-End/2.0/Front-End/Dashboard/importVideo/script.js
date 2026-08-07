@@ -1,22 +1,19 @@
-/* SABORÉ — Importador de Receitas por Vídeo Script */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Verify authentication session
   const user = api.getUser();
   if (!user) {
     window.location.href = "../../login/index.html";
     return;
   }
 
-  // ─── LOAD PERSISTED AVATAR ───
   const savedAvatar = localStorage.getItem('sabore_user_avatar');
   if (savedAvatar) {
     const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
     userAvatars.forEach(img => img.src = savedAvatar);
   }
 
-  // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
     selectedRecipeToSave: null,
@@ -36,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     recipe: null
   };
 
-  // Mock database representing social media videos extraction results
   const mockMediaDatabase = {
     tiktok: {
       title: "Macarrão Cremoso One-Pot (TikTok)",
@@ -147,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -177,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
@@ -205,10 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  userState.isPro = false; // Start free
+  userState.isPro = false; 
   updatePlanUI();
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -224,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── MODALS TRIGGER SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -257,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Sidebar notifications click
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     notifBtn.addEventListener('click', () => {
@@ -281,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
 
@@ -297,8 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-
-  // ─── FORM & MOCK CLICKS FLOWS ───
   const urlForm = document.getElementById('video-url-form');
   const urlInput = document.getElementById('video-url-input');
   const platformIcon = document.getElementById('platform-icon');
@@ -310,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const scannerLine = document.getElementById('scanner-line');
   const audioWaveContainer = document.getElementById('audio-wave-container');
 
-  // Input listener to update platform icon dynamically
   if (urlInput && platformIcon) {
     urlInput.addEventListener('input', () => {
       const urlText = urlInput.value.toLowerCase().trim();
@@ -338,21 +325,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Handle URL form submit
   if (urlForm) {
     urlForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const rawUrl = urlInput.value.trim();
       if (!rawUrl) return;
 
-      // Define standard mock thumbnail on custom URL
       const mockThumb = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80";
       
       triggerMediaProcessing(pageState.platform, mockThumb, rawUrl);
     });
   }
 
-  // Quick examples trigger click
   const mockButtons = document.querySelectorAll('.mock-link-item-btn');
   mockButtons.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -360,7 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const thumb = btn.dataset.img;
       const urlText = btn.dataset.url;
 
-      // Populate input field
       urlInput.value = urlText;
       detectAndSetPlatform(urlText);
 
@@ -368,27 +351,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Media converting simulation sequence
   function triggerMediaProcessing(platform, thumbSrc, urlStr) {
     pageState.platform = platform;
     pageState.url = urlStr;
     pageState.isProcessing = true;
 
-    // Open video player overlay
     playerIdle.classList.add('hidden');
     playerActive.classList.remove('hidden');
     videoThumb.src = thumbSrc;
 
-    // Show scanner laser line and audio wave bouncy bars
     scannerLine.classList.remove('hidden');
     audioWaveContainer.classList.remove('hidden');
 
-    // Switch right panel states
     document.getElementById('state-idle').classList.add('hidden');
     document.getElementById('state-converting').classList.remove('hidden');
     document.getElementById('state-recipe').classList.add('hidden');
 
-    // Reset conversion status lines
     const logs = document.querySelectorAll('.status-line');
     logs.forEach((log, idx) => {
       log.className = 'status-line';
@@ -399,7 +377,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Animate checkmarks logs
     let currentStep = 0;
     const processInterval = setInterval(() => {
       logs[currentStep].className = 'status-line done';
@@ -424,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = mockMediaDatabase[platform] || mockMediaDatabase['other'];
     pageState.recipe = data;
 
-    // Transition results views
     document.getElementById('state-converting').classList.add('hidden');
     showRecipeOutput(data);
   }
@@ -433,18 +409,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const stateRecipe = document.getElementById('state-recipe');
     stateRecipe.classList.remove('hidden');
 
-    // Plat tag class and icon label
     const platformBadge = document.getElementById('extracted-platform-badge');
     platformBadge.className = `recipe-ai-badge ${mediaData.platform}`;
     platformBadge.innerHTML = mediaData.platformLabel;
 
-    // Populate data
     document.getElementById('result-recipe-title').textContent = mediaData.title;
     document.getElementById('result-recipe-time').textContent = mediaData.recipe.time + ' min';
     document.getElementById('result-recipe-servings').textContent = mediaData.recipe.servings + (mediaData.recipe.servings > 1 ? ' porções' : ' porção');
     document.getElementById('result-recipe-difficulty').textContent = mediaData.recipe.difficulty;
 
-    // Diet badge
     const dietTag = document.getElementById('result-recipe-diet-tag');
     if (mediaData.recipe.diet !== 'none') {
       dietTag.classList.remove('hidden');
@@ -453,7 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
       dietTag.classList.add('hidden');
     }
 
-    // Ingredients checklist
     const ingList = document.getElementById('result-ingredients-list');
     ingList.innerHTML = '';
     mediaData.recipe.ingredients.forEach((ing, index) => {
@@ -470,7 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ingList.appendChild(li);
     });
 
-    // Steps ordered list
     const stepsList = document.getElementById('result-steps-list');
     stepsList.innerHTML = '';
     mediaData.recipe.steps.forEach(step => {
@@ -482,7 +453,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCursorHoverListeners();
   }
 
-  // Clear recipe resetting flow
   const btnClearRecipe = document.getElementById('btn-clear-recipe');
   if (btnClearRecipe) {
     btnClearRecipe.addEventListener('click', () => {
@@ -493,20 +463,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function resetImportVideoPage() {
     urlInput.value = '';
     detectAndSetPlatform('');
-    
-    // Hide active video container
+
     playerActive.classList.add('hidden');
     playerIdle.classList.remove('hidden');
     videoThumb.src = '';
 
-    // Reset panels
     document.getElementById('state-idle').classList.remove('hidden');
     document.getElementById('state-converting').classList.add('hidden');
     document.getElementById('state-recipe').classList.add('hidden');
   }
 
-
-  // ─── SAVE TO BOOK DIALOG CONTROLLER ───
   const saveRecipeBtn = document.getElementById('save-recipe-btn');
   const saveOptionsContainer = document.getElementById('save-book-options-container');
 

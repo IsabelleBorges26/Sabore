@@ -1,8 +1,7 @@
-/* SABORÉ — Control Center Dashboard Scripts */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ─── USER STATE MANAGEMENT ───
   let userState = {
     isPro: false,
     plan: 'Gratuito',
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -57,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const upgradeWidget = document.getElementById('upgrade-pro-section');
@@ -88,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ─── NAVBAR SCROLL BLUR ───
   const dashboardBody = document.querySelector('.dashboard-body');
   const navbar = document.querySelector('.navbar');
   
@@ -102,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -110,8 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation();
       sidebar.classList.toggle('active');
     });
-    
-    // Close sidebar clicking outside
+
     document.addEventListener('click', (e) => {
       if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
         sidebar.classList.remove('active');
@@ -119,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── RANGE SLIDER SYNC ───
   const timeSlider = document.getElementById('ai-time');
   const timeVal = document.getElementById('ai-time-val');
   if (timeSlider && timeVal) {
@@ -128,13 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── GLOBAL SEARCH FILTER ───
   const searchInput = document.getElementById('global-search');
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase().trim();
-      
-      // Filter recipe cards
+
       const recipeCards = document.querySelectorAll('.recipe-card');
       recipeCards.forEach(card => {
         const title = card.dataset.title.toLowerCase();
@@ -146,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // Filter trending cards
       const trendingCards = document.querySelectorAll('.trending-card');
       trendingCards.forEach(card => {
         const title = card.dataset.title.toLowerCase();
@@ -158,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // Filter book items
       const bookCards = document.querySelectorAll('.book-card-item');
       bookCards.forEach(card => {
         const title = card.querySelector('h4').textContent.toLowerCase();
@@ -171,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Shortcut key triggers search focus
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
@@ -179,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── MODALS TRIGGER SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -190,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) modal.classList.remove('open');
   }
 
-  // General closeModal on overlay click
   const modals = document.querySelectorAll('.modal-overlay');
   modals.forEach(modal => {
     modal.addEventListener('click', (e) => {
@@ -200,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Attach Close Actions
   const closeTriggers = [
     { btn: 'close-ai-modal', modal: 'ai-generator-modal' },
     { btn: 'close-book-modal', modal: 'add-book-modal' },
@@ -217,10 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Connect Shortcut actions
   const qaAiBtn = document.getElementById('qa-generate-ia');
   if (qaAiBtn) qaAiBtn.addEventListener('click', () => {
-    // Reset modal view states to show inputs form
+    
     const formContainer = document.getElementById('ai-form-container');
     const loadingContainer = document.getElementById('ai-loading-container');
     const resultContainer = document.getElementById('ai-result-container');
@@ -257,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) notifBtn.addEventListener('click', () => {
     openModal('notifications-modal');
-    // Clear badge
+    
     const badge = notifBtn.querySelector('.badge-dot');
     if (badge) badge.style.display = 'none';
   });
@@ -276,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const upgradeBtnWidget = document.getElementById('dashboard-upgrade-action-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
@@ -300,14 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function triggerCelebrationEffects() {
-    // Add small timeline activity log
+    
     addActivity('Seu plano foi atualizado para o <strong>Saboré PRO</strong>! 💎', 'agora');
-    // Update Stats visual
-    userState.stats.saved += 10; // add mock benefit
+    
+    userState.stats.saved += 10; 
     updateStatsUI();
   }
 
-  // ─── INGREDIENTS LIST CONTROLLER ───
   const ingContainer = document.getElementById('widget-ingredients-container');
   const addIngInput = document.getElementById('add-ing-input');
   const addIngBtn = document.getElementById('add-ing-btn');
@@ -325,8 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="ing-name">${ing}</span>
         <button class="ing-delete-btn"><i class="fa-solid fa-xmark"></i></button>
       `;
-      
-      // Bind delete button
+
       const delBtn = label.querySelector('.ing-delete-btn');
       delBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -342,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function addIngredient(name) {
     name = name.trim();
     if (!name) return;
-    // Capitalize first letter
+    
     name = name.charAt(0).toUpperCase() + name.slice(1);
     
     try {
@@ -387,11 +368,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Checklist generator link
   const generateDispensaBtn = document.getElementById('generate-dispensa-btn');
   if (generateDispensaBtn) {
     generateDispensaBtn.addEventListener('click', () => {
-      // Get all checked ingredients
+      
       const checkedIngs = [];
       const checkboxes = ingContainer.querySelectorAll('input[type="checkbox"]:checked');
       checkboxes.forEach(chk => checkedIngs.push(chk.value));
@@ -401,7 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Reset modal view states to show inputs form
       const formContainer = document.getElementById('ai-form-container');
       const loadingContainer = document.getElementById('ai-loading-container');
       const resultContainer = document.getElementById('ai-result-container');
@@ -422,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── BOOK CARD DYNAMIC CREATION ───
   const newBookBtn = document.getElementById('new-book-btn');
   const newBookForm = document.getElementById('new-book-form');
   const booksContainer = document.getElementById('books-list-container');
@@ -454,8 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
         userState.books.push(newBook);
         userState.stats.booksCount = userState.books.length;
         updateStatsUI();
-        
-        // Render
+
         renderBooks();
         closeModal('add-book-modal');
         newBookForm.reset();
@@ -493,7 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCursorHoverListeners();
   }
 
-  // ─── STATS AND ACTIVITIES TIMELINE ───
   const statsBubbles = document.querySelectorAll('.stat-count-num');
   function updateStatsUI() {
     if (statsBubbles.length >= 4) {
@@ -524,11 +500,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function addActivity(text, time = 'agora') {
     userState.activities.unshift({ text, time });
-    if (userState.activities.length > 5) userState.activities.pop(); // keep top 5
+    if (userState.activities.length > 5) userState.activities.pop(); 
     renderActivities();
   }
 
-  // ─── PHOTO UPLOAD PREVIEW ───
   const photoUploadZone = document.getElementById('photo-upload-zone');
   const photoFileInput = document.getElementById('photo-file-input');
   const photoPreviewContainer = document.getElementById('photo-preview-container');
@@ -538,8 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (photoUploadZone && photoFileInput) {
     photoUploadZone.addEventListener('click', () => photoFileInput.click());
-    
-    // Handle drop
+
     photoUploadZone.addEventListener('dragover', (e) => {
       e.preventDefault();
       photoUploadZone.style.borderColor = 'var(--accent)';
@@ -591,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       closeModal('photo-modal');
-      // Reset upload area
+      
       photoPreviewImg.src = '';
       photoFileInput.value = '';
       photoPreviewContainer.classList.add('hidden');
@@ -607,7 +581,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── VIDEO IMPORT SUBMIT ───
   const videoForm = document.getElementById('video-import-form');
   if (videoForm) {
     videoForm.addEventListener('submit', async (e) => {
@@ -626,7 +599,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── AI RECIPE GENERATOR ───
   const aiForm = document.getElementById('ai-recipe-form');
   const aiModal = document.getElementById('ai-generator-modal');
   const loadingContainer = document.getElementById('ai-loading-container');
@@ -635,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveRecipeBtn = document.getElementById('save-recipe-btn');
   const regenerateRecipeBtn = document.getElementById('regenerate-recipe-btn');
 
-  let currentGeneratedRecipe = null; // store current recipe details for saving
+  let currentGeneratedRecipe = null; 
 
   if (aiForm) {
     aiForm.addEventListener('submit', async (e) => {
@@ -668,7 +640,6 @@ document.addEventListener('DOMContentLoaded', () => {
     resultContainer.classList.add('hidden');
     openModal('ai-generator-modal');
 
-    // Steps list animation texts
     const loadingSteps = [
       'Analisando seus ingredientes...',
       'Buscando combinações de sabores na comunidade...',
@@ -695,7 +666,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadingContainer.classList.add('hidden');
     resultContainer.classList.remove('hidden');
 
-    // Populate titles
     document.getElementById('result-recipe-title').textContent = title;
     document.getElementById('result-recipe-time').textContent = time + ' min';
     document.getElementById('result-recipe-difficulty').textContent = difficulty;
@@ -708,7 +678,6 @@ document.addEventListener('DOMContentLoaded', () => {
       dietTag.style.display = 'none';
     }
 
-    // Populate lists
     const ingList = document.getElementById('result-ingredients-list');
     ingList.innerHTML = '';
     ingredients.forEach(ing => {
@@ -742,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!currentGeneratedRecipe) return;
 
       try {
-        // 1. Save recipe to DB
+        
         const savedRecipe = await api.post("/receitas/cadastrar", {
           titulo: currentGeneratedRecipe.title,
           tempoPreparo: currentGeneratedRecipe.time,
@@ -754,14 +723,11 @@ document.addEventListener('DOMContentLoaded', () => {
           publica: false
         });
 
-        // 2. Add to favorites
         await api.post("/favoritos/cadastrar", { receitaId: savedRecipe.id });
 
-        // Reload favorites list on home
         const freshFavs = await api.get("/favoritos/listar");
         renderFavorites(freshFavs);
 
-        // Update stats
         const profileData = await api.get("/usuarios/perfil");
         userState.stats = {
           saved: profileData.stats.saved,
@@ -771,7 +737,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         updateStatsUI();
 
-        // Add activity
         addActivity(`Salvou: <strong>${currentGeneratedRecipe.title}</strong>`, 'agora');
 
         closeModal('ai-generator-modal');
@@ -782,7 +747,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── FAVORITES / PUBLIC RENDERING ───
   function renderFavorites(favs) {
     const favsContainer = document.getElementById('favorites-container');
     if (!favsContainer) return;
@@ -910,7 +874,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCursorHoverListeners();
   }
 
-  // Load initial data from Back-End API
   async function loadInitialData() {
     const user = api.getUser();
     if (!user) {
@@ -918,7 +881,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Update welcome name & avatar
     const welcomeTitle = document.querySelector('.nav-welcome-text h2');
     if (welcomeTitle) welcomeTitle.innerHTML = `Olá, ${user.nome} <i class="fa-solid fa-utensils" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i>`;
     
@@ -929,7 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navName) navName.textContent = user.nome;
 
     try {
-      // 1. Get user profile & stats & plan
+      
       const profileData = await api.get("/usuarios/perfil");
       userState.isPro = profileData.plano === "PRO";
       userState.stats = {
@@ -941,12 +903,10 @@ document.addEventListener('DOMContentLoaded', () => {
       updatePlanUI();
       updateStatsUI();
 
-      // 2. Get ingredients in despensa
       const despensa = await api.get("/ingredientes-disponiveis/listar");
       userState.ingredients = despensa;
       renderIngredients();
 
-      // 3. Get books
       const books = await api.get("/livros/listar");
       userState.books = books.map(b => ({
         id: b.id,
@@ -957,23 +917,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }));
       renderBooks();
 
-      // 4. Get favorites
       const favorites = await api.get("/favoritos/listar");
       renderFavorites(favorites);
 
-      // 5. Get trending
       const publicRecipes = await api.get("/receitas/publicas");
       renderTrending(publicRecipes);
 
-      // 6. Get recommendations
       renderRecommendations(publicRecipes);
 
     } catch (err) {
-      console.error("Erro ao carregar dados do backend:", err);
     }
   }
 
-  // ─── RUN COMPONENT INITIALIZATION ───
   loadInitialData();
   renderIngredients();
   renderBooks();

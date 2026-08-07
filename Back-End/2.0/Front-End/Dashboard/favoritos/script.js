@@ -1,28 +1,24 @@
-/* SABORÉ — Receitas Favoritas Page Script */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Verify authentication session
   const user = api.getUser();
   if (!user) {
     window.location.href = "../../login/index.html";
     return;
   }
 
-  // ─── LOAD PERSISTED AVATAR ───
   const savedAvatar = localStorage.getItem('sabore_user_avatar');
   if (savedAvatar) {
     const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
     userAvatars.forEach(img => img.src = savedAvatar);
   }
 
-  // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
     favoritesCount: 6
   };
 
-  // Mock database for favorite recipes details modal
   const recipesDatabase = {
     "1": {
       title: "Lasanha de Berinjela",
@@ -161,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -191,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
@@ -219,10 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  userState.isPro = false; // Start free
+  userState.isPro = false; 
   updatePlanUI();
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -238,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── MODALS TRIGGER SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -272,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Sidebar notifications click
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     notifBtn.addEventListener('click', () => {
@@ -296,7 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
 
@@ -312,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+<<<<<<< HEAD
   // ─── DYNAMIC FAVORITES LOADING FROM API ───
   async function loadFavorites() {
     try {
@@ -406,6 +397,26 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(card);
       });
       
+=======
+  function updateFavoritesCount() {
+    const countLabel = document.getElementById('favorites-count-label');
+    const remainingCards = document.querySelectorAll('.recipe-card:not(.removing)');
+    userState.favoritesCount = remainingCards.length;
+    if (countLabel) {
+      countLabel.textContent = userState.favoritesCount;
+    }
+
+    const favoritesContainer = document.getElementById('favorites-container');
+    if (userState.favoritesCount === 0 && favoritesContainer) {
+      favoritesContainer.innerHTML = `
+        <div class="empty-favorites-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(242, 244, 243, 0.4);">
+          <i class="fa-regular fa-folder-open" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px; display: block;"></i>
+          <h3>Sua lista de favoritas está vazia</h3>
+          <p style="font-size: 0.85rem; margin-top: 5px;">Explore receitas e clique no ícone de coração para salvá-las aqui!</p>
+          <a href="../explorar/index.html" class="filter-tab-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Explorar Receitas</a>
+        </div>
+      `;
+>>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
       updateCursorHoverListeners();
       
     } catch (err) {
@@ -413,11 +424,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ─── CATEGORY TAB FILTERING ───
   const filterButtons = document.querySelectorAll('.filter-tab-btn');
   filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      // Switch active class
+      
       filterButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
@@ -435,12 +445,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+<<<<<<< HEAD
+=======
+  const favoriteToggleButtons = document.querySelectorAll('.favorite-toggle-btn');
+  favoriteToggleButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      const card = btn.closest('.recipe-card');
+      if (card) {
+        btn.classList.remove('active');
+        card.classList.add('removing');
+
+        setTimeout(() => {
+          card.remove();
+          updateFavoritesCount();
+        }, 300);
+      }
+    });
+  });
+
+  recipeCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const recipeId = card.dataset.id;
+      const recipeData = recipesDatabase[recipeId];
+      if (recipeData) {
+        populateRecipeModal(recipeData);
+        openModal('recipe-details-modal');
+      }
+    });
+  });
+
+>>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
   function populateRecipeModal(data) {
     document.getElementById('recipe-detail-title').textContent = data.title;
     document.getElementById('recipe-detail-time').textContent = data.time;
     document.getElementById('recipe-detail-difficulty').textContent = data.difficulty;
-    
-    // Diet badge setup
+
     const dietTag = document.getElementById('recipe-detail-diet-tag');
     if (dietTag) {
       if (data.vegetarian) {
@@ -451,7 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Ingredients checklist
     const ingredientsList = document.getElementById('recipe-detail-ingredients-list');
     if (ingredientsList) {
       ingredientsList.innerHTML = '';
@@ -470,7 +509,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Steps ordered list
     const stepsList = document.getElementById('recipe-detail-steps-list');
     if (stepsList) {
       stepsList.innerHTML = '';

@@ -18,7 +18,6 @@
   --danger: #FF5F56;
 }
 
-/* ─── SYSTEM RESET & SCROLLBARS ─── */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -61,7 +60,6 @@ a {
   background: var(--accent);
 }
 
-/* ─── CUSTOM CURSOR ─── */
 .custom-cursor {
   width: 48px;
   height: 48px;
@@ -81,7 +79,6 @@ a {
   height: 60px;
 }
 
-/* ─── MAIN DASHBOARD CONTAINER ─── */
 .dashboard-container {
   display: flex;
   width: 100vw;
@@ -90,7 +87,6 @@ a {
   overflow: hidden;
 }
 
-/* ─── SIDEBAR (LEFT MENU) ─── */
 .sidebar {
   width: var(--sidebar-width);
   background: var(--dark-deep);
@@ -241,7 +237,6 @@ a {
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(240, 213, 182, 0); }
 }
 
-/* ─── MAIN CONTENT ─── */
 .main-content {
   flex: 1;
   display: flex;
@@ -252,7 +247,6 @@ a {
   position: relative;
 }
 
-/* ─── NAVBAR SUPERIOR ─── */
 .navbar {
   height: var(--navbar-height);
   padding: 0 32px;
@@ -297,7 +291,7 @@ a {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-left: auto; /* Push right menu items to end */
+  margin-left: auto; 
 }
 
 .nav-action-btn {
@@ -408,14 +402,12 @@ a {
   margin-left: 2px;
 }
 
-/* ─── SCROLLABLE BODY ─── */
 .dashboard-body {
   flex: 1;
   padding: 32px;
-  overflow: hidden; /* Scroll handled internally by split panels */
+  overflow: hidden; 
 }
 
-/* ─── SPLIT GRID CHAT INTERFACE ─── */
 .chef-chat-grid {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -424,7 +416,6 @@ a {
   align-items: start;
 }
 
-/* ─── LEFT PANEL: SETUP SIDEBAR ─── */
 .chef-setup-sidebar {
   display: flex;
   flex-direction: column;
@@ -506,7 +497,6 @@ a {
   border-color: var(--accent);
 }
 
-/* Geladeira Tag cloud input */
 .tag-input-wrapper {
   display: flex;
   gap: 8px;
@@ -579,7 +569,6 @@ a {
   color: var(--light);
 }
 
-/* Prompt Chips Suggestions */
 .suggestion-prompts-list {
   display: flex;
   flex-direction: column;
@@ -606,7 +595,6 @@ a {
   transform: translateX(2px);
 }
 
-/* ─── RIGHT PANEL: CHAT INTERFACE ─── */
 .chef-chat-panel {
   background: var(--glass);
   border: 1px solid var(--glass-border);
@@ -618,7 +606,6 @@ a {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Chat Header */
 .chat-header {
   padding: 18px 24px;
   border-bottom: 1px solid var(--glass-border);
@@ -689,7 +676,6 @@ a {
   color: var(--danger);
 }
 
-/* Chat Messages Container */
 .chat-messages-container {
   flex: 1;
   padding: 24px;
@@ -744,7 +730,6 @@ a {
   color: rgba(27, 43, 39, 0.5);
 }
 
-/* Rich Message Contents (Structured Recipes in chat) */
 .bubble-content p {
   margin-bottom: 6px;
 }
@@ -825,7 +810,6 @@ a {
   background: var(--secondary);
 }
 
-/* Chat Input bar wrappers */
 .chat-input-wrapper {
   padding: 16px 24px 24px 24px;
   border-top: 1px solid var(--glass-border);
@@ -833,7 +817,6 @@ a {
   position: relative;
 }
 
-/* Typing loading dots */
 .typing-indicator {
   position: absolute;
   top: -24px;
@@ -918,7 +901,6 @@ a {
   border-color: var(--accent);
 }
 
-/* ==================== OVERLAY MODALS ==================== */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -1003,7 +985,6 @@ a {
   margin-top: 3px;
 }
 
-/* Save to book list */
 .book-selection-list {
   display: flex;
   flex-direction: column;
@@ -1073,7 +1054,6 @@ a {
   background: var(--secondary);
 }
 
-/* ─── NOTIFICATIONS LIST ─── */
 .notifications-list {
   display: flex;
   flex-direction: column;
@@ -1123,7 +1103,6 @@ a {
   color: rgba(242, 244, 243, 0.4);
 }
 
-/* ─── CELEBRATION UPGRADE MODAL ─── */
 .celebration-card {
   background: radial-gradient(circle at top, #1E463B 0%, var(--dark-deep) 70%);
   border: 1px solid var(--secondary);
@@ -1213,12 +1192,10 @@ a {
   color: var(--light);
 }
 
-/* ==================== HELPER CLASSES ==================== */
 .hidden {
   display: none !important;
 }
 
-/* ==================== RESPONSIVE MEDIA QUERIES ==================== */
 @media (max-width: 1100px) {
   .chef-chat-grid {
     grid-template-columns: 1fr;
@@ -1273,7 +1250,6 @@ a {
   }
 }
 
-/* ─── NUTRITIONAL TABLE & DESCRIPTION ─── */
 .chat-recipe-description {
   font-size: 0.8rem;
   color: rgba(242, 244, 243, 0.9);

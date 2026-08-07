@@ -11,8 +11,7 @@
 <body>
 
   <div class="dashboard-container">
-    
-    <!-- SIDEBAR -->
+
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
@@ -34,7 +33,6 @@
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
 
-      <!-- Sidebar Footer User Status (Conditional) -->
       <div class="sidebar-footer-promo">
         <div class="promo-card-compact">
           <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -47,10 +45,8 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="main-content">
-      
-      <!-- NAVBAR -->
+
       <header class="navbar">
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -83,13 +79,10 @@
         </div>
       </header>
 
-      <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
-        
-        <!-- PROFILE GRID -->
+
         <div class="perfil-grid">
-          
-          <!-- LEFT COLUMN: USER PRIMARY CARD -->
+
           <div class="perfil-panel-left">
             
             <div class="perfil-user-card">
@@ -103,8 +96,7 @@
               
               <h2>Davi Moratorio</h2>
               <span class="plan-badge-large pro" id="profile-plan-badge">Saboré PRO</span>
-              
-              <!-- User stats rows -->
+
               <div class="perfil-stats-row">
                 <div class="p-stat-item">
                   <span class="p-stat-val" id="profile-followers-count">0</span>
@@ -120,11 +112,9 @@
                 </div>
               </div>
 
-              <!-- Biography Area -->
               <div class="user-bio-area">
                 <p class="user-bio-text" id="user-bio-display">Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.</p>
-                
-                <!-- Editing inline form block -->
+
                 <div class="user-bio-edit-block hidden" id="bio-edit-block">
                   <textarea id="bio-textarea" rows="3" maxlength="165"></textarea>
                   <div class="edit-block-actions">
@@ -136,7 +126,6 @@
                 <button class="btn-edit-profile" id="btn-edit-bio"><i class="fa-solid fa-pen"></i> Editar Biografia</button>
               </div>
 
-              <!-- Certifications Badges -->
               <div class="certifications-wrap">
                 <div class="badge-cert">
                   <i class="fa-solid fa-award"></i>
@@ -152,29 +141,24 @@
 
           </div>
 
-          <!-- RIGHT COLUMN: PREFERENCES & CREATIONS -->
           <div class="perfil-panel-right">
-            
-            <!-- PREFERENCES WIDGET -->
+
             <div class="setup-widget">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-heart"></i> Suas Preferências Culinárias</h3>
               </div>
               <p class="setup-widget-desc">A IA do Saboré utiliza estas tags para recomendar e priorizar receitas que combinem com o seu gosto pessoal.</p>
-              
-              <!-- Tag cloud container -->
+
               <div class="pref-tags-container" id="pref-tags-container">
-                <!-- Javascript will load tags -->
+                
               </div>
-              
-              <!-- Add inline preference tags form -->
+
               <div class="pref-tag-input-wrap">
                 <input type="text" id="add-pref-input" placeholder="Ex: Low Carb, Vegano, Sobremesas...">
                 <button id="btn-add-pref"><i class="fa-solid fa-plus"></i></button>
               </div>
             </div>
 
-            <!-- MY CREATIONS SECTION -->
             <div class="setup-widget">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-utensils"></i> Minhas Criações</h3>
@@ -238,9 +222,6 @@
 
   </div>
 
-  <!-- ==================== OVERLAY MODALS ==================== -->
-
-  <!-- 1. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -274,7 +255,6 @@
     </div>
   </div>
 
-  <!-- 2. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

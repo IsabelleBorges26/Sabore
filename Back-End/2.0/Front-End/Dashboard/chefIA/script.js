@@ -1,8 +1,7 @@
-/* SABORÉ — Chef IA Culinário Page Script */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
     selectedRecipeToSave: null,
@@ -10,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     books: []
   };
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -40,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
@@ -68,10 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  userState.isPro = false; // Start free
+  userState.isPro = false; 
   updatePlanUI();
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -87,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── MODALS TRIGGER SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -120,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Sidebar notifications click
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     notifBtn.addEventListener('click', () => {
@@ -144,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
 
@@ -160,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── INGREDIENTS GELADEIRA TAG CLOUD ───
   const geladeiraTagsContainer = document.getElementById('geladeira-tags-cloud');
   const geladeiraInput = document.getElementById('geladeira-input');
   const btnAddGeladeiraTag = document.getElementById('btn-add-geladeira-tag');
@@ -225,13 +217,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── CHAT ENGINE & SIMULATIONS ───
   const chatMessagesContainer = document.getElementById('chat-messages-container');
   const chatTextarea = document.getElementById('chat-textarea');
   const chatSendBtn = document.getElementById('chat-send-btn');
   const clearChatBtn = document.getElementById('clear-chat-btn');
   const typingIndicator = document.getElementById('typing-indicator');
 
+<<<<<<< HEAD
   // Load user information for chat history scoping
   const user = api.getUser();
   const userName = user ? user.nome.split(' ')[0] : 'Davi';
@@ -379,6 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Trigger Send on click
+=======
+>>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
   if (chatSendBtn && chatTextarea) {
     chatSendBtn.addEventListener('click', () => {
       const msgText = chatTextarea.value.trim();
@@ -396,7 +390,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Suggestions prompt triggers
   const promptBtns = document.querySelectorAll('.prompt-chip-btn');
   promptBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -405,7 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Clear Chat Container
   if (clearChatBtn && chatMessagesContainer) {
     clearChatBtn.addEventListener('click', () => {
       if (confirm('Deseja limpar o histórico da conversa com o Chef IA?')) {
@@ -465,7 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       const difficulty = difficultySelect ? difficultyMap[difficultySelect.value] : 'Fácil';
 
-      // Load user configurations from localStorage
       const activeDiets = [];
       if (localStorage.getItem('sabore_diet_vegan') === 'true') activeDiets.push('Vegano');
       if (localStorage.getItem('sabore_diet_vegetarian') === 'true') activeDiets.push('Vegetariano');
@@ -708,10 +699,10 @@ document.addEventListener('DOMContentLoaded', () => {
         tag: b.tag
       }));
     } catch (err) {
-      console.error("Erro ao carregar dados do backend:", err);
     }
   }
 
+<<<<<<< HEAD
   // ─── ADVANCED MARKDOWN PARSER FOR RECIPE DESCRIPTION, LISTS & TABLES ───
   function parseMarkdown(text) {
     if (!text) return '';
@@ -721,6 +712,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Split by lines
     const lines = processed.split('\n');
+=======
+  function parseMarkdown(text) {
+    if (!text) return '';
+    let html = text;
+
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    html = html.replace(/\n/g, '<br>');
+
+    const lines = html.split('<br>');
+>>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
     let inTable = false;
     let inList = false;
     let listType = null; // 'ul' or 'ol'
@@ -740,6 +742,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const cells = cleanLine.split('|').map(c => c.trim()).filter((c, i, a) => i > 0 && i < a.length - 1);
         if (cells.length > 0) {
+<<<<<<< HEAD
+=======
+          
+>>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
           const isSeparator = cells.every(c => c.match(/^-+$/));
           if (isSeparator) continue;
           
@@ -812,7 +818,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return result.join('\n');
   }
 
-  // ─── INITIAL RENDERING CALLS ───
   loadInitialData();
   loadChatHistory();
 });

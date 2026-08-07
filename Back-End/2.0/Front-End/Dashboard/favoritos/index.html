@@ -11,8 +11,7 @@
 <body>
 
   <div class="dashboard-container">
-    
-    <!-- SIDEBAR -->
+
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
@@ -34,7 +33,6 @@
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
 
-      <!-- Sidebar Footer User Status (Conditional) -->
       <div class="sidebar-footer-promo">
         <div class="promo-card-compact">
           <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -47,10 +45,8 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="main-content">
-      
-      <!-- NAVBAR -->
+
       <header class="navbar">
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -83,10 +79,8 @@
         </div>
       </header>
 
-      <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
-        
-        <!-- FAVORITES SECTION HEADER -->
+
         <section class="card-section">
           <div class="section-title-wrap">
             <div class="title-details">
@@ -95,7 +89,6 @@
             </div>
           </div>
 
-          <!-- FILTERS TABS BAR -->
           <div class="favorites-filters-bar">
             <button class="filter-tab-btn active" data-filter="all">Todas</button>
             <button class="filter-tab-btn" data-filter="Café da Manhã">Café da Manhã</button>
@@ -105,7 +98,6 @@
             <button class="filter-tab-btn" data-filter="Massa">Massas</button>
           </div>
 
-          <!-- FAVORITES GRID -->
           <div class="recipes-grid" id="favorites-container">
             
             <article class="recipe-card" data-title="Lasanha de Berinjela" data-category="Almoço" data-id="1">
@@ -207,9 +199,6 @@
 
   </div>
 
-  <!-- ==================== OVERLAY MODALS ==================== -->
-
-  <!-- 1. RECIPE DETAILS VIEW MODAL -->
   <div class="modal-overlay" id="recipe-details-modal">
     <div class="modal-card">
       <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -230,14 +219,14 @@
           <div class="recipe-ingredients-side">
             <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
             <ul id="recipe-detail-ingredients-list">
-              <!-- JS Filled -->
+              
             </ul>
           </div>
 
           <div class="recipe-steps-side">
             <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
             <ol id="recipe-detail-steps-list">
-              <!-- JS Filled -->
+              
             </ol>
           </div>
         </div>
@@ -249,7 +238,6 @@
     </div>
   </div>
 
-  <!-- 2. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -283,7 +271,6 @@
     </div>
   </div>
 
-  <!-- 3. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

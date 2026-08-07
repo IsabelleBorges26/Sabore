@@ -11,8 +11,7 @@
 <body>
 
   <div class="dashboard-container">
-    
-    <!-- SIDEBAR -->
+
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
@@ -34,7 +33,6 @@
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
 
-      <!-- Sidebar Footer User Status (Conditional) -->
       <div class="sidebar-footer-promo">
         <div class="promo-card-compact">
           <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -47,10 +45,8 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="main-content">
-      
-      <!-- NAVBAR -->
+
       <header class="navbar">
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -83,21 +79,17 @@
         </div>
       </header>
 
-      <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
-        
-        <!-- IA PHOTOS GRID -->
+
         <div class="ia-fotos-grid">
-          
-          <!-- LEFT PANEL: UPLOAD & SCANNED PREVIEW -->
+
           <div class="ia-panel-left">
             
             <div class="setup-widget">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload da Imagem</h3>
               </div>
-              
-              <!-- DRAG & DROP ZONE -->
+
               <div class="upload-zone" id="photo-upload-zone">
                 <i class="fa-solid fa-camera-retro"></i>
                 <p class="zone-title">Arraste uma foto de comida aqui</p>
@@ -105,15 +97,12 @@
                 <input type="file" id="photo-file-input" accept="image/*" class="hidden">
               </div>
 
-              <!-- PREVIEW & SCANNING INTERACTIVE AREA -->
               <div class="scan-preview-container hidden" id="photo-preview-container">
                 <div class="image-wrapper">
                   <img src="" id="photo-preview-img" alt="Preview da Receita">
-                  
-                  <!-- Scanning overlay laser line -->
+
                   <div class="scanner-line hidden" id="scanner-line"></div>
-                  
-                  <!-- Bounding boxes will be dynamically added here -->
+
                   <div class="bounding-boxes-container" id="bounding-boxes-container"></div>
                 </div>
                 
@@ -125,16 +114,42 @@
               </div>
             </div>
 
+<<<<<<< HEAD
 
+=======
+            <div class="setup-widget">
+              <div class="widget-header">
+                <h3><i class="fa-solid fa-bolt"></i> Testar Exemplos Rápidos</h3>
+              </div>
+              <p class="setup-widget-desc">Clique em um dos pratos abaixo para simular o upload e análise instantaneamente:</p>
+              
+              <div class="mock-images-grid">
+                <button class="mock-img-btn" data-food="pizza" data-title="Pizza Margherita" data-img="https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?auto=format&fit=crop&w=600&q=80">
+                  <span class="mock-icon">🍕</span>
+                  <span class="mock-label">Pizza Margherita</span>
+                </button>
+                <button class="mock-img-btn" data-food="burger" data-title="Hambúrguer Gourmet" data-img="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80">
+                  <span class="mock-icon">🍔</span>
+                  <span class="mock-label">Burger & Fritas</span>
+                </button>
+                <button class="mock-img-btn" data-food="salad" data-title="Salada César" data-img="https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=600&q=80">
+                  <span class="mock-icon">🥗</span>
+                  <span class="mock-label">Salada César</span>
+                </button>
+                <button class="mock-img-btn" data-food="sushi" data-title="Combinado de Sushi" data-img="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80">
+                  <span class="mock-icon">🍣</span>
+                  <span class="mock-label">Sushi Combo</span>
+                </button>
+              </div>
+            </div>
+>>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
 
           </div>
 
-          <!-- RIGHT PANEL: DETECTION RESULTS & RECIPE STREAM -->
           <div class="ia-panel-right">
             
             <div class="results-container-panel" id="results-container-panel">
-              
-              <!-- STATE 1: IDLE / WAITING -->
+
               <div class="state-view state-idle" id="state-idle">
                 <div class="idle-content">
                   <div class="idle-circle-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -143,7 +158,6 @@
                 </div>
               </div>
 
-              <!-- STATE 2: SCANNING -->
               <div class="state-view state-scanning hidden" id="state-scanning">
                 <div class="scanning-content">
                   <div class="loader-spinner">
@@ -160,7 +174,6 @@
                 </div>
               </div>
 
-              <!-- STATE 3: DETECTED RESULTS -->
               <div class="state-view state-results hidden" id="state-results">
                 <div class="results-header">
                   <span class="detection-badge"><i class="fa-solid fa-circle-check"></i> Análise Concluída</span>
@@ -169,7 +182,7 @@
                 </div>
 
                 <div class="detection-results-list" id="detection-results-list">
-                  <!-- JS Filled confidence metrics -->
+                  
                 </div>
 
                 <div class="results-actions">
@@ -182,7 +195,6 @@
                 </div>
               </div>
 
-              <!-- STATE 4: GENERATED RECIPE -->
               <div class="state-view state-recipe hidden" id="state-recipe">
                 <div class="recipe-result-header">
                   <span class="recipe-ai-badge"><i class="fa-solid fa-robot"></i> Receita Gerada por IA</span>
@@ -200,14 +212,14 @@
                   <div class="recipe-ingredients-side">
                     <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
                     <ul id="result-ingredients-list">
-                      <!-- JS Filled -->
+                      
                     </ul>
                   </div>
 
                   <div class="recipe-steps-side">
                     <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
                     <ol id="result-steps-list">
-                      <!-- JS Filled -->
+                      
                     </ol>
                   </div>
                 </div>
@@ -230,9 +242,6 @@
 
   </div>
 
-  <!-- ==================== OVERLAY MODALS ==================== -->
-
-  <!-- 1. SAVE TO BOOK SELECTOR MODAL -->
   <div class="modal-overlay" id="save-to-book-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -241,12 +250,11 @@
         <p>Escolha em qual coleção salvar esta receita:</p>
       </div>
       <div class="book-selection-list" id="save-book-options-container">
-        <!-- Javascript loads book items -->
+        
       </div>
     </div>
   </div>
 
-  <!-- 2. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -280,7 +288,6 @@
     </div>
   </div>
 
-  <!-- 3. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>
