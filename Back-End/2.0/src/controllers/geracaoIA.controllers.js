@@ -1,44 +1,54 @@
 const prisma = require("../data/prisma");
 
 
-// System Prompt for Recipe Generation
-const systemPrompt = `Você é o Chef Saboré IA, um assistente culinário pessoal inteligente.
-O usuário enviará uma solicitação de receita ou ingredientes, juntamente com o seu perfil e histórico.
-Sua tarefa é gerar uma receita perfeitamente adequada que respeite as restrições e preferências alimentares do usuário, adaptando sua comunicação de forma inteligente.
+// System Prompt for Recipe Generation & Conversation
+const systemPrompt = `Você é o Chef Saboré IA, um assistente culinário pessoal inteligente e amigável.
+O usuário pode interagir com você de duas formas:
+1. Conversando ou tirando dúvidas culinárias gerais (ex: "Olá", "Como conservar manjericão?", "Como faço para substituir ovos em um bolo?").
+2. Solicitando uma receita específica ou fornecendo ingredientes e pedindo sugestão de prato.
+
+Sua tarefa é analisar o pedido do usuário e responder adequadamente em formato JSON.
 
 Você DEVE responder EXCLUSIVAMENTE com um objeto JSON válido, sem qualquer texto adicional antes ou depois. Não use blocos de código de markdown. Não use \`\`\`json no início nem \`\`\` no fim. Retorne apenas o JSON bruto.
 
 O JSON gerado deve seguir exatamente a seguinte estrutura:
 {
-  "title": "Nome da Receita",
-  "description": "Texto em Markdown contendo a introdução do Chef com tom adaptado, seguido de uma tabela nutricional detalhada (Calorias, Proteínas, Carboidratos, Gorduras) formatada como tabela em Markdown (| Macro | Quantidade |), e dicas adicionais baseadas no perfil do usuário.",
-  "ingredients": ["Ingrediente 1 com quantidade", "Ingrediente 2 com quantidade", ...],
-  "steps": ["Passo 1 do modo de preparo", "Passo 2 do modo de preparo", ...],
-  "time": tempo_em_minutos_como_numero,
-  "difficulty": "Fácil" ou "Médio" ou "Difícil",
-  "category": "Categoria da receita (ex: Fit, Sobremesa, Vegano, Massas, etc.)"
+  "isRecipe": true (APENAS se o usuário pedir explicitamente para detalhar a receita, os ingredientes ou o passo a passo de um prato específico) ou false (se for saudação, tirar dúvidas teóricas, ou pedir sugestões, ideias de receitas ou listas de opções de prato),
+  "message": "Sua resposta de texto/conversa para o usuário. Use este campo para saudações, responder dúvidas, dar conselhos de cozinha ou listar sugestões/ideias de pratos. (Obrigatório se isRecipe for false. Deixe em branco \"\" se isRecipe for true)",
+  "title": "Nome da Receita (Obrigatório se isRecipe for true. Deixe em branco \"\" se isRecipe for false)",
+  "description": "Texto em Markdown contendo a introdução do Chef com tom adaptado, seguido de uma tabela nutricional detalhada (Calorias, Proteínas, Carboidratos, Gorduras) formatada como tabela em Markdown (| Macro | Quantidade |), e dicas adicionais baseadas no perfil do usuário. (Obrigatório se isRecipe for true. Deixe em branco \"\" se isRecipe for false)",
+  "ingredients": ["Ingrediente 1 com quantidade", "Ingrediente 2 com quantidade", ...], (Obrigatório se isRecipe for true. Deixe vazio [] se isRecipe for false)
+  "steps": ["Passo 1 do modo de preparo", "Passo 2 do modo de preparo", ...], (Obrigatório se isRecipe for true. Deixe vazio [] se isRecipe for false)
+  "time": tempo_em_minutos_como_numero, (Obrigatório se isRecipe for true. Deixe como 0 se isRecipe for false)
+  "difficulty": "Fácil" ou "Médio" ou "Difícil", (Obrigatório se isRecipe for true. Deixe em branco \"\" se isRecipe for false)
+  "category": "Categoria da receita (ex: Fit, Sobremesa, Vegano, Massas, etc.)" (Obrigatório se isRecipe for true. Deixe em branco \"\" se isRecipe for false)
 }`;
 
-// Robust parser function for LLM JSON output
+// Robust parser function for LLM JSON output that handles trailing commas
 function parseJSONRecipe(text) {
-    text = text.trim();
+    let cleanText = text.trim();
     
     // Check if it's wrapped in markdown JSON code block
-    const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    const match = cleanText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (match) {
-        text = match[1].trim();
+        cleanText = match[1].trim();
     }
     
+    // Function to strip trailing commas in objects and arrays
+    const cleanTrailingCommas = (str) => {
+        return str.replace(/,(\s*[\]}])/g, '$1');
+    };
+    
     try {
-        return JSON.parse(text);
+        return JSON.parse(cleanTrailingCommas(cleanText));
     } catch (e) {
         // If JSON.parse fails, try to extract first '{' to last '}'
-        const start = text.indexOf('{');
-        const end = text.lastIndexOf('}');
+        const start = cleanText.indexOf('{');
+        const end = cleanText.lastIndexOf('}');
         if (start !== -1 && end !== -1 && end > start) {
-            const potentialJson = text.substring(start, end + 1);
+            const potentialJson = cleanText.substring(start, end + 1);
             try {
-                return JSON.parse(potentialJson);
+                return JSON.parse(cleanTrailingCommas(potentialJson));
             } catch (innerErr) {
                 console.error("Inner JSON parsing failed:", innerErr);
             }
@@ -100,19 +110,20 @@ const gerar = async (req, res) => {
         contextInstructions += `\nPreferências Culinárias: [${userPrefs}]`;
     }
 
-    const userPrompt = `Quero uma receita baseada no seguinte pedido: "${prompt || 'Qualquer receita interessante'}".
-Ingredientes adicionais da minha geladeira para usar: [${ingredients || ''}].
-Tempo máximo de preparo: ${maxTime || 60} minutos.
-Restrição alimentar: ${diet || 'nenhuma'}.
-Dificuldade desejada: ${difficulty || 'Qualquer'}.
-Porções: ${servings || 2} porções.
+    const userPrompt = `Mensagem ou pedido do usuário: "${prompt || ''}".
+Ingredientes disponíveis na geladeira: [${ingredients || ''}].
+Configurações/Filtros do usuário:
+- Tempo máximo de preparo: ${maxTime || 60} minutos.
+- Restrição alimentar: ${diet || 'nenhuma'}.
+- Dificuldade desejada: ${difficulty || 'Qualquer'}.
+- Porções: ${servings || 2} porções.
 
 INFORMAÇÕES DE PREFERÊNCIAS E HISTÓRICO DO USUÁRIO:${contextInstructions || '\nNenhuma cadastrada ainda.'}
 
-Com base nestes dados do usuário, adapte sua comunicação e a receita criada:
-1. Analise se o usuário tem perfil de academia/hipertrofia, dieta light/saudável, vegetariana, intolerâncias ou se prefere receitas práticas. 
-2. Adapte o tom do texto do Chef (ex: empático, motivador esportivo, focado em nutrição funcional ou chef gourmet).
-3. Preencha o campo "description" com a apresentação do prato, seguido de uma tabela nutricional em formato Markdown contendo estimativas de macros (Calorias, Carboidratos, Proteínas, Gorduras) por porção, e conselhos de Chef baseados nas preferências do usuário.`;
+Diretrizes de resposta:
+1. Se a mensagem do usuário for uma saudação, dúvida culinária, bate-papo geral OU solicitação de ideias, opções, sugestões ou listas de receitas (ex: "me dê ideias do que cozinhar com frango", "quais receitas posso fazer?"), defina "isRecipe" como false. Interaja amigavelmente e liste as sugestões/ideias no campo "message" como texto conversacional estruturado (usando listas com '-' ou '1.'). Não monte uma receita estruturada.
+2. Se o usuário pedir explicitamente para criar, detalhar os ingredientes e passo a passo de uma receita específica (ex: "me dê a receita de frango grelhado", "monte uma receita com os ingredientes da geladeira"), defina "isRecipe" como true e preencha os respectivos campos de receita ("title", "description", "ingredients", "steps", etc.).
+3. Adapte o tom da conversa ("message" ou "description") com base no perfil e preferências do usuário.`;
 
     const modelsToTry = [
         "google/gemma-4-26b-a4b-it:free",
@@ -176,55 +187,140 @@ const analisarFoto = async (req, res) => {
     }
 
     try {
-        const { OpenRouter } = await import("@openrouter/sdk");
-        const openrouter = new OpenRouter({
-            apiKey: process.env.OPENROUTER_API_KEY
-        });
+        // ─── STEP 1: Extract base64 data ───
+        let mimeType = "image/jpeg";
+        let base64Data = image;
 
-        console.log("[IA Vision] Enviando imagem para análise...");
-        const response = await openrouter.chat.send({
-            chatRequest: {
-                model: "meta-llama/llama-3.2-11b-vision-instruct:free",
-                messages: [
-                    {
-                        role: "user",
-                        content: [
-                            {
-                                type: "text",
-                                text: `Analise esta imagem de comida. Identifique o prato principal e liste de 3 a 5 ingredientes principais visíveis com uma porcentagem estimada de confiança (ex: entre 80% e 99%).
-Retorne a resposta estritamente em formato JSON válido contendo os seguintes campos, sem blocos de código markdown adicionais:
-{
-  "title": "Nome da receita (ex: Pizza Margherita)",
-  "dishName": "Título do prato (ex: Pizza Margherita Identificada!)",
-  "detections": [
-    { "name": "Ingrediente 1", "percent": 98 },
-    { "name": "Ingrediente 2", "percent": 95 }
-  ]
-}`
+        if (image.startsWith("data:")) {
+            const matches = image.match(/^data:([^;]+);base64,(.+)$/);
+            if (matches) {
+                mimeType = matches[1];
+                base64Data = matches[2];
+            }
+        }
+
+        // ─── STEP 2: HuggingFace — Image classification via router ───
+        console.log("[IA Vision] Enviando imagem para HuggingFace classificação...");
+
+        const imageBuffer = Buffer.from(base64Data, "base64");
+        const hfToken = process.env.HF_TOKEN;
+
+        // Classification models supported by hf-inference provider
+        const hfClassificationModels = [
+            "nateraw/food",                         // food-specific classifier (best)
+            "Kaludi/food-category-classification-v2.0", // food categories
+            "google/vit-base-patch16-224",          // general image classifier (fallback)
+        ];
+
+        let imageCaption = null;
+
+        if (hfToken) {
+            for (const modelId of hfClassificationModels) {
+                try {
+                    const hfResponse = await fetch(
+                        `https://router.huggingface.co/hf-inference/models/${modelId}`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Authorization": `Bearer ${hfToken}`,
+                                "Content-Type": mimeType,
                             },
-                            {
-                                type: "image_url",
-                                image_url: {
-                                    url: image
-                                }
+                            body: imageBuffer
+                        }
+                    );
+
+                    if (hfResponse.ok) {
+                        const hfData = await hfResponse.json();
+                        // Classification returns [{ label: "...", score: 0.99 }, ...]
+                        if (Array.isArray(hfData) && hfData.length > 0) {
+                            // Get top 3 labels with score > 0.05
+                            const topLabels = hfData
+                                .filter(d => d.score > 0.05)
+                                .slice(0, 3)
+                                .map(d => d.label);
+
+                            if (topLabels.length > 0) {
+                                imageCaption = topLabels.join(", ");
+                                console.log(`[IA Vision] HuggingFace (${modelId}) labels: "${imageCaption}"`);
+                                break;
                             }
-                        ]
+                        }
+                    } else {
+                        const errText = await hfResponse.text();
+                        console.warn(`[IA Vision] HuggingFace ${modelId} falhou (${hfResponse.status}):`, errText.substring(0, 100));
                     }
-                ]
+                } catch (hfErr) {
+                    console.warn(`[IA Vision] Erro HuggingFace ${modelId}:`, hfErr.message);
+                }
+            }
+        } else {
+            console.warn("[IA Vision] HF_TOKEN não configurado, pulando classificação de imagem.");
+        }
+
+        if (!imageCaption) {
+            console.warn("[IA Vision] Classificação indisponível. Usando análise genérica pelo Gemma.");
+        }
+
+        // ─── STEP 3: Gemma via OpenRouter — Structured analysis ───
+        console.log("[IA Vision] Enviando para Gemma via OpenRouter...");
+
+        const { OpenRouter } = await import("@openrouter/sdk");
+        const openrouter = new OpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+
+        let gemmaPrompt;
+
+        if (imageCaption) {
+            // With classification labels — high accuracy
+            gemmaPrompt = `Você é um chef culinário especialista. Uma IA de visão computacional analisou uma foto de comida e identificou os seguintes rótulos em inglês: "${imageCaption}"
+
+Com base nesses rótulos, identifique com precisão o prato culinário e retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto extra, sem markdown, sem blocos de código. Apenas o JSON bruto:
+{
+  "title": "Nome completo e descritivo do prato em português (ex: Bolo de Cenoura com Cobertura de Chocolate)",
+  "dishName": "Nome curto do prato identificado seguido de exclamação (ex: Bolo de Cenoura Identificado!)",
+  "detections": [
+    { "name": "Ingrediente principal visível em português", "percent": 97 },
+    { "name": "Segundo ingrediente principal", "percent": 93 },
+    { "name": "Terceiro ingrediente", "percent": 88 },
+    { "name": "Quarto ingrediente (se houver)", "percent": 83 }
+  ]
+}`;
+        } else {
+            // Without caption — suggest a common dish
+            gemmaPrompt = `Você é um chef culinário especialista. Um usuário enviou uma foto de comida para análise, mas o sistema de reconhecimento de imagem está temporariamente indisponível.
+
+Selecione um prato culinário popular e retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto extra, sem markdown, sem blocos de código. Apenas o JSON bruto com um prato aleatório e seus ingredientes principais:
+{
+  "title": "Nome completo do prato em português",
+  "dishName": "Nome identificado com exclamação",
+  "detections": [
+    { "name": "Ingrediente 1", "percent": 95 },
+    { "name": "Ingrediente 2", "percent": 91 },
+    { "name": "Ingrediente 3", "percent": 87 }
+  ]
+}`;
+        }
+
+        const gemmaResponse = await openrouter.chat.send({
+            chatRequest: {
+                model: "google/gemma-4-26b-a4b-it:free",
+                messages: [{ role: "user", content: gemmaPrompt }]
             }
         });
 
-        const content = response.choices[0]?.message?.content;
+        const content = gemmaResponse.choices[0]?.message?.content;
         if (!content) {
-            throw new Error("Resposta vazia do OpenRouter");
+            throw new Error("Resposta vazia do Gemma.");
         }
 
-        // Robust JSON extraction using regex
+        console.log("[IA Vision] Resposta do Gemma:", content);
+
+        // Robust JSON extraction
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-            throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
+            throw new Error("Nenhum objeto JSON encontrado na resposta do Gemma.");
         }
-        const parsedData = JSON.parse(jsonMatch[0]);
+        const cleanJson = jsonMatch[0].replace(/,(\s*[\]}])/g, '$1');
+        const parsedData = JSON.parse(cleanJson);
         res.status(200).json(parsedData);
 
     } catch (error) {
@@ -302,7 +398,8 @@ Diretrizes Importantes:
         if (!jsonMatch) {
             throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
         }
-        const parsedData = JSON.parse(jsonMatch[0]);
+        const cleanJson = jsonMatch[0].replace(/,(\s*[\]}])/g, '$1');
+        const parsedData = JSON.parse(cleanJson);
         res.status(200).json(parsedData);
 
     } catch (error) {

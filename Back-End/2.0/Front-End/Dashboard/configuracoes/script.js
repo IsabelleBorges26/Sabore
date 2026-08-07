@@ -341,6 +341,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ─── LOGOUT FROM SETTINGS ───
+  const logoutSettingsBtn = document.getElementById('btn-logout-settings');
+  if (logoutSettingsBtn) {
+    logoutSettingsBtn.addEventListener('click', () => {
+      if (confirm("Deseja realmente sair da sua conta?")) {
+        api.clearToken();
+        api.clearUser();
+        localStorage.removeItem('sabore_user_avatar');
+        window.location.href = '../../login/index.html';
+      }
+    });
+  }
+
   // ─── DELETE ACCOUNT ───
   const deleteAccountBtn = document.getElementById('btn-delete-account');
   if (deleteAccountBtn) {

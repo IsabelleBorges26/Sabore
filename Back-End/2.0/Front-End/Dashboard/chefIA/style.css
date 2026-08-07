@@ -1310,3 +1310,24 @@ a {
   border-bottom: 1px solid rgba(240, 213, 182, 0.15);
   background: rgba(27, 43, 39, 0.6);
 }
+
+/* Chatbot Formatting Improvements */
+.chat-paragraph {
+  margin-bottom: 10px;
+}
+.chat-paragraph:last-child {
+  margin-bottom: 0;
+}
+.chat-list {
+  margin: 8px 0 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chat-list li {
+  line-height: 1.4;
+  color: rgba(242, 244, 243, 0.9);
+}
+.chat-spacer {
+  height: 6px;
+}

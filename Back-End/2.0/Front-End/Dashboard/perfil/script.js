@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
-    bio: localStorage.getItem('sabore_user_bio') || 'Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.',
-    preferences: localStorage.getItem('sabore_user_preferences') ? JSON.parse(localStorage.getItem('sabore_user_preferences')) : ['Fitness', 'Sem Glúten', 'Low Carb', 'Sobremesas', 'Massas']
+    bio: localStorage.getItem('sabore_user_bio') || '',
+    preferences: localStorage.getItem('sabore_user_preferences') ? JSON.parse(localStorage.getItem('sabore_user_preferences')) : []
   };
 
   // ─── DYNAMIC CUSTOM CURSOR ───
@@ -300,7 +300,87 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ─── DYNAMIC CREATIONS LOADING FROM API ───
+  async function loadCreations() {
+    try {
+      const container = document.querySelector(".creations-grid");
+      if (!container) return;
+
+      const creations = await api.get("/receitas/listar");
+      container.innerHTML = "";
+
+      if (creations.length === 0) {
+        container.innerHTML = `
+          <div class="empty-creations-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 35px; color: rgba(242, 244, 243, 0.45);">
+            <i class="fa-solid fa-utensils" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 12px; display: block;"></i>
+            <h4>Nenhuma criação ainda</h4>
+            <p style="font-size: 0.8rem; margin-top: 5px;">Você ainda não criou nenhuma receita própria.</p>
+            <a href="../chefIA/index.html" class="btn-edit-profile" style="display: inline-block; margin-top: 12px; text-decoration: none; padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-robot"></i> Criar com Chef IA</a>
+          </div>
+        `;
+        return;
+      }
+
+      creations.forEach(rec => {
+        const card = document.createElement("article");
+        card.className = "creation-card";
+        card.innerHTML = `
+          <div class="creation-img-wrap">
+            <img src="${rec.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=400&q=80'}" alt="${rec.title}">
+            <span class="creation-category">${rec.category}</span>
+          </div>
+          <div class="creation-info">
+            <h4>${rec.title}</h4>
+            <div class="creation-meta">
+              <span><i class="fa-regular fa-clock"></i> ${rec.time} min</span>
+              <span><i class="fa-solid fa-gauge-simple"></i> ${rec.difficulty}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      updateCursorHoverListeners();
+    } catch (err) {
+      console.error("Erro ao carregar criações:", err);
+    }
+  }
+
+  // ─── DYNAMIC PROFILE DATA LOADING FROM API ───
+  async function loadProfileData() {
+    try {
+      const profileData = await api.get("/usuarios/perfil");
+      userState.isPro = profileData.plano === "PRO";
+      updatePlanUI();
+
+      // Update name
+      const profileName = document.querySelector('.perfil-user-card h2');
+      if (profileName && user.nome) {
+        profileName.textContent = user.nome;
+      }
+
+      // Update bio
+      const savedBio = localStorage.getItem('sabore_user_bio') || profileData.bio || 'Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.';
+      userState.bio = savedBio;
+      const bioDisplay = document.getElementById('user-bio-display');
+      if (bioDisplay) bioDisplay.textContent = savedBio;
+
+      // Update stats
+      const followersVal = document.getElementById('profile-followers-count');
+      const followingVal = document.getElementById('profile-following-count');
+      const recipesVal = document.getElementById('profile-recipes-count');
+
+      if (followersVal) followersVal.textContent = "0"; // New users start with 0
+      if (followingVal) followingVal.textContent = "0"; // New users start with 0
+      if (recipesVal) recipesVal.textContent = profileData.stats.created;
+
+    } catch (err) {
+      console.error("Erro ao carregar dados do perfil:", err);
+    }
+  }
+
   // Initial rendering
   renderPrefTags();
+  loadProfileData();
+  loadCreations();
 
 });

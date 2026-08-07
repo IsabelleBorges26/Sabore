@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@openrouter/sdk": "^0.12.79",
     "@prisma/adapter-mariadb": "^7.4.0",
     "@prisma/client": "^6.19.3",

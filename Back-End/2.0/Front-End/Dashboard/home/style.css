@@ -566,6 +566,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 36px;
+  min-width: 0;
 }
 
 .card-section {

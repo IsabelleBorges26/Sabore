@@ -312,34 +312,109 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── FAVORITES RECIPES COUNT UPDATE ───
-  function updateFavoritesCount() {
-    const countLabel = document.getElementById('favorites-count-label');
-    const remainingCards = document.querySelectorAll('.recipe-card:not(.removing)');
-    userState.favoritesCount = remainingCards.length;
-    if (countLabel) {
-      countLabel.textContent = userState.favoritesCount;
-    }
-
-    // If no favorites, show placeholder
-    const favoritesContainer = document.getElementById('favorites-container');
-    if (userState.favoritesCount === 0 && favoritesContainer) {
-      favoritesContainer.innerHTML = `
-        <div class="empty-favorites-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(242, 244, 243, 0.4);">
-          <i class="fa-regular fa-folder-open" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px; display: block;"></i>
-          <h3>Sua lista de favoritas está vazia</h3>
-          <p style="font-size: 0.85rem; margin-top: 5px;">Explore receitas e clique no ícone de coração para salvá-las aqui!</p>
-          <a href="../explorar/index.html" class="filter-tab-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Explorar Receitas</a>
-        </div>
-      `;
+  // ─── DYNAMIC FAVORITES LOADING FROM API ───
+  async function loadFavorites() {
+    try {
+      const favorites = await api.get("/favoritos/listar");
+      const container = document.getElementById("favorites-container");
+      if (!container) return;
+      
+      container.innerHTML = "";
+      
+      // Clear and rebuild recipesDatabase local cache
+      for (const key in recipesDatabase) {
+        delete recipesDatabase[key];
+      }
+      
+      if (favorites.length === 0) {
+        container.innerHTML = `
+          <div class="empty-favorites-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(242, 244, 243, 0.4);">
+            <i class="fa-regular fa-folder-open" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px; display: block;"></i>
+            <h3>Sua lista de favoritas está vazia</h3>
+            <p style="font-size: 0.85rem; margin-top: 5px;">Explore receitas e clique no ícone de coração para salvá-las aqui!</p>
+            <a href="../explorar/index.html" class="filter-tab-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Explorar Receitas</a>
+          </div>
+        `;
+        const countLabel = document.getElementById('favorites-count-label');
+        if (countLabel) countLabel.textContent = "0";
+        updateCursorHoverListeners();
+        return;
+      }
+      
+      const countLabel = document.getElementById('favorites-count-label');
+      if (countLabel) countLabel.textContent = favorites.length;
+      
+      favorites.forEach(rec => {
+        // Store in database for modal popup
+        recipesDatabase[rec.id] = {
+          title: rec.title,
+          time: `${rec.time} min`,
+          difficulty: rec.difficulty,
+          category: rec.category,
+          vegetarian: rec.categories.includes("Vegano") || rec.categories.includes("Vegetariano"),
+          ingredients: rec.ingredients,
+          steps: rec.steps
+        };
+        
+        const card = document.createElement("article");
+        card.className = "recipe-card";
+        card.dataset.title = rec.title;
+        card.dataset.category = rec.category;
+        card.dataset.id = rec.id;
+        
+        card.innerHTML = `
+          <div class="recipe-image-wrap">
+            <img src="${rec.image}" alt="${rec.title}" class="recipe-img">
+            <button class="favorite-toggle-btn active" data-id="${rec.id}"><i class="fa-solid fa-heart"></i></button>
+          </div>
+          <div class="recipe-content-area">
+            <span class="recipe-category">${rec.category}</span>
+            <h4>${rec.title}</h4>
+            <div class="recipe-meta-bottom">
+              <span><i class="fa-regular fa-clock"></i> ${rec.time} min</span>
+              <span class="recipe-difficulty ${rec.difficulty.toLowerCase() === 'fácil' ? 'easy' : rec.difficulty.toLowerCase() === 'médio' ? 'medium' : 'hard'}">${rec.difficulty}</span>
+            </div>
+          </div>
+        `;
+        
+        // Add click listener to open details modal
+        card.addEventListener('click', () => {
+          populateRecipeModal(recipesDatabase[rec.id]);
+          openModal('recipe-details-modal');
+        });
+        
+        // Add unfavorite click listener
+        const favBtn = card.querySelector(".favorite-toggle-btn");
+        favBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          try {
+            await api.delete(`/favoritos/excluir/${rec.id}`);
+            card.classList.add("removing");
+            setTimeout(() => {
+              card.remove();
+              const remaining = container.querySelectorAll('.recipe-card:not(.removing)');
+              if (countLabel) countLabel.textContent = remaining.length;
+              if (remaining.length === 0) {
+                loadFavorites();
+              }
+            }, 300);
+          } catch (err) {
+            alert("Erro ao remover dos favoritos: " + err.message);
+          }
+        });
+        
+        container.appendChild(card);
+      });
+      
       updateCursorHoverListeners();
+      
+    } catch (err) {
+      console.error("Erro ao carregar favoritos:", err);
     }
   }
 
   // ─── CATEGORY TAB FILTERING ───
   const filterButtons = document.querySelectorAll('.filter-tab-btn');
-  const recipeCards = document.querySelectorAll('.recipe-card');
-
   filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       // Switch active class
@@ -347,8 +422,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.add('active');
 
       const filterValue = btn.dataset.filter;
+      const cards = document.querySelectorAll('.recipe-card');
 
-      recipeCards.forEach(card => {
+      cards.forEach(card => {
         const cardCategory = card.dataset.category;
         if (filterValue === 'all' || cardCategory === filterValue) {
           card.classList.remove('hidden');
@@ -356,37 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
           card.classList.add('hidden');
         }
       });
-    });
-  });
-
-  // ─── HEART ICON UNFAVORITE LOGIC ───
-  const favoriteToggleButtons = document.querySelectorAll('.favorite-toggle-btn');
-  favoriteToggleButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation(); // Stop opening modal details
-      const card = btn.closest('.recipe-card');
-      if (card) {
-        btn.classList.remove('active');
-        card.classList.add('removing');
-        
-        // Wait 300ms for CSS fade-out scale animation
-        setTimeout(() => {
-          card.remove();
-          updateFavoritesCount();
-        }, 300);
-      }
-    });
-  });
-
-  // ─── RECIPE MODAL DETAILS POPULATION ───
-  recipeCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const recipeId = card.dataset.id;
-      const recipeData = recipesDatabase[recipeId];
-      if (recipeData) {
-        populateRecipeModal(recipeData);
-        openModal('recipe-details-modal');
-      }
     });
   });
 
@@ -438,5 +483,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateCursorHoverListeners();
   }
+
+  // Load dynamically
+  loadFavorites();
 
 });

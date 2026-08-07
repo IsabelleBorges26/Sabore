@@ -232,6 +232,152 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearChatBtn = document.getElementById('clear-chat-btn');
   const typingIndicator = document.getElementById('typing-indicator');
 
+  // Load user information for chat history scoping
+  const user = api.getUser();
+  const userName = user ? user.nome.split(' ')[0] : 'Davi';
+  const chatStorageKey = user ? `sabore_chat_history_${user.id}` : 'sabore_chat_history_guest';
+
+  function saveMessageToLocalStorage(msg) {
+    try {
+      const history = JSON.parse(localStorage.getItem(chatStorageKey) || '[]');
+      history.push(msg);
+      localStorage.setItem(chatStorageKey, JSON.stringify(history));
+    } catch (e) {
+      console.error("Erro ao salvar mensagem no localStorage:", e);
+    }
+  }
+
+  function clearChatHistory() {
+    try {
+      localStorage.removeItem(chatStorageKey);
+    } catch (e) {
+      console.error("Erro ao limpar histórico no localStorage:", e);
+    }
+  }
+
+  function renderMessage(msg) {
+    if (!chatMessagesContainer) return;
+    const bubble = document.createElement('div');
+    bubble.className = `message-bubble ${msg.sender}`;
+    
+    if (msg.sender === 'user') {
+      bubble.innerHTML = `
+        <div class="bubble-content">
+          <p>${msg.text}</p>
+        </div>
+        <span class="message-time">${msg.time}</span>
+      `;
+      chatMessagesContainer.appendChild(bubble);
+    } else { // assistant
+      if (msg.isRecipe) {
+        const recipe = msg.recipe;
+        const title = recipe.title;
+        const time = recipe.time;
+        const diff = recipe.difficulty;
+        const category = recipe.category;
+        
+        const ingredientsLines = recipe.ingredients.map(i => `<li>${i}</li>`).join('');
+        const stepsLines = recipe.steps.map(s => `<li>${s}</li>`).join('');
+
+        const rawDescription = recipe.description || '';
+        const formattedDescription = parseMarkdown(rawDescription);
+        const descriptionSection = rawDescription ? `<div class="chat-recipe-description">${formattedDescription}</div>` : '';
+
+        bubble.innerHTML = `
+          <div class="bubble-content">
+            <p>Com certeza! Elaborei uma receita especial com base no seu pedido:</p>
+            <div class="chat-recipe-card">
+              <div class="chat-recipe-header">
+                <h4>${title}</h4>
+                <div class="chat-recipe-meta">
+                  <span><i class="fa-regular fa-clock"></i> ${time} min</span>
+                  <span><i class="fa-solid fa-gauge-simple"></i> ${diff}</span>
+                  <span><i class="fa-solid fa-utensils"></i> ${category}</span>
+                </div>
+              </div>
+              ${descriptionSection}
+              <div class="chat-recipe-section">
+                <h5>Ingredientes</h5>
+                <ul>
+                  ${ingredientsLines}
+                </ul>
+              </div>
+              <div class="chat-recipe-section">
+                <h5>Modo de Preparo</h5>
+                <ol>
+                  ${stepsLines}
+                </ol>
+              </div>
+              <button class="btn-chat-save-recipe" data-title="${title}" data-time="${time}" data-difficulty="${diff}" data-category="${category}">
+                <i class="fa-solid fa-folder-plus"></i> Salvar esta Receita
+              </button>
+            </div>
+          </div>
+          <span class="message-time">${msg.time}</span>
+        `;
+
+        chatMessagesContainer.appendChild(bubble);
+        
+        const saveBtn = bubble.querySelector('.btn-chat-save-recipe');
+        if (saveBtn) {
+          saveBtn.addEventListener('click', () => {
+            userState.selectedRecipeToSave = {
+              title: title,
+              time: time,
+              difficulty: diff,
+              category: category,
+              ingredients: recipe.ingredients,
+              steps: recipe.steps,
+              description: rawDescription
+            };
+
+            renderBookSaveOptions();
+            openModal('save-to-book-modal');
+          });
+        }
+      } else {
+        const rawMessage = msg.message || '';
+        const formattedMessage = parseMarkdown(rawMessage);
+        bubble.innerHTML = `
+          <div class="bubble-content">
+            <div>${formattedMessage}</div>
+          </div>
+          <span class="message-time">${msg.time}</span>
+        `;
+        chatMessagesContainer.appendChild(bubble);
+      }
+    }
+  }
+
+  function loadChatHistory() {
+    if (!chatMessagesContainer) return;
+    try {
+      const history = JSON.parse(localStorage.getItem(chatStorageKey) || '[]');
+      if (history.length > 0) {
+        chatMessagesContainer.innerHTML = '';
+        history.forEach(renderMessage);
+      } else {
+        chatMessagesContainer.innerHTML = `
+          <div class="message-bubble assistant">
+            <div class="bubble-content">
+              <p>Olá, ${userName}! Sou o seu **Chef Saboré IA** pessoal. 🍲</p>
+              <p>Estou pronto para ajudar você na cozinha. Você pode me dizer quais ingredientes tem na geladeira, pedir uma receita específica ou tirar dúvidas sobre técnicas culinárias. Como posso te ajudar hoje?</p>
+            </div>
+            <span class="message-time">agora</span>
+          </div>
+        `;
+        const initialBubble = chatMessagesContainer.querySelector('.bubble-content');
+        if (initialBubble) {
+          initialBubble.innerHTML = parseMarkdown(initialBubble.innerHTML);
+        }
+      }
+      scrollToBottom();
+      updateCursorHoverListeners();
+    } catch (e) {
+      console.error("Erro ao carregar histórico do localStorage:", e);
+    }
+  }
+
   // Trigger Send on click
   if (chatSendBtn && chatTextarea) {
     chatSendBtn.addEventListener('click', () => {
@@ -263,14 +409,19 @@ document.addEventListener('DOMContentLoaded', () => {
   if (clearChatBtn && chatMessagesContainer) {
     clearChatBtn.addEventListener('click', () => {
       if (confirm('Deseja limpar o histórico da conversa com o Chef IA?')) {
+        clearChatHistory();
         chatMessagesContainer.innerHTML = `
           <div class="message-bubble assistant">
             <div class="bubble-content">
-              <p>Olá, Davi! Histórico limpo. Como posso ajudar você na cozinha hoje? 🍲</p>
+              <p>Olá, ${userName}! Histórico limpo. Como posso ajudar você na cozinha hoje? 🍲</p>
             </div>
             <span class="message-time">agora</span>
           </div>
         `;
+        const initialBubble = chatMessagesContainer.querySelector('.bubble-content');
+        if (initialBubble) {
+          initialBubble.innerHTML = parseMarkdown(initialBubble.innerHTML);
+        }
         updateCursorHoverListeners();
       }
     });
@@ -278,6 +429,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function handleUserMessage(msgText) {
     const timeStr = getCurrentTimeFormatted();
+    
+    // Save user message to local history
+    saveMessageToLocalStorage({
+      sender: "user",
+      text: msgText,
+      time: timeStr
+    });
+
     const userBubble = document.createElement('div');
     userBubble.className = 'message-bubble user';
     userBubble.innerHTML = `
@@ -335,57 +494,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const assistantBubble = document.createElement('div');
       assistantBubble.className = 'message-bubble assistant';
       
-      const title = responseRecipe.title;
-      const time = responseRecipe.time;
-      const diff = responseRecipe.difficulty || difficulty;
-      const category = responseRecipe.category || (diet !== 'none' ? diet : 'Chef IA');
-      
-      const ingredientsLines = responseRecipe.ingredients.map(i => `<li>${i}</li>`).join('');
-      const stepsLines = responseRecipe.steps.map(s => `<li>${s}</li>`).join('');
+      if (responseRecipe.isRecipe) {
+        const title = responseRecipe.title;
+        const time = responseRecipe.time;
+        const diff = responseRecipe.difficulty || difficulty;
+        const category = responseRecipe.category || (diet !== 'none' ? diet : 'Chef IA');
+        
+        const ingredientsLines = responseRecipe.ingredients.map(i => `<li>${i}</li>`).join('');
+        const stepsLines = responseRecipe.steps.map(s => `<li>${s}</li>`).join('');
 
-      const rawDescription = responseRecipe.description || '';
-      const formattedDescription = parseMarkdown(rawDescription);
-      const descriptionSection = rawDescription ? `<div class="chat-recipe-description">${formattedDescription}</div>` : '';
+        const rawDescription = responseRecipe.description || '';
+        const formattedDescription = parseMarkdown(rawDescription);
+        const descriptionSection = rawDescription ? `<div class="chat-recipe-description">${formattedDescription}</div>` : '';
 
-      assistantBubble.innerHTML = `
-        <div class="bubble-content">
-          <p>Com certeza! Elaborei uma receita especial com base no seu pedido:</p>
-          <div class="chat-recipe-card">
-            <div class="chat-recipe-header">
-              <h4>${title}</h4>
-              <div class="chat-recipe-meta">
-                <span><i class="fa-regular fa-clock"></i> ${time} min</span>
-                <span><i class="fa-solid fa-gauge-simple"></i> ${diff}</span>
-                <span><i class="fa-solid fa-utensils"></i> ${category}</span>
-              </div>
-            </div>
-            ${descriptionSection}
-            <div class="chat-recipe-section">
-              <h5>Ingredientes</h5>
-              <ul>
-                ${ingredientsLines}
-              </ul>
-            </div>
-            <div class="chat-recipe-section">
-              <h5>Modo de Preparo</h5>
-              <ol>
-                ${stepsLines}
-              </ol>
-            </div>
-            <button class="btn-chat-save-recipe" data-title="${title}" data-time="${time}" data-difficulty="${diff}" data-category="${category}">
-              <i class="fa-solid fa-folder-plus"></i> Salvar esta Receita
-            </button>
-          </div>
-        </div>
-        <span class="message-time">${getCurrentTimeFormatted()}</span>
-      `;
-
-      chatMessagesContainer.appendChild(assistantBubble);
-      
-      const saveBtn = assistantBubble.querySelector('.btn-chat-save-recipe');
-      if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-          userState.selectedRecipeToSave = {
+        // Save assistant recipe to history
+        saveMessageToLocalStorage({
+          sender: "assistant",
+          isRecipe: true,
+          recipe: {
             title: title,
             time: time,
             difficulty: diff,
@@ -393,11 +519,81 @@ document.addEventListener('DOMContentLoaded', () => {
             ingredients: responseRecipe.ingredients,
             steps: responseRecipe.steps,
             description: rawDescription
-          };
-
-          renderBookSaveOptions();
-          openModal('save-to-book-modal');
+          },
+          time: getCurrentTimeFormatted()
         });
+
+        assistantBubble.innerHTML = `
+          <div class="bubble-content">
+            <p>Com certeza! Elaborei uma receita especial com base no seu pedido:</p>
+            <div class="chat-recipe-card">
+              <div class="chat-recipe-header">
+                <h4>${title}</h4>
+                <div class="chat-recipe-meta">
+                  <span><i class="fa-regular fa-clock"></i> ${time} min</span>
+                  <span><i class="fa-solid fa-gauge-simple"></i> ${diff}</span>
+                  <span><i class="fa-solid fa-utensils"></i> ${category}</span>
+                </div>
+              </div>
+              ${descriptionSection}
+              <div class="chat-recipe-section">
+                <h5>Ingredientes</h5>
+                <ul>
+                  ${ingredientsLines}
+                </ul>
+              </div>
+              <div class="chat-recipe-section">
+                <h5>Modo de Preparo</h5>
+                <ol>
+                  ${stepsLines}
+                </ol>
+              </div>
+              <button class="btn-chat-save-recipe" data-title="${title}" data-time="${time}" data-difficulty="${diff}" data-category="${category}">
+                <i class="fa-solid fa-folder-plus"></i> Salvar esta Receita
+              </button>
+            </div>
+          </div>
+          <span class="message-time">${getCurrentTimeFormatted()}</span>
+        `;
+
+        chatMessagesContainer.appendChild(assistantBubble);
+        
+        const saveBtn = assistantBubble.querySelector('.btn-chat-save-recipe');
+        if (saveBtn) {
+          saveBtn.addEventListener('click', () => {
+            userState.selectedRecipeToSave = {
+              title: title,
+              time: time,
+              difficulty: diff,
+              category: category,
+              ingredients: responseRecipe.ingredients,
+              steps: responseRecipe.steps,
+              description: rawDescription
+            };
+
+            renderBookSaveOptions();
+            openModal('save-to-book-modal');
+          });
+        }
+      } else {
+        const rawMessage = responseRecipe.message || '';
+        const formattedMessage = parseMarkdown(rawMessage);
+
+        // Save assistant message to history
+        saveMessageToLocalStorage({
+          sender: "assistant",
+          isRecipe: false,
+          message: rawMessage,
+          time: getCurrentTimeFormatted()
+        });
+
+        assistantBubble.innerHTML = `
+          <div class="bubble-content">
+            <div>${formattedMessage}</div>
+          </div>
+          <span class="message-time">${getCurrentTimeFormatted()}</span>
+        `;
+        chatMessagesContainer.appendChild(assistantBubble);
       }
 
       scrollToBottom();
@@ -516,57 +712,107 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ─── SIMPLE MARKDOWN PARSER FOR RECIPE DESCRIPTION & TABLES ───
+  // ─── ADVANCED MARKDOWN PARSER FOR RECIPE DESCRIPTION, LISTS & TABLES ───
   function parseMarkdown(text) {
     if (!text) return '';
-    let html = text;
     
-    // Bold: **text**
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Replace bold (**text**)
+    let processed = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     
-    // Line breaks: \n
-    html = html.replace(/\n/g, '<br>');
-    
-    // Table parser
-    const lines = html.split('<br>');
+    // Split by lines
+    const lines = processed.split('\n');
     let inTable = false;
+    let inList = false;
+    let listType = null; // 'ul' or 'ol'
     let tableHtml = '';
-    const outputLines = [];
+    const result = [];
     
     for (let line of lines) {
       const cleanLine = line.trim();
+      
+      // Table handling
       if (cleanLine.startsWith('|')) {
+        if (inList) {
+          result.push(`</${listType}>`);
+          inList = false;
+          listType = null;
+        }
+        
         const cells = cleanLine.split('|').map(c => c.trim()).filter((c, i, a) => i > 0 && i < a.length - 1);
         if (cells.length > 0) {
-          // Check if separator like |---|---|
           const isSeparator = cells.every(c => c.match(/^-+$/));
-          if (isSeparator) {
-            continue;
-          }
+          if (isSeparator) continue;
+          
           if (!inTable) {
             inTable = true;
             tableHtml = '<table class="nutritional-table">';
           }
           tableHtml += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
         }
-      } else {
-        if (inTable) {
-          inTable = false;
-          tableHtml += '</table>';
-          outputLines.push(tableHtml);
-          tableHtml = '';
+        continue;
+      }
+      
+      if (inTable) {
+        inTable = false;
+        tableHtml += '</table>';
+        result.push(tableHtml);
+        tableHtml = '';
+      }
+      
+      // List handling: Bullet points
+      const bulletMatch = cleanLine.match(/^[\*\-\u2022]\s+(.*)/);
+      // List handling: Ordered list
+      const orderedMatch = cleanLine.match(/^(\d+)\.\s+(.*)/);
+      
+      if (bulletMatch) {
+        if (inList && listType !== 'ul') {
+          result.push(`</${listType}>`);
+          inList = false;
         }
-        outputLines.push(line);
+        if (!inList) {
+          inList = true;
+          listType = 'ul';
+          result.push('<ul class="chat-list">');
+        }
+        result.push(`<li>${bulletMatch[1]}</li>`);
+      } else if (orderedMatch) {
+        if (inList && listType !== 'ol') {
+          result.push(`</${listType}>`);
+          inList = false;
+        }
+        if (!inList) {
+          inList = true;
+          listType = 'ol';
+          result.push('<ol class="chat-list">');
+        }
+        result.push(`<li>${orderedMatch[2]}</li>`);
+      } else {
+        if (inList) {
+          result.push(`</${listType}>`);
+          inList = false;
+          listType = null;
+        }
+        
+        if (cleanLine === '') {
+          result.push('<div class="chat-spacer"></div>');
+        } else {
+          result.push(`<p class="chat-paragraph">${cleanLine}</p>`);
+        }
       }
     }
+    
     if (inTable) {
       tableHtml += '</table>';
-      outputLines.push(tableHtml);
+      result.push(tableHtml);
+    }
+    if (inList) {
+      result.push(`</${listType}>`);
     }
     
-    return outputLines.join('<br>');
+    return result.join('\n');
   }
 
   // ─── INITIAL RENDERING CALLS ───
   loadInitialData();
+  loadChatHistory();
 });
