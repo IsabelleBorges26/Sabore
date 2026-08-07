@@ -8,5 +8,4 @@ const {
 
 router.post("/gerar/:receitaId", authMiddleware, gerarLink);
 
-
 module.exports = router;

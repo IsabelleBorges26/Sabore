@@ -11,8 +11,7 @@
 <body>
 
   <div class="dashboard-container">
-    
-    <!-- SIDEBAR -->
+
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
@@ -34,7 +33,6 @@
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
 
-      <!-- Sidebar Footer User Status (Conditional) -->
       <div class="sidebar-footer-promo">
         <div class="promo-card-compact">
           <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -47,10 +45,8 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="main-content">
-      
-      <!-- NAVBAR -->
+
       <header class="navbar">
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -83,16 +79,12 @@
         </div>
       </header>
 
-      <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
-        
-        <!-- SPLIT GRID CHAT INTERFACE -->
+
         <div class="chef-chat-grid">
-          
-          <!-- LEFT PANEL: ASSISTANT SETUP CONTROLS -->
+
           <div class="chef-setup-sidebar">
-            
-            <!-- CONTROLS SETUP CARD -->
+
             <div class="setup-widget">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-sliders"></i> Contexto do Chef</h3>
@@ -123,26 +115,22 @@
               </div>
             </div>
 
-            <!-- INGREDIENTS GELADEIRA TAG CLOUD -->
             <div class="setup-widget">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-basket-shopping"></i> O que tem na geladeira?</h3>
               </div>
               <p class="setup-widget-desc">Adicione ingredientes que você quer aproveitar e a IA dará prioridade a eles.</p>
-              
-              <!-- Input field to add tags -->
+
               <div class="tag-input-wrapper">
                 <input type="text" id="geladeira-input" placeholder="Ex: Frango, Tomate, Creme de leite...">
                 <button id="btn-add-geladeira-tag"><i class="fa-solid fa-plus"></i></button>
               </div>
 
-              <!-- Tags container -->
               <div class="geladeira-tags-container" id="geladeira-tags-cloud">
-                <!-- Javascript will load tags here -->
+                
               </div>
             </div>
 
-            <!-- SUGGESTION PROMPTS QUICK ACTION LINKS -->
             <div class="setup-widget">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Sugestões Rápidas</h3>
@@ -157,10 +145,8 @@
 
           </div>
 
-          <!-- RIGHT PANEL: CONVERSATIONAL STREAM & INPUT -->
           <div class="chef-chat-panel">
-            
-            <!-- CHAT HEADER -->
+
             <div class="chat-header">
               <div class="chef-status-wrap">
                 <div class="chef-avatar-indicator">
@@ -175,9 +161,8 @@
               <button class="btn-clear-chat" id="clear-chat-btn" title="Limpar conversa"><i class="fa-solid fa-trash-arrow-up"></i></button>
             </div>
 
-            <!-- MESSAGES CONTAINER -->
             <div class="chat-messages-container" id="chat-messages-container">
-              <!-- Initial Greeting Message -->
+              
               <div class="message-bubble assistant">
                 <div class="bubble-content">
                   <p>Olá, Davi! Sou o seu **Chef Saboré IA** pessoal. 🍲</p>
@@ -187,10 +172,8 @@
               </div>
             </div>
 
-            <!-- INPUT BAR AREA -->
             <div class="chat-input-wrapper">
-              
-              <!-- Typing Indicator (Hidden by default) -->
+
               <div class="typing-indicator hidden" id="typing-indicator">
                 <span></span><span></span><span></span>
               </div>
@@ -211,9 +194,6 @@
 
   </div>
 
-  <!-- ==================== OVERLAY MODALS ==================== -->
-
-  <!-- 1. SAVE TO BOOK SELECTOR MODAL -->
   <div class="modal-overlay" id="save-to-book-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -222,12 +202,11 @@
         <p>Escolha em qual coleção salvar esta receita:</p>
       </div>
       <div class="book-selection-list" id="save-book-options-container">
-        <!-- Javascript loads book items -->
+        
       </div>
     </div>
   </div>
 
-  <!-- 2. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -261,7 +240,6 @@
     </div>
   </div>
 
-  <!-- 3. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

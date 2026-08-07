@@ -11,8 +11,7 @@
 <body>
 
   <div class="dashboard-container">
-    
-    <!-- SIDEBAR -->
+
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
@@ -34,7 +33,6 @@
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
 
-      <!-- Sidebar Footer User Status (Conditional) -->
       <div class="sidebar-footer-promo">
         <div class="promo-card-compact">
           <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -47,10 +45,8 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="main-content">
-      
-      <!-- NAVBAR -->
+
       <header class="navbar">
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -91,16 +87,12 @@
         </div>
       </header>
 
-      <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
-        
-        <!-- GRID SYSTEM -->
+
         <div class="dashboard-grid">
-          
-          <!-- LEFT COLUMN (EXPLORE MAIN WORKSPACE) -->
+
           <div class="main-column">
-            
-            <!-- DISCOVERY HERO BANNER -->
+
             <section class="explore-hero-card">
               <div class="explore-hero-glow"></div>
               <div class="explore-hero-content">
@@ -110,17 +102,15 @@
               </div>
             </section>
 
-            <!-- EXPLORE CATEGORIES (CAROUSEL TRACK) -->
             <section class="card-section">
               <div class="section-title-wrap">
                 <h3><i class="fa-solid fa-tags"></i> Categorias Populares</h3>
               </div>
               <div class="categories-scroll-carousel" id="categories-carousel-list">
-                <!-- Javascript will load categories here -->
+                
               </div>
             </section>
 
-            <!-- DYNAMIC RECIPES GRID (PINTEREST INSPIRED FEED) -->
             <section class="card-section">
               <div class="section-title-wrap" style="margin-bottom: 8px;">
                 <div class="title-details">
@@ -138,11 +128,10 @@
               </div>
 
               <div class="explore-recipes-grid" id="explore-recipes-container">
-                <!-- Recipes Loaded Dynamically by script.js -->
+                
               </div>
             </section>
 
-            <!-- CHEF SPOTLIGHT (NETFLIX STYLE ROW) -->
             <section class="card-section">
               <div class="section-title-wrap">
                 <div class="title-details">
@@ -151,26 +140,23 @@
                 </div>
               </div>
               <div class="chefs-scroll-row" id="chefs-spotlight-container">
-                <!-- Chefs Loaded Dynamically by script.js -->
+                
               </div>
             </section>
 
           </div>
 
-          <!-- RIGHT COLUMN (WIDGET PANELS) -->
           <div class="side-column">
-            
-            <!-- POPULAR HASHTAGS TAG CLOUD -->
+
             <section class="widget-card">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-hashtag"></i> Hashtags em Alta</h3>
               </div>
               <div class="tag-cloud-container" id="popular-tags-cloud">
-                <!-- Javascript loads tags -->
+                
               </div>
             </section>
 
-            <!-- WEEKLY CHALLENGE WIDGET -->
             <section class="weekly-challenge-card">
               <div class="challenge-glow"></div>
               <div class="challenge-content">
@@ -185,7 +171,6 @@
               </div>
             </section>
 
-            <!-- COMMUNITY STATS -->
             <section class="widget-card">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-chart-line"></i> Atividade Saboré</h3>
@@ -225,9 +210,6 @@
 
   </div>
 
-  <!-- ==================== OVERLAY MODALS ==================== -->
-
-  <!-- 1. RECIPE DETAILS VIEW MODAL -->
   <div class="modal-overlay" id="recipe-details-modal">
     <div class="modal-card">
       <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -250,19 +232,18 @@
           <div class="recipe-ingredients-side">
             <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
             <ul id="recipe-detail-ingredients-list">
-              <!-- JS Filled -->
+              
             </ul>
           </div>
           
           <div class="recipe-steps-side">
             <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
             <ol id="recipe-detail-steps-list">
-              <!-- JS Filled -->
+              
             </ol>
           </div>
         </div>
 
-        <!-- RATING SECTION -->
         <div class="recipe-rating-section" style="padding: 15px 25px; border-top: 1px solid rgba(242, 244, 243, 0.1); margin-top: 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
           <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-light);"><i class="fa-solid fa-star" style="color: var(--accent);"></i> Avaliar esta Receita</h4>
           <div class="rating-stars" id="recipe-rating-stars" style="display: flex; gap: 8px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">
@@ -283,7 +264,6 @@
     </div>
   </div>
 
-  <!-- 2. SAVE TO BOOK SELECTOR MODAL -->
   <div class="modal-overlay" id="save-to-book-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -292,12 +272,11 @@
         <p>Escolha em qual coleção salvar esta receita:</p>
       </div>
       <div class="book-selection-list" id="save-book-options-container">
-        <!-- Javascript loads book items -->
+        
       </div>
     </div>
   </div>
 
-  <!-- 3. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -331,7 +310,6 @@
     </div>
   </div>
 
-  <!-- 4. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

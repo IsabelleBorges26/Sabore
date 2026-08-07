@@ -1,6 +1,5 @@
-/* SABORÉ — Cadastro Scripts */
 
-// ─── CUSTOM CURSOR DYNAMIC INITIALIZATION ───
+
 const customCursor = document.createElement('div');
 customCursor.className = 'custom-cursor';
 document.body.appendChild(customCursor);
@@ -30,7 +29,6 @@ document.addEventListener('mouseenter', () => {
   customCursor.style.display = 'block';
 });
 
-// ─── FIREBASE INITIALIZATION ───
 const firebaseConfig = {
   apiKey: "AIzaSyDoi7oFnxm_M3uRHtv8FW5utfNQIiwlXVM",
   authDomain: "sabore-be19b.firebaseapp.com",
@@ -41,11 +39,10 @@ const firebaseConfig = {
 };
 
 try {
-  // Initialize Firebase
+  
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
 
-  // Password toggle
   const toggleBtn = document.getElementById('togglePassword');
   const passwordInput = document.getElementById('senha');
 
@@ -57,7 +54,6 @@ try {
     });
   }
 
-  // Password strength
   const strengthIndicator = document.getElementById('strengthIndicator');
   const bars = [
     document.getElementById('bar1'),
@@ -104,7 +100,6 @@ try {
     });
   }
 
-  // Signup with Email and Password
   const btnCadastro = document.getElementById('btnCadastro');
   if (btnCadastro) {
     btnCadastro.addEventListener('click', async () => {
@@ -133,13 +128,11 @@ try {
           senha: password
         });
 
-        // Store JWT token and user info
         api.setToken(response.token);
         api.setUser(response.usuario);
 
         window.location.href = '../Dashboard/home/index.html';
       } catch (error) {
-        console.error(error);
         alert(error.message || 'Erro ao criar conta. Por favor, tente novamente.');
         btnCadastro.textContent = 'Criar conta grátis';
         btnCadastro.disabled = false;
@@ -147,7 +140,6 @@ try {
     });
   }
 
-  // Signup with Google
   const btnGoogle = document.querySelector('.btn-social');
   if (btnGoogle) {
     btnGoogle.addEventListener('click', () => {
@@ -165,20 +157,17 @@ try {
               foto: user.photoURL
             });
 
-            // Store JWT token and user info
             api.setToken(response.token);
             api.setUser(response.usuario);
 
             window.location.href = '../Dashboard/home/index.html';
           } catch (error) {
-            console.error(error);
             alert('Erro ao sincronizar login com Google no servidor: ' + error.message);
             btnGoogle.innerHTML = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';
             btnGoogle.disabled = false;
           }
         })
         .catch((error) => {
-          console.error(error);
           alert('Erro ao cadastrar com o Google: ' + error.message);
           btnGoogle.innerHTML = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';
           btnGoogle.disabled = false;
@@ -186,7 +175,6 @@ try {
     });
   }
 
-  // Enter key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       const btn = document.getElementById('btnCadastro');
@@ -195,10 +183,8 @@ try {
   });
 
 } catch (fbError) {
-  console.warn("Firebase failed to initialize. Make sure you are connected to the internet.", fbError);
 }
 
-// Input focus
 document.querySelectorAll('.field input').forEach(input => {
   const wrap = input.closest('.input-wrap');
   input.addEventListener('focus', () => { wrap.style.transform = 'scale(1.01)'; });

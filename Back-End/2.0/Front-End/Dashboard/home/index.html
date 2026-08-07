@@ -14,7 +14,6 @@
 
   <div class="dashboard-container">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
@@ -40,7 +39,6 @@
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
 
-      <!-- Sidebar Footer User Status (Conditional) -->
       <div class="sidebar-footer-promo">
         <div class="promo-card-compact">
           <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -54,10 +52,8 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="main-content">
 
-      <!-- NAVBAR -->
       <header class="navbar">
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -100,10 +96,8 @@
         </div>
       </header>
 
-      <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
 
-        <!-- QUICK ACTIONS BANNER -->
         <section class="quick-actions-bar">
           <button class="quick-action-card qa-ai" id="qa-generate-ia">
             <span class="qa-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
@@ -128,13 +122,10 @@
           </button>
         </section>
 
-        <!-- GRID SYSTEM -->
         <div class="dashboard-grid">
 
-          <!-- LEFT COLUMN (PRIMARY SECTIONS) -->
           <div class="main-column">
 
-            <!-- MEUS LIVROS SECTION (SPOTIFY INSPIRED) -->
             <section class="card-section" id="section-livros">
               <div class="section-title-wrap">
                 <h3><i class="fa-solid fa-book"></i> Meus Livros de Receitas</h3>
@@ -142,7 +133,7 @@
               </div>
 
               <div class="books-scroll-grid" id="books-list-container">
-                <!-- Book Cards Dynamically Handled / Prefilled -->
+                
                 <div class="book-card-item b-1">
                   <div class="book-cover"><i class="fa-solid fa-mug-hot"></i></div>
                   <div class="book-info-area">
@@ -190,7 +181,6 @@
               </div>
             </section>
 
-            <!-- FAVORITAS RECENTES SECTION (PINTEREST INSPIRED GRID) -->
             <section class="card-section" id="section-favoritas">
               <div class="section-title-wrap">
                 <h3><i class="fa-solid fa-heart"></i> Favoritas Recentes</h3>
@@ -198,7 +188,7 @@
               </div>
 
               <div class="recipes-grid" id="favorites-container">
-                <!-- Max 6 cards -->
+                
                 <article class="recipe-card" data-title="Lasanha de Berinjela" data-category="Almoço">
                   <div class="recipe-image-wrap">
                     <img
@@ -302,7 +292,6 @@
               </div>
             </section>
 
-            <!-- RECEITAS EM ALTA SECTION (NETFLIX INSPIRED ROW) -->
             <section class="card-section">
               <div class="section-title-wrap">
                 <h3><i class="fa-solid fa-fire"></i> Em Alta na Comunidade</h3>
@@ -375,7 +364,6 @@
               </div>
             </section>
 
-            <!-- PERSONALIZED RECOMMENDATIONS -->
             <section class="card-section">
               <div class="section-title-wrap">
                 <h3><i class="fa-solid fa-star"></i> Recomendadas para você</h3>
@@ -418,10 +406,8 @@
 
           </div>
 
-          <!-- RIGHT COLUMN (SIDEBAR PANEL WIDGETS) -->
           <div class="side-column">
 
-            <!-- INGREDIENTS AVAILABLE -->
             <section class="widget-card">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-basket-shopping"></i> Dispensa de Ingredientes</h3>
@@ -464,7 +450,6 @@
                 </label>
               </div>
 
-              <!-- Dynamic Add Input -->
               <div class="add-ingredient-inline-wrap">
                 <input type="text" id="add-ing-input" placeholder="Adicionar ingrediente...">
                 <button id="add-ing-btn"><i class="fa-solid fa-plus"></i></button>
@@ -476,9 +461,6 @@
               </div>
             </section>
 
-
-
-            <!-- USER STATS (PRO) -->
             <section class="widget-card">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-chart-simple"></i> Suas Estatísticas</h3>
@@ -508,7 +490,6 @@
               </div>
             </section>
 
-            <!-- ACTIVITY FEED -->
             <section class="widget-card">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-clock-rotate-left"></i> Atividade Recente</h3>
@@ -541,7 +522,6 @@
               </div>
             </section>
 
-            <!-- UPGRADE CARD (FREE USERS ONLY PROMO) -->
             <section class="upgrade-widget-card" id="upgrade-pro-section">
               <div class="upgrade-glow"></div>
               <div class="upgrade-content">
@@ -568,14 +548,10 @@
 
   </div>
 
-  <!-- ==================== OVERLAY MODALS ==================== -->
-
-  <!-- 1. AI RECEIPE GENERATOR MODAL -->
   <div class="modal-overlay" id="ai-generator-modal">
     <div class="modal-card">
       <button class="modal-close-btn" id="close-ai-modal"><i class="fa-solid fa-xmark"></i></button>
 
-      <!-- FORM INPUTS VIEW -->
       <div class="ai-inputs-view" id="ai-form-container">
         <div class="ai-header" style="margin-bottom: 24px;">
           <span class="ai-tag"><i class="fa-solid fa-robot"></i> Chef IA Saboré</span>
@@ -617,7 +593,6 @@
         </form>
       </div>
 
-      <!-- LOADING VIEW -->
       <div class="ai-loading-view hidden" id="ai-loading-container">
         <div class="loader-spinner">
           <div class="spinner-circle"></div>
@@ -627,7 +602,6 @@
         <p class="loading-status-text" id="ai-loading-step">Analisando seus ingredientes...</p>
       </div>
 
-      <!-- RECIPE CONTAINER -->
       <div class="ai-recipe-result-view hidden" id="ai-result-container">
         <div class="recipe-result-header">
           <span class="recipe-ai-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> IA Culinária Saboré</span>
@@ -647,14 +621,14 @@
           <div class="recipe-ingredients-side">
             <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
             <ul id="result-ingredients-list">
-              <!-- JS Filled -->
+              
             </ul>
           </div>
 
           <div class="recipe-steps-side">
             <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
             <ol id="result-steps-list">
-              <!-- JS Filled -->
+              
             </ol>
           </div>
         </div>
@@ -669,7 +643,6 @@
     </div>
   </div>
 
-  <!-- 2. ADD BOOK MODAL -->
   <div class="modal-overlay" id="add-book-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-book-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -706,7 +679,6 @@
     </div>
   </div>
 
-  <!-- 3. IA PHOTO MODAL -->
   <div class="modal-overlay" id="photo-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-photo-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -730,7 +702,6 @@
     </div>
   </div>
 
-  <!-- 4. VIDEO IMPORT MODAL -->
   <div class="modal-overlay" id="video-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-video-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -748,7 +719,6 @@
     </div>
   </div>
 
-  <!-- 5. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -783,7 +753,6 @@
     </div>
   </div>
 
-  <!-- 6. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

@@ -2,7 +2,7 @@ const prisma = require("../data/prisma");
 
 const parseIngredient = (str) => {
     const cleanStr = str.trim();
-    // Regular expression to match quantities and units at the beginning
+    
     const match = cleanStr.match(/^(\d+(?:\/\d+)?(?:\.\d+)?\s*(?:g|ml|kg|xícara|xícaras|colher|colheres|dente|dentes|folha|folhas|unidade|unidades|fatia|fatias|copo|copos|lata|latas|colher de sopa|colheres de sopa|colher de chá|colheres de chá)?)\s+(.+)$/i);
     if (match) {
         return { quantidade: match[1].trim(), nome: match[2].trim() };
@@ -43,29 +43,28 @@ const cadastrar = async (req, res) => {
         titulo, 
         descricao, 
         modoPreparo, 
-        steps, // Front-end might send steps as array
+        steps, 
         tempoPreparo, 
-        time, // Front-end might send time
+        time, 
         publica, 
-        public: frontendPublic, // Front-end might send public
+        public: frontendPublic, 
         imagem, 
-        image, // Front-end might send image
+        image, 
         dificuldade, 
         criadaPorIA, 
         rascunho, 
         linkImportacao, 
         livroId,
-        ingredients, // Array of strings
-        ingredientes, // Array of strings
-        categories, // Array of strings
-        categorias // Array of strings
+        ingredients, 
+        ingredientes, 
+        categories, 
+        categorias 
     } = req.body;
 
     if (!titulo) {
         return res.status(400).json({ erro: "O título da receita é obrigatório." });
     }
 
-    // Unify frontend fields
     const finalSteps = steps || (modoPreparo ? [modoPreparo] : []);
     const prepStepsString = Array.isArray(finalSteps) ? finalSteps.join("\n") : (modoPreparo || "");
     const finalTime = time !== undefined ? Number(time) : (tempoPreparo !== undefined ? Number(tempoPreparo) : 15);
@@ -75,7 +74,7 @@ const cadastrar = async (req, res) => {
     const finalCategories = categories || categorias || [];
 
     try {
-        // Create the recipe inside a transaction
+        
         const result = await prisma.$transaction(async (tx) => {
             const recipe = await tx.receita.create({
                 data: {
@@ -94,18 +93,15 @@ const cadastrar = async (req, res) => {
                 }
             });
 
-            // Handle ingredients
             for (const ingStr of finalIngredients) {
                 const parsed = parseIngredient(ingStr);
-                
-                // Find or create ingredient
+
                 const ingrediente = await tx.ingrediente.upsert({
                     where: { nome: parsed.nome.toLowerCase() },
                     update: {},
                     create: { nome: parsed.nome.toLowerCase() }
                 });
 
-                // Link to recipe
                 await tx.receitaIngrediente.create({
                     data: {
                         quantidade: parsed.quantidade,
@@ -115,7 +111,6 @@ const cadastrar = async (req, res) => {
                 });
             }
 
-            // Handle categories
             for (const catStr of finalCategories) {
                 const catNameClean = catStr.trim();
                 const categoria = await tx.categoria.upsert({
@@ -135,7 +130,6 @@ const cadastrar = async (req, res) => {
             return recipe;
         });
 
-        // Retrieve full populated recipe to return
         const fullRecipe = await prisma.receita.findUnique({
             where: { id: result.id },
             include: {
@@ -257,7 +251,7 @@ const atualizar = async (req, res) => {
     } = req.body;
 
     try {
-        // Verify owner
+        
         const existing = await prisma.receita.findUnique({
             where: { id: Number(id) }
         });
@@ -294,9 +288,8 @@ const atualizar = async (req, res) => {
                 data: dataToUpdate
             });
 
-            // Update ingredients if provided
             if (finalIngredients) {
-                // Delete existing ones
+                
                 await tx.receitaIngrediente.deleteMany({
                     where: { receitaId: r.id }
                 });
@@ -319,7 +312,6 @@ const atualizar = async (req, res) => {
                 }
             }
 
-            // Update categories if provided
             if (finalCategories) {
                 await tx.receitaCategoria.deleteMany({
                     where: { receitaId: r.id }

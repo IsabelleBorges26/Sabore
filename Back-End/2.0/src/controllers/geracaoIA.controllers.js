@@ -35,7 +35,6 @@ function parseJSONRecipe(text) {
             try {
                 return JSON.parse(potentialJson);
             } catch (innerErr) {
-                console.error("Inner JSON parsing failed:", innerErr);
             }
         }
         throw e;
@@ -76,7 +75,6 @@ const gerar = async (req, res) => {
         });
         userBooks = livros;
     } catch (dbErr) {
-        console.warn("[Chef IA] Falha ao consultar histórico do usuário no banco:", dbErr);
     }
 
     let contextInstructions = "";
@@ -123,7 +121,6 @@ Com base nestes dados do usuário, adapte sua comunicação e a receita criada:
 
         for (const model of modelsToTry) {
             try {
-                console.log(`[Chef IA] Enviando requisição para o modelo ${model}...`);
                 const response = await openrouter.chat.send({
                     chatRequest: {
                         model: model,
@@ -136,11 +133,9 @@ Com base nestes dados do usuário, adapte sua comunicação e a receita criada:
 
                 content = response.choices[0]?.message?.content;
                 if (content) {
-                    console.log(`[Chef IA] Sucesso com o modelo ${model}!`);
                     break;
                 }
             } catch (err) {
-                console.warn(`[Chef IA] Erro com o modelo ${model}:`, err.message || err);
                 lastError = err;
             }
         }
@@ -153,7 +148,6 @@ Com base nestes dados do usuário, adapte sua comunicação e a receita criada:
         res.status(200).json(recipe);
 
     } catch (error) {
-        console.error("[Chef IA] Erro ao gerar receita com IA:", error);
         res.status(500).json({ 
             erro: "Erro ao gerar receita por IA.", 
             detalhe: error.message 
@@ -173,7 +167,6 @@ const analisarFoto = async (req, res) => {
             apiKey: process.env.OPENROUTER_API_KEY
         });
 
-        console.log("[IA Vision] Enviando imagem para análise...");
         const response = await openrouter.chat.send({
             chatRequest: {
                 model: "meta-llama/llama-3.2-11b-vision-instruct:free",
@@ -219,7 +212,6 @@ Retorne a resposta estritamente em formato JSON válido contendo os seguintes ca
         res.status(200).json(parsedData);
 
     } catch (error) {
-        console.error("[IA Vision] Erro ao analisar imagem:", error);
         res.status(500).json({ 
             erro: "Erro ao analisar imagem por IA.", 
             detalhe: error.message 
@@ -242,7 +234,6 @@ const gerarReceitaFoto = async (req, res) => {
         const configRestrictionText = diet || "Nenhuma restrição";
         const numServings = servings || "2";
 
-        console.log(`[IA Vision Recipe] Gerando receita para o prato: ${dishName}...`);
         const response = await openrouter.chat.send({
             chatRequest: {
                 model: "google/gemma-4-26b-a4b-it:free",
@@ -296,7 +287,6 @@ Diretrizes Importantes:
         res.status(200).json(parsedData);
 
     } catch (error) {
-        console.error("[IA Vision Recipe] Erro ao gerar receita a partir da foto:", error);
         res.status(500).json({ 
             erro: "Erro ao gerar receita por IA.", 
             detalhe: error.message 

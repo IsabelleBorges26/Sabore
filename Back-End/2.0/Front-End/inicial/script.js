@@ -1,6 +1,5 @@
-/* SABORÉ — Landing Page Scripts */
 
-// ─── CUSTOM CURSOR DYNAMIC INITIALIZATION ───
+
 const customCursor = document.createElement('div');
 customCursor.className = 'custom-cursor';
 document.body.appendChild(customCursor);
@@ -30,7 +29,6 @@ document.addEventListener('mouseenter', () => {
   customCursor.style.display = 'block';
 });
 
-// ─── NAVBAR SCROLL ───
 const navbar = document.getElementById('navbar');
 window.addEventListener('scroll', () => {
   if (window.scrollY > 60) {
@@ -40,7 +38,6 @@ window.addEventListener('scroll', () => {
   }
 });
 
-// ─── HAMBURGER MENU ───
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
 const mobileClose = document.getElementById('mobileClose');
@@ -62,13 +59,12 @@ mobileMenu.querySelectorAll('a').forEach(link => {
   });
 });
 
-// ─── SCROLL REVEAL ───
 const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
 
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
     if (entry.isIntersecting) {
-      // Stagger based on sibling index
+      
       const siblings = entry.target.parentElement.querySelectorAll('.reveal, .reveal-left, .reveal-right');
       let delay = 0;
       siblings.forEach((sib, idx) => {
@@ -91,21 +87,19 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 revealElements.forEach(el => revealObserver.observe(el));
 
-// ─── FAQ ACCORDION ───
 const faqItems = document.querySelectorAll('.faq-item');
 
 faqItems.forEach(item => {
   const question = item.querySelector('.faq-question');
   question.addEventListener('click', () => {
     const isOpen = item.classList.contains('open');
-    // Close all
+    
     faqItems.forEach(i => i.classList.remove('open'));
-    // Toggle current
+    
     if (!isOpen) item.classList.add('open');
   });
 });
 
-// ─── SMOOTH SCROLL ───
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
     const href = this.getAttribute('href');
@@ -120,7 +114,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// ─── COUNTER ANIMATION ───
 function animateCounter(el, target, suffix = '') {
   let current = 0;
   const increment = target / 60;
@@ -148,7 +141,6 @@ const statsObserver = new IntersectionObserver((entries) => {
 const heroStats = document.querySelector('.hero-stats');
 if (heroStats) statsObserver.observe(heroStats);
 
-// ─── FEATURE CARDS HOVER TILT ───
 document.querySelectorAll('.feature-card').forEach(card => {
   card.addEventListener('mousemove', (e) => {
     const rect = card.getBoundingClientRect();
@@ -165,7 +157,6 @@ document.querySelectorAll('.feature-card').forEach(card => {
   });
 });
 
-// ─── PLAN CARD HOVER GLOW ───
 document.querySelectorAll('.plan-card').forEach(card => {
   card.addEventListener('mousemove', (e) => {
     const rect = card.getBoundingClientRect();
@@ -180,17 +171,15 @@ document.querySelectorAll('.plan-card').forEach(card => {
   });
 });
 
-// ─── TYPING ANIMATION (AI CHAT) ───
 const typingDots = document.querySelector('.typing-indicator');
 if (typingDots) {
-  // Periodic re-trigger of typing animation for visual effect
+  
   setInterval(() => {
     typingDots.style.opacity = '0';
     setTimeout(() => { typingDots.style.opacity = '1'; }, 300);
   }, 4000);
 }
 
-// ─── PARALLAX HERO ───
 let ticking = false;
 window.addEventListener('scroll', () => {
   if (!ticking) {
@@ -206,7 +195,6 @@ window.addEventListener('scroll', () => {
   }
 });
 
-// ─── NAV ACTIVE LINK ───
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-links a');
 
@@ -223,7 +211,6 @@ const activeObserver = new IntersectionObserver((entries) => {
 
 sections.forEach(sec => activeObserver.observe(sec));
 
-// ─── CURSOR GLOW ───
 const cursorGlow = document.createElement('div');
 cursorGlow.style.cssText = `
   position: fixed;
@@ -243,9 +230,6 @@ document.addEventListener('mousemove', (e) => {
   cursorGlow.style.top = e.clientY + 'px';
 });
 
-
-
-// ─── FIREBASE AUTHENTICATION INITIALIZATION ───
 const firebaseConfig = {
   apiKey: "AIzaSyDoi7oFnxm_M3uRHtv8FW5utfNQIiwlXVM",
   authDomain: "sabore-be19b.firebaseapp.com",
@@ -264,7 +248,7 @@ auth.onAuthStateChanged((user) => {
   const mobileLogin = document.getElementById('mobileLogin');
 
   if (user) {
-    // User is logged in
+    
     const displayName = user.displayName || 'Cozinheiro';
     
     if (navCta) {
@@ -288,7 +272,7 @@ auth.onAuthStateChanged((user) => {
       });
     }
   } else {
-    // User is logged out, restore default buttons
+    
     if (navCta) {
       navCta.innerHTML = `
         <a href="../login/index.html" class="btn-nav-login">Entrar</a>
@@ -304,6 +288,4 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
-console.log('%cSABORÉ 🍳', 'font-family: serif; font-size: 24px; font-weight: bold; color: #E0857A;');
-console.log('%cPlataforma inteligente de receitas', 'font-size: 12px; color: #F0D5B6;');
 

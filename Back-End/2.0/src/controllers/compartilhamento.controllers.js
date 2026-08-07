@@ -4,7 +4,7 @@ const gerarLink = async (req, res) => {
     const { receitaId } = req.params;
     const usuarioId = req.usuario.id;
     
-    const token = Math.random().toString(36).substring(2, 15); // essa função gera o token de forma aletória
+    const token = Math.random().toString(36).substring(2, 15); 
     
     const item = await prisma.compartilhamento.create({
         data: {

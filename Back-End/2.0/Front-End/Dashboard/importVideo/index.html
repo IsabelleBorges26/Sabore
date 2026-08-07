@@ -11,8 +11,7 @@
 <body>
 
   <div class="dashboard-container">
-    
-    <!-- SIDEBAR -->
+
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
@@ -34,7 +33,6 @@
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
 
-      <!-- Sidebar Footer User Status (Conditional) -->
       <div class="sidebar-footer-promo">
         <div class="promo-card-compact">
           <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -47,10 +45,8 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="main-content">
-      
-      <!-- NAVBAR -->
+
       <header class="navbar">
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -83,16 +79,12 @@
         </div>
       </header>
 
-      <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
-        
-        <!-- IMPORT VIDEO GRID -->
+
         <div class="import-video-grid">
-          
-          <!-- LEFT PANEL: URL INPUT & PLAYER SIMULATION -->
+
           <div class="video-panel-left">
-            
-            <!-- CONTROLS SETUP CARD -->
+
             <div class="setup-widget">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-link"></i> Link do Vídeo</h3>
@@ -108,24 +100,20 @@
               </form>
             </div>
 
-            <!-- SIMULATED VIDEO PLAYER -->
             <div class="setup-widget" style="padding: 16px;">
               <div class="player-wrapper" id="player-container">
-                <!-- Idle thumbnail showing standard background -->
+                
                 <div class="player-idle-view" id="player-idle">
                   <i class="fa-solid fa-video-slash"></i>
                   <p>Nenhum vídeo carregado</p>
                 </div>
 
-                <!-- Active video display (hidden initially) -->
                 <div class="player-active-view hidden" id="player-active">
                   <img src="" id="video-thumbnail-img" alt="Miniatura do Vídeo">
                   <div class="play-btn-overlay"><i class="fa-solid fa-play"></i></div>
-                  
-                  <!-- Scanning overlay line -->
+
                   <div class="scanner-line hidden" id="scanner-line"></div>
-                  
-                  <!-- Audio wave overlay tracker -->
+
                   <div class="audio-wave-container hidden" id="audio-wave-container">
                     <span class="wave-bar"></span>
                     <span class="wave-bar"></span>
@@ -137,7 +125,6 @@
               </div>
             </div>
 
-            <!-- QUICK MOCK SOCIAL EXAMPLES -->
             <div class="setup-widget">
               <div class="widget-header">
                 <h3><i class="fa-solid fa-bolt"></i> Exemplos Rápidos</h3>
@@ -164,12 +151,10 @@
 
           </div>
 
-          <!-- RIGHT PANEL: CONVERSION STATUS & RECIPE OUTPUT -->
           <div class="video-panel-right">
             
             <div class="results-container-panel" id="results-container-panel">
-              
-              <!-- STATE 1: IDLE / WAITING -->
+
               <div class="state-view state-idle" id="state-idle">
                 <div class="idle-content">
                   <div class="idle-circle-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -178,7 +163,6 @@
                 </div>
               </div>
 
-              <!-- STATE 2: CONVERTING -->
               <div class="state-view state-converting hidden" id="state-converting">
                 <div class="converting-content">
                   <div class="loader-spinner">
@@ -196,7 +180,6 @@
                 </div>
               </div>
 
-              <!-- STATE 3: RECIPE GENERATED -->
               <div class="state-view state-recipe hidden" id="state-recipe">
                 <div class="recipe-result-header">
                   <span class="recipe-ai-badge" id="extracted-platform-badge"><i class="fa-brands fa-tiktok"></i> TikTok</span>
@@ -214,14 +197,14 @@
                   <div class="recipe-ingredients-side">
                     <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes Extraídos</h3>
                     <ul id="result-ingredients-list">
-                      <!-- JS Filled -->
+                      
                     </ul>
                   </div>
 
                   <div class="recipe-steps-side">
                     <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo Transcrito</h3>
                     <ol id="result-steps-list">
-                      <!-- JS Filled -->
+                      
                     </ol>
                   </div>
                 </div>
@@ -244,9 +227,6 @@
 
   </div>
 
-  <!-- ==================== OVERLAY MODALS ==================== -->
-
-  <!-- 1. SAVE TO BOOK SELECTOR MODAL -->
   <div class="modal-overlay" id="save-to-book-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -255,12 +235,11 @@
         <p>Escolha em qual coleção salvar esta receita:</p>
       </div>
       <div class="book-selection-list" id="save-book-options-container">
-        <!-- Javascript loads book items -->
+        
       </div>
     </div>
   </div>
 
-  <!-- 2. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -294,7 +273,6 @@
     </div>
   </div>
 
-  <!-- 3. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

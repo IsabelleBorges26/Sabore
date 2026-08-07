@@ -11,8 +11,7 @@
 <body>
 
   <div class="dashboard-container">
-    
-    <!-- SIDEBAR -->
+
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
@@ -34,7 +33,6 @@
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
 
-      <!-- Sidebar Footer User Status (Conditional) -->
       <div class="sidebar-footer-promo">
         <div class="promo-card-compact">
           <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
@@ -47,10 +45,8 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
     <main class="main-content">
-      
-      <!-- NAVBAR -->
+
       <header class="navbar">
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -91,13 +87,10 @@
         </div>
       </header>
 
-      <!-- DASHBOARD BODY (SCROLLABLE) -->
       <div class="dashboard-body">
-        
-        <!-- GRID SYSTEM -->
+
         <div class="dashboard-grid">
-          
-          <!-- LEFT COLUMN (BOOKS ARCHIVE GRID) -->
+
           <div class="main-column">
             
             <section class="card-section">
@@ -109,7 +102,6 @@
                 <button class="btn-primary-action" id="new-book-btn"><i class="fa-solid fa-plus"></i> Novo Livro</button>
               </div>
 
-              <!-- FILTERS BAR -->
               <div class="books-filters-bar">
                 <div class="filter-group">
                   <button class="filter-tab-btn active" data-filter="all">Todos</button>
@@ -127,20 +119,18 @@
                   </select>
                 </div>
               </div>
-              
-              <!-- GRID OF BOOK CARDS -->
+
               <div class="books-grid-layout" id="books-grid-container">
-                <!-- Javascript will load books dynamically here -->
+                
               </div>
             </section>
 
           </div>
 
-          <!-- RIGHT COLUMN (BOOK DETAIL SIDEBAR DRAWER) -->
           <div class="side-column">
             
             <div class="book-detail-panel" id="book-detail-panel">
-              <!-- Default Empty State -->
+              
               <div class="book-detail-empty" id="book-detail-empty">
                 <div class="empty-icon-glow">
                   <i class="fa-solid fa-book-open"></i>
@@ -149,7 +139,6 @@
                 <p>Selecione um livro de receitas na grade para ver as receitas salvas, adicionar novas ou gerenciar a coleção.</p>
               </div>
 
-              <!-- Selected Book Active State -->
               <div class="book-detail-active hidden" id="book-detail-active">
                 <div class="detail-header-card">
                   <div class="detail-book-glow"></div>
@@ -179,7 +168,7 @@
                   </div>
 
                   <div class="detail-recipes-list" id="active-book-recipes-list">
-                    <!-- Recipes of the selected book will load here -->
+                    
                   </div>
                 </div>
               </div>
@@ -195,9 +184,6 @@
 
   </div>
 
-  <!-- ==================== OVERLAY MODALS ==================== -->
-
-  <!-- 1. ADD BOOK MODAL -->
   <div class="modal-overlay" id="add-book-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-book-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -236,7 +222,6 @@
     </div>
   </div>
 
-  <!-- 2. ADD RECIPE MODAL -->
   <div class="modal-overlay" id="add-recipe-modal">
     <div class="modal-card">
       <button class="modal-close-btn" id="close-recipe-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -300,7 +285,6 @@
     </div>
   </div>
 
-  <!-- 3. RECIPE DETAILS VIEW MODAL -->
   <div class="modal-overlay" id="recipe-details-modal">
     <div class="modal-card">
       <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -320,19 +304,18 @@
           <div class="recipe-ingredients-side">
             <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
             <ul id="recipe-detail-ingredients-list">
-              <!-- JS Filled -->
+              
             </ul>
           </div>
           
           <div class="recipe-steps-side">
             <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
             <ol id="recipe-detail-steps-list">
-              <!-- JS Filled -->
+              
             </ol>
           </div>
         </div>
 
-        <!-- RATING SECTION -->
         <div class="recipe-rating-section" style="padding: 15px 25px; border-top: 1px solid rgba(242, 244, 243, 0.1); margin-top: 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
           <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-light);"><i class="fa-solid fa-star" style="color: var(--accent);"></i> Avaliar esta Receita</h4>
           <div class="rating-stars" id="recipe-rating-stars" style="display: flex; gap: 8px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">
@@ -352,7 +335,6 @@
     </div>
   </div>
 
-  <!-- 4. NOTIFICATIONS MODAL -->
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -386,7 +368,6 @@
     </div>
   </div>
 
-  <!-- 5. CELEBRATION UPGRADE MODAL -->
   <div class="modal-overlay" id="celebration-modal">
     <div class="celebration-card">
       <div class="fireworks-canvas"></div>

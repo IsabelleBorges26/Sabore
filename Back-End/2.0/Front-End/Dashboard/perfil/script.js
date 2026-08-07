@@ -1,22 +1,19 @@
-/* SABORÉ — Perfil do Chef Page Script */
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Verify authentication session
   const user = api.getUser();
   if (!user) {
     window.location.href = "../../login/index.html";
     return;
   }
 
-  // ─── STATE MANAGEMENT ───
   let userState = {
     isPro: false,
     bio: localStorage.getItem('sabore_user_bio') || 'Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.',
     preferences: localStorage.getItem('sabore_user_preferences') ? JSON.parse(localStorage.getItem('sabore_user_preferences')) : ['Fitness', 'Sem Glúten', 'Low Carb', 'Sobremesas', 'Massas']
   };
 
-  // ─── DYNAMIC CUSTOM CURSOR ───
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -46,14 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
     customCursor.style.display = 'block';
   });
 
-  // ─── LOAD PERSISTED AVATAR ───
   const savedAvatar = localStorage.getItem('sabore_user_avatar');
   if (savedAvatar) {
     const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
     userAvatars.forEach(img => img.src = savedAvatar);
   }
 
-  // ─── AVATAR CHANGE HANDLING ───
   const avatarContainer = document.querySelector('.avatar-container');
   const avatarInput = document.getElementById('avatar-upload-input');
 
@@ -68,11 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const reader = new FileReader();
         reader.onload = (event) => {
           const dataUrl = event.target.result;
-          
-          // Save to localStorage
+
           localStorage.setItem('sabore_user_avatar', dataUrl);
-          
-          // Update visual avatar images on the page
+
           const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
           userAvatars.forEach(img => img.src = dataUrl);
         };
@@ -81,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── INITIALIZE PLAN VISUALS ───
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const profilePlanBadge = document.getElementById('profile-plan-badge');
@@ -118,10 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  userState.isPro = false; // Start free
+  userState.isPro = false; 
   updatePlanUI();
 
-  // ─── MOBILE MENU TOGGLE ───
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -137,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── MODALS TRIGGER SYSTEM ───
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -169,7 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Sidebar notifications click
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     notifBtn.addEventListener('click', () => {
@@ -186,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ─── UPGRADE CELEBRATION PROCESS ───
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
 
@@ -202,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ─── BIOGRAPHY EDITING LOGIC ───
   const btnEditBio = document.getElementById('btn-edit-bio');
   const bioDisplay = document.getElementById('user-bio-display');
   const editBlock = document.getElementById('bio-edit-block');
@@ -211,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSaveBio = document.getElementById('btn-save-bio');
 
   if (btnEditBio && bioDisplay && editBlock && bioTextarea) {
-    // Set initial persisted bio
+    
     bioDisplay.textContent = userState.bio;
 
     btnEditBio.addEventListener('click', () => {
@@ -241,8 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-
-  // ─── PREFERENCES TAG CLOUD LOGIC ───
   const tagsContainer = document.getElementById('pref-tags-container');
   const addPrefInput = document.getElementById('add-pref-input');
   const btnAddPref = document.getElementById('btn-add-pref');
@@ -273,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let text = addPrefInput.value.trim();
     if (!text) return;
 
-    // Capitalize first letter
     text = text.charAt(0).toUpperCase() + text.slice(1);
 
     if (!userState.preferences.includes(text)) {
@@ -300,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Initial rendering
   renderPrefTags();
 
 });
