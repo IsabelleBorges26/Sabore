@@ -68,6 +68,20 @@ const api = {
 
 // ─── GLOBAL DASHBOARD HEADER USER INITIALIZATION & DROPDOWN ───
 document.addEventListener("DOMContentLoaded", () => {
+    // Inject custom cursor styling globally to prevent overlays from hiding it
+    const cursorStyleId = "sabore-cursor-global-style";
+    if (!document.getElementById(cursorStyleId)) {
+        const style = document.createElement("style");
+        style.id = cursorStyleId;
+        style.textContent = `
+            .custom-cursor {
+                z-index: 999999999 !important;
+                pointer-events: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     const trigger = document.getElementById("profile-dropdown-trigger");
     if (!trigger) return; // Only run on pages that have the profile badge
 

@@ -284,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-<<<<<<< HEAD
   // ─── DYNAMIC CREATIONS LOADING FROM API ───
   async function loadCreations() {
     try {
@@ -364,8 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Initial rendering
-=======
->>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
   renderPrefTags();
   loadProfileData();
   loadCreations();

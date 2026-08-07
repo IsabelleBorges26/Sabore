@@ -223,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearChatBtn = document.getElementById('clear-chat-btn');
   const typingIndicator = document.getElementById('typing-indicator');
 
-<<<<<<< HEAD
   // Load user information for chat history scoping
   const user = api.getUser();
   const userName = user ? user.nome.split(' ')[0] : 'Davi';
@@ -371,8 +370,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Trigger Send on click
-=======
->>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
   if (chatSendBtn && chatTextarea) {
     chatSendBtn.addEventListener('click', () => {
       const msgText = chatTextarea.value.trim();
@@ -702,7 +699,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-<<<<<<< HEAD
   // ─── ADVANCED MARKDOWN PARSER FOR RECIPE DESCRIPTION, LISTS & TABLES ───
   function parseMarkdown(text) {
     if (!text) return '';
@@ -712,17 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Split by lines
     const lines = processed.split('\n');
-=======
-  function parseMarkdown(text) {
-    if (!text) return '';
-    let html = text;
-
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    html = html.replace(/\n/g, '<br>');
-
-    const lines = html.split('<br>');
->>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
     let inTable = false;
     let inList = false;
     let listType = null; // 'ul' or 'ol'
@@ -742,10 +727,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const cells = cleanLine.split('|').map(c => c.trim()).filter((c, i, a) => i > 0 && i < a.length - 1);
         if (cells.length > 0) {
-<<<<<<< HEAD
-=======
-          
->>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
           const isSeparator = cells.every(c => c.match(/^-+$/));
           if (isSeparator) continue;
           

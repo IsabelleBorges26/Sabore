@@ -316,7 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-<<<<<<< HEAD
   // ─── LOGOUT FROM SETTINGS ───
   const logoutSettingsBtn = document.getElementById('btn-logout-settings');
   if (logoutSettingsBtn) {
@@ -331,8 +330,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── DELETE ACCOUNT ───
-=======
->>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
   const deleteAccountBtn = document.getElementById('btn-delete-account');
   if (deleteAccountBtn) {
     deleteAccountBtn.addEventListener('click', () => {

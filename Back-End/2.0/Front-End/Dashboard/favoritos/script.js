@@ -302,7 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-<<<<<<< HEAD
   // ─── DYNAMIC FAVORITES LOADING FROM API ───
   async function loadFavorites() {
     try {
@@ -397,26 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(card);
       });
       
-=======
-  function updateFavoritesCount() {
-    const countLabel = document.getElementById('favorites-count-label');
-    const remainingCards = document.querySelectorAll('.recipe-card:not(.removing)');
-    userState.favoritesCount = remainingCards.length;
-    if (countLabel) {
-      countLabel.textContent = userState.favoritesCount;
-    }
-
-    const favoritesContainer = document.getElementById('favorites-container');
-    if (userState.favoritesCount === 0 && favoritesContainer) {
-      favoritesContainer.innerHTML = `
-        <div class="empty-favorites-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(242, 244, 243, 0.4);">
-          <i class="fa-regular fa-folder-open" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px; display: block;"></i>
-          <h3>Sua lista de favoritas está vazia</h3>
-          <p style="font-size: 0.85rem; margin-top: 5px;">Explore receitas e clique no ícone de coração para salvá-las aqui!</p>
-          <a href="../explorar/index.html" class="filter-tab-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Explorar Receitas</a>
-        </div>
-      `;
->>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
       updateCursorHoverListeners();
       
     } catch (err) {
@@ -445,37 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-<<<<<<< HEAD
-=======
-  const favoriteToggleButtons = document.querySelectorAll('.favorite-toggle-btn');
-  favoriteToggleButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation(); 
-      const card = btn.closest('.recipe-card');
-      if (card) {
-        btn.classList.remove('active');
-        card.classList.add('removing');
-
-        setTimeout(() => {
-          card.remove();
-          updateFavoritesCount();
-        }, 300);
-      }
-    });
-  });
-
-  recipeCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const recipeId = card.dataset.id;
-      const recipeData = recipesDatabase[recipeId];
-      if (recipeData) {
-        populateRecipeModal(recipeData);
-        openModal('recipe-details-modal');
-      }
-    });
-  });
-
->>>>>>> b05dadfc638f6492f5e74fdd7801a6c9785216e5
   function populateRecipeModal(data) {
     document.getElementById('recipe-detail-title').textContent = data.title;
     document.getElementById('recipe-detail-time').textContent = data.time;
