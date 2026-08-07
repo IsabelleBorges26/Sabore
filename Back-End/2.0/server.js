@@ -8,6 +8,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+const path = require("path");
+app.use(express.static(path.join(__dirname, "Front-End")));
+
+
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const receitasRoutes = require("./src/routes/receitas.routes");
 const ingredientesRoutes = require("./src/routes/ingredientes.routes");
