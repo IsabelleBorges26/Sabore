@@ -51,7 +51,6 @@ const cadastrar = async (req, res) => {
             }
         });
 
-        // Criar livros padrão para o novo usuário
         await criarLivrosPadrao(usuario.id);
 
         const token = jwt.sign(
@@ -127,7 +126,6 @@ const loginGoogle = async (req, res) => {
         });
 
         if (!usuario) {
-            // Criar nova conta vinculada ao Google
             const senhaHash = bcrypt.hashSync(Math.random().toString(36).substring(2, 10), 10);
             usuario = await prisma.usuario.create({
                 data: {
@@ -140,7 +138,6 @@ const loginGoogle = async (req, res) => {
 
             await criarLivrosPadrao(usuario.id);
         } else if (foto && !usuario.foto) {
-            // Atualizar foto do usuário se ele ainda não tiver uma
             usuario = await prisma.usuario.update({
                 where: { id: usuario.id },
                 data: { foto }
@@ -259,7 +256,6 @@ const atualizar = async (req, res) => {
     const { id } = req.params;
     const { nome, email, senha, foto, plano } = req.body;
 
-    // Apenas permitir que o usuário atualize a própria conta
     if (req.usuario.id !== Number(id)) {
         return res.status(403).json({ erro: "Acesso negado. Você não pode atualizar os dados de outro usuário." });
     }

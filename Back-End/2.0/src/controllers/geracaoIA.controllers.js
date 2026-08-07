@@ -1,7 +1,5 @@
 const prisma = require("../data/prisma");
 
-
-// System Prompt for Recipe Generation
 const systemPrompt = `Você é o Chef Saboré IA, um assistente culinário pessoal inteligente.
 O usuário enviará uma solicitação de receita ou ingredientes, juntamente com o seu perfil e histórico.
 Sua tarefa é gerar uma receita perfeitamente adequada que respeite as restrições e preferências alimentares do usuário, adaptando sua comunicação de forma inteligente.
@@ -19,11 +17,9 @@ O JSON gerado deve seguir exatamente a seguinte estrutura:
   "category": "Categoria da receita (ex: Fit, Sobremesa, Vegano, Massas, etc.)"
 }`;
 
-// Robust parser function for LLM JSON output
 function parseJSONRecipe(text) {
     text = text.trim();
     
-    // Check if it's wrapped in markdown JSON code block
     const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (match) {
         text = match[1].trim();
@@ -32,7 +28,6 @@ function parseJSONRecipe(text) {
     try {
         return JSON.parse(text);
     } catch (e) {
-        // If JSON.parse fails, try to extract first '{' to last '}'
         const start = text.indexOf('{');
         const end = text.lastIndexOf('}');
         if (start !== -1 && end !== -1 && end > start) {
@@ -51,7 +46,6 @@ const gerar = async (req, res) => {
     const usuarioId = req.usuario.id;
     const { prompt, ingredients, maxTime, diet, difficulty, servings, userBio, userPrefs } = req.body;
 
-    // Fetch user context from database: Favorite recipes and books
     let userFavorites = [];
     let userBooks = [];
 
@@ -85,7 +79,6 @@ const gerar = async (req, res) => {
         console.warn("[Chef IA] Falha ao consultar histórico do usuário no banco:", dbErr);
     }
 
-    // Build the personalized context
     let contextInstructions = "";
     if (userFavorites.length > 0) {
         contextInstructions += `\nReceitas Favoritas do Usuário:\n` + userFavorites.map(f => `- ${f.titulo} (${f.dificuldade || 'Fácil'}, ${f.tempoPreparo || 15} min)`).join("\n");
@@ -120,7 +113,6 @@ Com base nestes dados do usuário, adapte sua comunicação e a receita criada:
     ];
 
     try {
-        // Dynamic import of OpenRouter SDK (CommonJS compatibility)
         const { OpenRouter } = await import("@openrouter/sdk");
         const openrouter = new OpenRouter({
             apiKey: process.env.OPENROUTER_API_KEY
@@ -219,7 +211,6 @@ Retorne a resposta estritamente em formato JSON válido contendo os seguintes ca
             throw new Error("Resposta vazia do OpenRouter");
         }
 
-        // Robust JSON extraction using regex
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
             throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
@@ -297,7 +288,6 @@ Diretrizes Importantes:
             throw new Error("Resposta vazia do OpenRouter");
         }
 
-        // Robust JSON extraction using regex
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
             throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
@@ -318,4 +308,4 @@ module.exports = {
     gerar,
     analisarFoto,
     gerarReceitaFoto
-};
+};

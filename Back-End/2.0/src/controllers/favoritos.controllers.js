@@ -105,7 +105,7 @@ const buscar = async (req, res) => {
 };
 
 const excluir = async (req, res) => {
-    const { id } = req.params; // ID of the recipe
+    const { id } = req.params;
     const usuarioId = req.usuario.id;
 
     try {
