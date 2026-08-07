@@ -810,12 +810,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (saveRecipeBtn) {
     saveRecipeBtn.addEventListener('click', () => {
-      if (!pageState.recipe) return;
+      if (!pageState.recipe || !pageState.recipe.recipe) return;
 
       userState.selectedRecipeToSave = {
         title: pageState.recipe.title,
-        time: pageState.recipe.recipe.time,
-        difficulty: pageState.recipe.recipe.difficulty
+        description: `Receita gerada automaticamente por IA a partir da imagem identificada de ${pageState.recipe.title}.`,
+        time: pageState.recipe.recipe.time || 30,
+        difficulty: pageState.recipe.recipe.difficulty || "Médio",
+        ingredients: pageState.recipe.recipe.ingredients || [],
+        steps: pageState.recipe.recipe.steps || [],
+        category: pageState.recipe.recipe.diet !== 'none' ? pageState.recipe.recipe.diet : 'IA Fotos'
       };
 
       renderBookSaveOptions();
@@ -842,15 +846,52 @@ document.addEventListener('DOMContentLoaded', () => {
         <button class="btn-select-save-book">Salvar</button>
       `;
 
-      item.querySelector('.btn-select-save-book').addEventListener('click', () => {
-        book.count += 1;
-        closeModal('save-to-book-modal');
-        alert(`Receita "${userState.selectedRecipeToSave.title}" salva com sucesso no livro "${book.title}"!`);
+      item.querySelector('.btn-select-save-book').addEventListener('click', async () => {
+        if (!userState.selectedRecipeToSave) return;
+        
+        try {
+          await api.post("/receitas/cadastrar", {
+            titulo: userState.selectedRecipeToSave.title,
+            descricao: userState.selectedRecipeToSave.description,
+            tempoPreparo: parseInt(userState.selectedRecipeToSave.time) || 30,
+            modoPreparo: userState.selectedRecipeToSave.steps.join("\n"),
+            dificuldade: userState.selectedRecipeToSave.difficulty,
+            criadaPorIA: true,
+            ingredientes: userState.selectedRecipeToSave.ingredients,
+            categorias: [userState.selectedRecipeToSave.category],
+            livroId: book.id,
+            publica: false
+          });
+
+          book.count += 1;
+          closeModal('save-to-book-modal');
+          alert(`Receita "${userState.selectedRecipeToSave.title}" salva com sucesso no livro "${book.title}"!`);
+        } catch (err) {
+          alert("Erro ao salvar receita no livro: " + err.message);
+        }
       });
 
       saveOptionsContainer.appendChild(item);
     });
     updateCursorHoverListeners();
   }
+
+  async function loadInitialData() {
+    try {
+      const books = await api.get("/livros/listar");
+      userState.books = books.map(b => ({
+        id: b.id,
+        title: b.titulo,
+        count: b._count.receitas,
+        emoji: b.emoji || 'fa-solid fa-book',
+        tag: b.tag
+      }));
+    } catch (err) {
+      console.warn("Erro ao carregar livros do usuário:", err);
+    }
+  }
+
+  // Carrega os livros reais do usuário no carregamento da página
+  loadInitialData();
 
 });
