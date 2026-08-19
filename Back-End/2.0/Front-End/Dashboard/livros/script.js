@@ -1,690 +1,1 @@
-
-
-document.addEventListener('DOMContentLoaded', () => {
-
-  let userState = {
-    isPro: false,
-    selectedBookId: null,
-    books: [],
-    recipes: {}
-  };
-
-  let currentFilter = 'all';
-
-  const customCursor = document.createElement('div');
-  customCursor.className = 'custom-cursor';
-  document.body.appendChild(customCursor);
-
-  document.addEventListener('mousemove', (e) => {
-    customCursor.style.left = e.clientX + 'px';
-    customCursor.style.top = e.clientY + 'px';
-  });
-
-  function updateCursorHoverListeners() {
-    const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], option, .book-card-item, .recipe-item-card');
-    interactives.forEach(el => {
-      if (el.dataset.cursorBound) return;
-      el.dataset.cursorBound = 'true';
-      el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));
-      el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));
-    });
-  }
-
-  updateCursorHoverListeners();
-  setInterval(updateCursorHoverListeners, 1000);
-
-  document.addEventListener('mouseleave', () => {
-    customCursor.style.display = 'none';
-  });
-  document.addEventListener('mouseenter', () => {
-    customCursor.style.display = 'block';
-  });
-
-  function updatePlanUI() {
-    const navbarPlanTag = document.getElementById('navbar-plan-tag');
-    const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
-    
-    if (userState.isPro) {
-      if (navbarPlanTag) {
-        navbarPlanTag.textContent = 'PRO';
-        navbarPlanTag.className = 'user-plan-tag pro';
-      }
-      if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.textContent = 'Menu PRO';
-        sidebarUpgradeBtn.style.background = 'var(--accent-light)';
-        sidebarUpgradeBtn.style.color = 'var(--accent)';
-      }
-    } else {
-      if (navbarPlanTag) {
-        navbarPlanTag.textContent = 'Gratuito';
-        navbarPlanTag.className = 'user-plan-tag free';
-      }
-      if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.textContent = '🚀 Virar PRO';
-        sidebarUpgradeBtn.style.background = 'var(--secondary)';
-        sidebarUpgradeBtn.style.color = 'var(--dark-deep)';
-      }
-    }
-  }
-
-  const mobileToggle = document.getElementById('mobile-toggle');
-  const sidebar = document.querySelector('.sidebar');
-  if (mobileToggle && sidebar) {
-    mobileToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      sidebar.classList.toggle('active');
-    });
-    
-    document.addEventListener('click', (e) => {
-      if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
-        sidebar.classList.remove('active');
-      }
-    });
-  }
-
-  const globalSearchInput = document.getElementById('global-search');
-  if (globalSearchInput) {
-    globalSearchInput.addEventListener('input', () => {
-      renderBooks();
-    });
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      if (globalSearchInput) globalSearchInput.focus();
-    }
-  });
-
-  const filterBtns = document.querySelectorAll('.filter-tab-btn');
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentFilter = btn.dataset.filter;
-      renderBooks();
-    });
-  });
-
-  const sortSelect = document.getElementById('books-sort');
-  if (sortSelect) {
-    sortSelect.addEventListener('change', () => {
-      renderBooks();
-    });
-  }
-
-  function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add('open');
-  }
-
-  function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove('open');
-  }
-
-  const modals = document.querySelectorAll('.modal-overlay');
-  modals.forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('open');
-      }
-    });
-  });
-
-  const closeTriggers = [
-    { btn: 'close-book-modal', modal: 'add-book-modal' },
-    { btn: 'close-recipe-modal', modal: 'add-recipe-modal' },
-    { btn: 'close-details-modal', modal: 'recipe-details-modal' },
-    { btn: 'recipe-detail-close-btn', modal: 'recipe-details-modal' },
-    { btn: 'close-notif-modal', modal: 'notifications-modal' },
-    { btn: 'close-celebration-btn', modal: 'celebration-modal' }
-  ];
-
-  closeTriggers.forEach(trigger => {
-    const btn = document.getElementById(trigger.btn);
-    if (btn) {
-      btn.addEventListener('click', () => closeModal(trigger.modal));
-    }
-  });
-
-  const notifBtn = document.getElementById('notifications-btn');
-  if (notifBtn) {
-    notifBtn.addEventListener('click', () => {
-      openModal('notifications-modal');
-      const badge = notifBtn.querySelector('.badge-dot');
-      if (badge) badge.style.display = 'none';
-    });
-  }
-
-  const settingsBtn = document.getElementById('settings-btn');
-  if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => {
-      window.location.href = '../configuracoes/index.html';
-    });
-  }
-
-  const profileTrigger = document.getElementById('profile-dropdown-trigger');
-  if (profileTrigger) {
-    profileTrigger.addEventListener('click', () => {
-      window.location.href = '../perfil/index.html';
-    });
-  }
-
-  const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
-  const proMenuLink = document.querySelector('[data-target="pro"]');
-
-  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];
-  upgradeTriggers.forEach(trigger => {
-    if (trigger) {
-      trigger.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try {
-          await api.put("/planos/atualizar", { plano: "PRO" });
-          userState.isPro = true;
-          updatePlanUI();
-          renderBooks();
-          openModal('celebration-modal');
-        } catch (err) {
-          alert("Erro ao atualizar plano: " + err.message);
-        }
-      });
-    }
-  });
-
-  const booksContainer = document.getElementById('books-grid-container');
-
-  function renderBooks() {
-    if (!booksContainer) return;
-    booksContainer.innerHTML = '';
-
-    const searchQuery = globalSearchInput ? globalSearchInput.value.toLowerCase().trim() : '';
-
-    let filteredBooks = userState.books.filter(book => {
-      const matchesSearch = book.title.toLowerCase().includes(searchQuery);
-      
-      let matchesFilter = true;
-      if (currentFilter !== 'all') {
-        matchesFilter = (book.tag === currentFilter);
-      }
-
-      return matchesSearch && matchesFilter;
-    });
-
-    const sortVal = sortSelect ? sortSelect.value : 'recipes-desc';
-    filteredBooks.sort((a, b) => {
-      if (sortVal === 'name') {
-        return a.title.localeCompare(b.title);
-      } else if (sortVal === 'recipes-desc') {
-        return b.count - a.count;
-      } else if (sortVal === 'recipes-asc') {
-        return a.count - b.count;
-      }
-      return 0;
-    });
-
-    if (filteredBooks.length === 0) {
-      booksContainer.innerHTML = `
-        <div class="book-detail-empty" style="grid-column: 1 / -1; padding: 60px 20px;">
-          <div class="empty-icon-glow"><i class="fa-solid fa-face-rolling-eyes"></i></div>
-          <h3>Nenhuma coleção encontrada</h3>
-          <p>Tente ajustar seus termos de pesquisa ou crie um novo livro de receitas.</p>
-        </div>
-      `;
-      return;
-    }
-
-    filteredBooks.forEach((book, index) => {
-      const card = document.createElement('div');
-      
-      const styleIndex = (book.id % 5) || 5;
-      card.className = `book-card-item b-${styleIndex}`;
-      if (userState.selectedBookId === book.id) {
-        card.classList.add('selected');
-      }
-
-      let badgeClass = '';
-      if (book.tag === 'PRO') badgeClass = 'pro';
-      else if (book.tag === 'Favorito') badgeClass = 'fav';
-      else if (book.tag === 'Público') badgeClass = 'public';
-
-      card.innerHTML = `
-        <div class="book-cover"><i class="${book.emoji}"></i></div>
-        <div class="book-info-area">
-          <h4>${book.title}</h4>
-          <p>${book.count} receitas</p>
-        </div>
-        <span class="book-badge ${badgeClass}">${book.tag}</span>
-      `;
-
-      card.addEventListener('click', () => {
-        if (book.tag === 'PRO' && !userState.isPro) {
-          const upgradeNow = confirm('A coleção "' + book.title + '" é um recurso PRO.\n\nDeseja atualizar sua conta para PRO agora para liberar este livro de receitas?');
-          if (upgradeNow) {
-            api.put("/planos/atualizar", { plano: "PRO" }).then(() => {
-              userState.isPro = true;
-              updatePlanUI();
-              userState.selectedBookId = book.id;
-              renderBooks();
-              showBookDetail(book.id);
-              openModal('celebration-modal');
-            }).catch(err => alert("Erro ao assinar PRO: " + err.message));
-          }
-          return;
-        }
-
-        userState.selectedBookId = book.id;
-        
-        document.querySelectorAll('.book-card-item').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-
-        showBookDetail(book.id);
-      });
-
-      booksContainer.appendChild(card);
-    });
-
-    updateCursorHoverListeners();
-  }
-
-  const bookDetailEmpty = document.getElementById('book-detail-empty');
-  const bookDetailActive = document.getElementById('book-detail-active');
-  const activeBookCover = document.getElementById('active-book-cover');
-  const activeBookBadge = document.getElementById('active-book-badge');
-  const activeBookTitle = document.getElementById('active-book-title');
-  const activeBookCount = document.getElementById('active-book-count');
-  const activeRecipesList = document.getElementById('active-book-recipes-list');
-  const recipeSearchInput = document.getElementById('recipe-search-input');
-
-  async function showBookDetail(bookId) {
-    const book = userState.books.find(b => b.id === bookId);
-    if (!book) {
-      showEmptyState();
-      return;
-    }
-
-    bookDetailEmpty.classList.add('hidden');
-    bookDetailActive.classList.remove('hidden');
-
-    try {
-      const recipes = await api.get(`/receitas/listar?livroId=${bookId}`);
-      userState.recipes[bookId] = recipes;
-      book.count = recipes.length;
-    } catch (err) {
-    }
-
-    activeBookCover.innerHTML = `<i class="${book.emoji}"></i>`;
-    activeBookTitle.textContent = book.title;
-    activeBookCount.textContent = book.count + (book.count === 1 ? ' receita salva' : ' receitas salvas');
-    
-    activeBookBadge.textContent = book.tag;
-    activeBookBadge.className = 'book-badge';
-    if (book.tag === 'PRO') activeBookBadge.classList.add('pro');
-    else if (book.tag === 'Favorito') activeBookBadge.classList.add('fav');
-    else if (book.tag === 'Público') activeBookBadge.classList.add('public');
-
-    renderBookRecipes();
-  }
-
-  function showEmptyState() {
-    userState.selectedBookId = null;
-    bookDetailActive.classList.add('hidden');
-    bookDetailEmpty.classList.remove('hidden');
-    document.querySelectorAll('.book-card-item').forEach(c => c.classList.remove('selected'));
-  }
-
-  function renderBookRecipes() {
-    const bookId = userState.selectedBookId;
-    if (!bookId) return;
-
-    activeRecipesList.innerHTML = '';
-    const searchVal = recipeSearchInput ? recipeSearchInput.value.toLowerCase().trim() : '';
-
-    const list = userState.recipes[bookId] || [];
-
-    const filteredRecipes = list.filter(rec => rec.title.toLowerCase().includes(searchVal));
-
-    if (filteredRecipes.length === 0) {
-      activeRecipesList.innerHTML = `
-        <div class="book-detail-empty" style="padding: 30px 10px;">
-          <i class="fa-solid fa-bowl-rice" style="font-size: 1.5rem; color: rgba(242, 244, 243, 0.2); margin-bottom: 8px;"></i>
-          <p style="font-size: 0.75rem; color: rgba(242, 244, 243, 0.4);">Nenhuma receita salva neste livro.</p>
-        </div>
-      `;
-      return;
-    }
-
-    filteredRecipes.forEach(rec => {
-      const card = document.createElement('div');
-      card.className = 'recipe-item-card';
-
-      let catIcon = 'fa-solid fa-utensils';
-      const cat = rec.category ? rec.category.toLowerCase() : '';
-      if (cat.includes('doce') || cat.includes('sobremesa')) catIcon = 'fa-solid fa-cake-candles';
-      else if (cat.includes('saud') || cat.includes('fit') || cat.includes('vegano') || cat.includes('vegetariano')) catIcon = 'fa-solid fa-leaf';
-      else if (cat.includes('caf') || cat.includes('manh')) catIcon = 'fa-solid fa-mug-hot';
-      else if (cat.includes('mass') || cat.includes('pasta') || cat.includes('pizza')) catIcon = 'fa-solid fa-pizza-slice';
-      else if (cat.includes('bebida') || cat.includes('drink') || cat.includes('suco')) catIcon = 'fa-solid fa-martini-glass-citrus';
-      else if (cat.includes('lanche') || cat.includes('burger')) catIcon = 'fa-solid fa-burger';
-
-      let diffClass = 'easy';
-      if (rec.difficulty === 'Médio') diffClass = 'medium';
-      else if (rec.difficulty === 'Difícil') diffClass = 'hard';
-
-      card.innerHTML = `
-        <div class="recipe-item-info">
-          <div class="recipe-item-icon"><i class="${catIcon}"></i></div>
-          <div class="recipe-item-meta">
-            <h5>${rec.title}</h5>
-            <p>🕐 ${rec.time} min · <span class="diff ${diffClass}">${rec.difficulty}</span></p>
-          </div>
-        </div>
-        <div class="recipe-item-actions">
-          <button class="btn-recipe-view" title="Ver Receita"><i class="fa-solid fa-eye"></i></button>
-          <button class="btn-recipe-delete" title="Excluir da Coleção"><i class="fa-solid fa-trash-can"></i></button>
-        </div>
-      `;
-
-      card.querySelector('.btn-recipe-view').addEventListener('click', () => {
-        openRecipeDetailsModal(rec);
-      });
-
-      card.querySelector('.btn-recipe-delete').addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (confirm('Deseja realmente remover "' + rec.title + '" desta coleção?')) {
-          deleteRecipeFromBook(bookId, rec.id);
-        }
-      });
-
-      activeRecipesList.appendChild(card);
-    });
-
-    updateCursorHoverListeners();
-  }
-
-  if (recipeSearchInput) {
-    recipeSearchInput.addEventListener('input', () => {
-      renderBookRecipes();
-    });
-  }
-
-  const deleteBookBtn = document.getElementById('detail-delete-book-btn');
-  if (deleteBookBtn) {
-    deleteBookBtn.addEventListener('click', async () => {
-      const bookId = userState.selectedBookId;
-      if (!bookId) return;
-
-      const book = userState.books.find(b => b.id === bookId);
-      if (confirm('Tem certeza de que deseja excluir o livro "' + book.title + '"?\n\nTodas as receitas salvas nele serão perdidas definitivamente.')) {
-        try {
-          await api.delete(`/livros/excluir/${bookId}`);
-          userState.books = userState.books.filter(b => b.id !== bookId);
-          delete userState.recipes[bookId];
-          showEmptyState();
-          renderBooks();
-        } catch (err) {
-          alert("Erro ao excluir livro: " + err.message);
-        }
-      }
-    });
-  }
-
-  const newBookBtnMain = document.getElementById('new-book-btn');
-  const newBookForm = document.getElementById('new-book-form');
-
-  if (newBookBtnMain) {
-    newBookBtnMain.addEventListener('click', () => openModal('add-book-modal'));
-  }
-
-  if (newBookForm) {
-    newBookForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const title = document.getElementById('book-title').value.trim();
-      const emoji = document.getElementById('book-emoji-select').value;
-      const visibility = document.getElementById('book-visibility').value;
-
-      if (!title) return;
-
-      try {
-        const response = await api.post("/livros/cadastrar", {
-          titulo: title,
-          emoji,
-          tag: visibility
-        });
-
-        const newBook = {
-          id: response.id,
-          title: response.titulo,
-          emoji: response.emoji,
-          tag: response.tag,
-          count: 0
-        };
-
-        userState.books.push(newBook);
-        userState.recipes[response.id] = [];
-        
-        closeModal('add-book-modal');
-        newBookForm.reset();
-        
-        userState.selectedBookId = response.id;
-        renderBooks();
-        showBookDetail(response.id);
-      } catch (err) {
-        alert("Erro ao criar livro: " + err.message);
-      }
-    });
-  }
-
-  const detailAddRecipeBtn = document.getElementById('detail-add-recipe-btn');
-  const newRecipeForm = document.getElementById('new-recipe-form');
-
-  if (detailAddRecipeBtn) {
-    detailAddRecipeBtn.addEventListener('click', () => openModal('add-recipe-modal'));
-  }
-
-  if (newRecipeForm) {
-    newRecipeForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const bookId = userState.selectedBookId;
-      if (!bookId) return;
-
-      const title = document.getElementById('recipe-title-input').value.trim();
-      const time = parseInt(document.getElementById('recipe-time-input').value);
-      const difficulty = document.getElementById('recipe-difficulty-input').value;
-      const category = document.getElementById('recipe-category-input').value.trim();
-      const ingredientsText = document.getElementById('recipe-ingredients-input').value.trim();
-      const stepsText = document.getElementById('recipe-steps-input').value.trim();
-
-      if (!title || !ingredientsText || !stepsText) return;
-
-      const ingredients = ingredientsText.split('\n').map(l => l.trim().replace(/^[-*•\d.]\s*/, '')).filter(l => l !== '');
-      const steps = stepsText.split('\n').map(l => l.trim().replace(/^\d+[\s.)]*/, '')).filter(l => l !== '');
-
-      try {
-        await api.post("/receitas/cadastrar", {
-          titulo: title,
-          tempoPreparo: time,
-          dificuldade: difficulty,
-          categorias: [category],
-          ingredientes: ingredients,
-          modoPreparo: steps.join('\n'),
-          livroId: bookId,
-          criadaPorIA: false,
-          publica: false
-        });
-
-        closeModal('add-recipe-modal');
-        newRecipeForm.reset();
-
-        showBookDetail(bookId);
-
-        const books = await api.get("/livros/listar");
-        userState.books = books.map(b => ({
-          id: b.id,
-          title: b.titulo,
-          emoji: b.emoji || 'fa-solid fa-book',
-          tag: b.tag,
-          count: b._count.receitas
-        }));
-        renderBooks();
-      } catch (err) {
-        alert("Erro ao adicionar receita: " + err.message);
-      }
-    });
-  }
-
-  async function deleteRecipeFromBook(bookId, recipeId) {
-    try {
-      await api.delete(`/receitas/excluir/${recipeId}`);
-      
-      userState.recipes[bookId] = userState.recipes[bookId].filter(rec => rec.id !== recipeId);
-      
-      const book = userState.books.find(b => b.id === bookId);
-      if (book) {
-        book.count = userState.recipes[bookId].length;
-      }
-
-      renderBooks();
-      showBookDetail(bookId);
-    } catch (err) {
-      alert("Erro ao remover receita: " + err.message);
-    }
-  }
-
-  const recipeDetailTitle = document.getElementById('recipe-detail-title');
-  const recipeDetailBadge = document.getElementById('recipe-detail-badge');
-  const recipeDetailTime = document.getElementById('recipe-detail-time');
-  const recipeDetailDifficulty = document.getElementById('recipe-detail-difficulty');
-  const recipeDetailDietTag = document.getElementById('recipe-detail-diet-tag');
-  const recipeDetailIngredients = document.getElementById('recipe-detail-ingredients-list');
-  const recipeDetailSteps = document.getElementById('recipe-detail-steps-list');
-
-  function openRecipeDetailsModal(rec) {
-    userState.selectedRecipe = rec;
-    recipeDetailTitle.textContent = rec.title;
-    
-    const activeBook = userState.books.find(b => b.id === userState.selectedBookId);
-    recipeDetailBadge.innerHTML = `<i class="fa-solid fa-bookmark"></i> Livro: ${activeBook ? activeBook.title : 'Coleção'}`;
-    
-    recipeDetailTime.textContent = rec.time + ' min';
-    recipeDetailDifficulty.textContent = rec.difficulty;
-    
-    recipeDetailDietTag.style.display = 'inline-flex';
-    recipeDetailDietTag.textContent = rec.category;
-
-    recipeDetailIngredients.innerHTML = '';
-    rec.ingredients.forEach(ing => {
-      const li = document.createElement('li');
-      li.textContent = ing;
-      recipeDetailIngredients.appendChild(li);
-    });
-
-    recipeDetailSteps.innerHTML = '';
-    rec.steps.forEach(step => {
-      const li = document.createElement('li');
-      li.textContent = step;
-      recipeDetailSteps.appendChild(li);
-    });
-
-    selectedRating = 0;
-    updateStarsUI(0);
-    if (submitRatingBtn) submitRatingBtn.style.display = 'none';
-
-    api.get(`/avaliacoes/listar?receitaId=${rec.id}`).then(ratings => {
-      const currentUser = api.getUser();
-      const existing = ratings.find(r => r.usuarioId === currentUser.id);
-      if (existing) {
-        selectedRating = existing.nota;
-        updateStarsUI(existing.nota);
-      }
-    }).catch(err => {
-    });
-
-    openModal('recipe-details-modal');
-  }
-
-  async function loadInitialData() {
-    const user = api.getUser();
-    if (!user) {
-      window.location.href = "../../login/index.html";
-      return;
-    }
-
-    const navAvatar = document.querySelector('.user-avatar');
-    if (navAvatar && user.foto) navAvatar.src = user.foto;
-
-    const navName = document.querySelector('.user-name');
-    if (navName) navName.textContent = user.nome;
-
-    try {
-      const profileData = await api.get("/usuarios/perfil");
-      userState.isPro = profileData.plano === "PRO";
-      updatePlanUI();
-
-      const books = await api.get("/livros/listar");
-      userState.books = books.map(b => ({
-        id: b.id,
-        title: b.titulo,
-        emoji: b.emoji || 'fa-solid fa-book',
-        tag: b.tag,
-        count: b._count.receitas
-      }));
-      renderBooks();
-    } catch (err) {
-    }
-  }
-
-  let selectedRating = 0;
-  const ratingStarsContainer = document.getElementById('recipe-rating-stars');
-  const submitRatingBtn = document.getElementById('recipe-submit-rating');
-
-  function initRatingSystem() {
-    if (!ratingStarsContainer || !submitRatingBtn) return;
-    
-    const stars = ratingStarsContainer.querySelectorAll('i');
-    stars.forEach(star => {
-      star.addEventListener('click', () => {
-        const rating = parseInt(star.dataset.rating);
-        selectedRating = rating;
-        updateStarsUI(rating);
-        submitRatingBtn.style.display = 'block';
-      });
-    });
-
-    submitRatingBtn.addEventListener('click', async () => {
-      const rec = userState.selectedRecipe;
-      if (!rec || selectedRating === 0) return;
-
-      try {
-        await api.post("/avaliacoes/cadastrar", {
-          receitaId: rec.id,
-          nota: selectedRating,
-          comentario: ""
-        });
-        alert("Avaliação enviada com sucesso!");
-        submitRatingBtn.style.display = 'none';
-      } catch (err) {
-        alert("Erro ao enviar avaliação: " + err.message);
-      }
-    });
-  }
-
-  function updateStarsUI(rating) {
-    if (!ratingStarsContainer) return;
-    const stars = ratingStarsContainer.querySelectorAll('i');
-    stars.forEach(star => {
-      const starRating = parseInt(star.dataset.rating);
-      if (starRating <= rating) {
-        star.className = 'fa-solid fa-star';
-        star.style.color = 'var(--accent)';
-      } else {
-        star.className = 'fa-regular fa-star';
-        star.style.color = '';
-      }
-    });
-  }
-
-  initRatingSystem();
-  loadInitialData();
-  showEmptyState();
-});
+document.addEventListener('DOMContentLoaded', () => {  let userState = {    isPro: false,    selectedBookId: null,    books: [],    recipes: {}  };  let currentFilter = 'all';  const customCursor = document.createElement('div');  customCursor.className = 'custom-cursor';  document.body.appendChild(customCursor);  document.addEventListener('mousemove', (e) => {    customCursor.style.left = e.clientX + 'px';    customCursor.style.top = e.clientY + 'px';  });  function updateCursorHoverListeners() {    const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], option, .book-card-item, .recipe-item-card');    interactives.forEach(el => {      if (el.dataset.cursorBound) return;      el.dataset.cursorBound = 'true';      el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));      el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));    });  }  updateCursorHoverListeners();  setInterval(updateCursorHoverListeners, 1000);  document.addEventListener('mouseleave', () => {    customCursor.style.display = 'none';  });  document.addEventListener('mouseenter', () => {    customCursor.style.display = 'block';  });  function updatePlanUI() {    const navbarPlanTag = document.getElementById('navbar-plan-tag');    const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');    if (userState.isPro) {      if (navbarPlanTag) {        navbarPlanTag.textContent = 'PRO';        navbarPlanTag.className = 'user-plan-tag pro';      }      if (sidebarUpgradeBtn) {        sidebarUpgradeBtn.textContent = 'Menu PRO';        sidebarUpgradeBtn.style.background = 'var(--accent-light)';        sidebarUpgradeBtn.style.color = 'var(--accent)';      }    } else {      if (navbarPlanTag) {        navbarPlanTag.textContent = 'Gratuito';        navbarPlanTag.className = 'user-plan-tag free';      }      if (sidebarUpgradeBtn) {        sidebarUpgradeBtn.textContent = '🚀 Virar PRO';        sidebarUpgradeBtn.style.background = 'var(--secondary)';        sidebarUpgradeBtn.style.color = 'var(--dark-deep)';      }    }  }  const mobileToggle = document.getElementById('mobile-toggle');  const sidebar = document.querySelector('.sidebar');  if (mobileToggle && sidebar) {    mobileToggle.addEventListener('click', (e) => {      e.stopPropagation();      sidebar.classList.toggle('active');    });    document.addEventListener('click', (e) => {      if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {        sidebar.classList.remove('active');      }    });  }  const globalSearchInput = document.getElementById('global-search');  if (globalSearchInput) {    globalSearchInput.addEventListener('input', () => {      renderBooks();    });  }  document.addEventListener('keydown', (e) => {    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {      e.preventDefault();      if (globalSearchInput) globalSearchInput.focus();    }  });  const filterBtns = document.querySelectorAll('.filter-tab-btn');  filterBtns.forEach(btn => {    btn.addEventListener('click', () => {      filterBtns.forEach(b => b.classList.remove('active'));      btn.classList.add('active');      currentFilter = btn.dataset.filter;      renderBooks();    });  });  const sortSelect = document.getElementById('books-sort');  if (sortSelect) {    sortSelect.addEventListener('change', () => {      renderBooks();    });  }  function openModal(modalId) {    const modal = document.getElementById(modalId);    if (modal) modal.classList.add('open');  }  function closeModal(modalId) {    const modal = document.getElementById(modalId);    if (modal) modal.classList.remove('open');  }  const modals = document.querySelectorAll('.modal-overlay');  modals.forEach(modal => {    modal.addEventListener('click', (e) => {      if (e.target === modal) {        modal.classList.remove('open');      }    });  });  const closeTriggers = [    { btn: 'close-book-modal', modal: 'add-book-modal' },    { btn: 'close-recipe-modal', modal: 'add-recipe-modal' },    { btn: 'close-details-modal', modal: 'recipe-details-modal' },    { btn: 'recipe-detail-close-btn', modal: 'recipe-details-modal' },    { btn: 'close-notif-modal', modal: 'notifications-modal' },    { btn: 'close-celebration-btn', modal: 'celebration-modal' }  ];  closeTriggers.forEach(trigger => {    const btn = document.getElementById(trigger.btn);    if (btn) {      btn.addEventListener('click', () => closeModal(trigger.modal));    }  });  const notifBtn = document.getElementById('notifications-btn');  if (notifBtn) {    notifBtn.addEventListener('click', () => {      openModal('notifications-modal');      const badge = notifBtn.querySelector('.badge-dot');      if (badge) badge.style.display = 'none';    });  }  const settingsBtn = document.getElementById('settings-btn');  if (settingsBtn) {    settingsBtn.addEventListener('click', () => {      window.location.href = '../configuracoes/index.html';    });  }  const profileTrigger = document.getElementById('profile-dropdown-trigger');  if (profileTrigger) {    profileTrigger.addEventListener('click', () => {      window.location.href = '../perfil/index.html';    });  }  const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');  const proMenuLink = document.querySelector('[data-target="pro"]');  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];  upgradeTriggers.forEach(trigger => {    if (trigger) {      trigger.addEventListener('click', async (e) => {        e.preventDefault();        try {          await api.put("/planos/atualizar", { plano: "PRO" });          userState.isPro = true;          updatePlanUI();          renderBooks();          openModal('celebration-modal');        } catch (err) {          alert("Erro ao atualizar plano: " + err.message);        }      });    }  });  const booksContainer = document.getElementById('books-grid-container');  function renderBooks() {    if (!booksContainer) return;    booksContainer.innerHTML = '';    const searchQuery = globalSearchInput ? globalSearchInput.value.toLowerCase().trim() : '';    let filteredBooks = userState.books.filter(book => {      const matchesSearch = book.title.toLowerCase().includes(searchQuery);      let matchesFilter = true;      if (currentFilter !== 'all') {        matchesFilter = (book.tag === currentFilter);      }      return matchesSearch && matchesFilter;    });    const sortVal = sortSelect ? sortSelect.value : 'recipes-desc';    filteredBooks.sort((a, b) => {      if (sortVal === 'name') {        return a.title.localeCompare(b.title);      } else if (sortVal === 'recipes-desc') {        return b.count - a.count;      } else if (sortVal === 'recipes-asc') {        return a.count - b.count;      }      return 0;    });    if (filteredBooks.length === 0) {      booksContainer.innerHTML = `        <div class="book-detail-empty" style="grid-column: 1 / -1; padding: 60px 20px;">          <div class="empty-icon-glow"><i class="fa-solid fa-face-rolling-eyes"></i></div>          <h3>Nenhuma coleção encontrada</h3>          <p>Tente ajustar seus termos de pesquisa ou crie um novo livro de receitas.</p>        </div>      `;      return;    }    filteredBooks.forEach((book, index) => {      const card = document.createElement('div');      const styleIndex = (book.id % 5) || 5;      card.className = `book-card-item b-${styleIndex}`;      if (userState.selectedBookId === book.id) {        card.classList.add('selected');      }      let badgeClass = '';      if (book.tag === 'PRO') badgeClass = 'pro';      else if (book.tag === 'Favorito') badgeClass = 'fav';      else if (book.tag === 'Público') badgeClass = 'public';      card.innerHTML = `        <div class="book-cover"><i class="${book.emoji}"></i></div>        <div class="book-info-area">          <h4>${book.title}</h4>          <p>${book.count} receitas</p>        </div>        <span class="book-badge ${badgeClass}">${book.tag}</span>      `;      card.addEventListener('click', () => {        if (book.tag === 'PRO' && !userState.isPro) {          const upgradeNow = confirm('A coleção "' + book.title + '" é um recurso PRO.\n\nDeseja atualizar sua conta para PRO agora para liberar este livro de receitas?');          if (upgradeNow) {            api.put("/planos/atualizar", { plano: "PRO" }).then(() => {              userState.isPro = true;              updatePlanUI();              userState.selectedBookId = book.id;              renderBooks();              showBookDetail(book.id);              openModal('celebration-modal');            }).catch(err => alert("Erro ao assinar PRO: " + err.message));          }          return;        }        userState.selectedBookId = book.id;        document.querySelectorAll('.book-card-item').forEach(c => c.classList.remove('selected'));        card.classList.add('selected');        showBookDetail(book.id);      });      booksContainer.appendChild(card);    });    updateCursorHoverListeners();  }  const bookDetailEmpty = document.getElementById('book-detail-empty');  const bookDetailActive = document.getElementById('book-detail-active');  const activeBookCover = document.getElementById('active-book-cover');  const activeBookBadge = document.getElementById('active-book-badge');  const activeBookTitle = document.getElementById('active-book-title');  const activeBookCount = document.getElementById('active-book-count');  const activeRecipesList = document.getElementById('active-book-recipes-list');  const recipeSearchInput = document.getElementById('recipe-search-input');  async function showBookDetail(bookId) {    const book = userState.books.find(b => b.id === bookId);    if (!book) {      showEmptyState();      return;    }    bookDetailEmpty.classList.add('hidden');    bookDetailActive.classList.remove('hidden');    try {      const recipes = await api.get(`/receitas/listar?livroId=${bookId}`);      userState.recipes[bookId] = recipes;      book.count = recipes.length;    } catch (err) {    }    activeBookCover.innerHTML = `<i class="${book.emoji}"></i>`;    activeBookTitle.textContent = book.title;    activeBookCount.textContent = book.count + (book.count === 1 ? ' receita salva' : ' receitas salvas');    activeBookBadge.textContent = book.tag;    activeBookBadge.className = 'book-badge';    if (book.tag === 'PRO') activeBookBadge.classList.add('pro');    else if (book.tag === 'Favorito') activeBookBadge.classList.add('fav');    else if (book.tag === 'Público') activeBookBadge.classList.add('public');    renderBookRecipes();  }  function showEmptyState() {    userState.selectedBookId = null;    bookDetailActive.classList.add('hidden');    bookDetailEmpty.classList.remove('hidden');    document.querySelectorAll('.book-card-item').forEach(c => c.classList.remove('selected'));  }  function renderBookRecipes() {    const bookId = userState.selectedBookId;    if (!bookId) return;    activeRecipesList.innerHTML = '';    const searchVal = recipeSearchInput ? recipeSearchInput.value.toLowerCase().trim() : '';    const list = userState.recipes[bookId] || [];    const filteredRecipes = list.filter(rec => rec.title.toLowerCase().includes(searchVal));    if (filteredRecipes.length === 0) {      activeRecipesList.innerHTML = `        <div class="book-detail-empty" style="padding: 30px 10px;">          <i class="fa-solid fa-bowl-rice" style="font-size: 1.5rem; color: rgba(242, 244, 243, 0.2); margin-bottom: 8px;"></i>          <p style="font-size: 0.75rem; color: rgba(242, 244, 243, 0.4);">Nenhuma receita salva neste livro.</p>        </div>      `;      return;    }    filteredRecipes.forEach(rec => {      const card = document.createElement('div');      card.className = 'recipe-item-card';      let catIcon = 'fa-solid fa-utensils';      const cat = rec.category ? rec.category.toLowerCase() : '';      if (cat.includes('doce') || cat.includes('sobremesa')) catIcon = 'fa-solid fa-cake-candles';      else if (cat.includes('saud') || cat.includes('fit') || cat.includes('vegano') || cat.includes('vegetariano')) catIcon = 'fa-solid fa-leaf';      else if (cat.includes('caf') || cat.includes('manh')) catIcon = 'fa-solid fa-mug-hot';      else if (cat.includes('mass') || cat.includes('pasta') || cat.includes('pizza')) catIcon = 'fa-solid fa-pizza-slice';      else if (cat.includes('bebida') || cat.includes('drink') || cat.includes('suco')) catIcon = 'fa-solid fa-martini-glass-citrus';      else if (cat.includes('lanche') || cat.includes('burger')) catIcon = 'fa-solid fa-burger';      let diffClass = 'easy';      if (rec.difficulty === 'Médio') diffClass = 'medium';      else if (rec.difficulty === 'Difícil') diffClass = 'hard';      card.innerHTML = `        <div class="recipe-item-info">          <div class="recipe-item-icon"><i class="${catIcon}"></i></div>          <div class="recipe-item-meta">            <h5>${rec.title}</h5>            <p>🕐 ${rec.time} min · <span class="diff ${diffClass}">${rec.difficulty}</span></p>          </div>        </div>        <div class="recipe-item-actions">          <button class="btn-recipe-view" title="Ver Receita"><i class="fa-solid fa-eye"></i></button>          <button class="btn-recipe-delete" title="Excluir da Coleção"><i class="fa-solid fa-trash-can"></i></button>        </div>      `;      card.querySelector('.btn-recipe-view').addEventListener('click', () => {        openRecipeDetailsModal(rec);      });      card.querySelector('.btn-recipe-delete').addEventListener('click', (e) => {        e.stopPropagation();        if (confirm('Deseja realmente remover "' + rec.title + '" desta coleção?')) {          deleteRecipeFromBook(bookId, rec.id);        }      });      activeRecipesList.appendChild(card);    });    updateCursorHoverListeners();  }  if (recipeSearchInput) {    recipeSearchInput.addEventListener('input', () => {      renderBookRecipes();    });  }  const deleteBookBtn = document.getElementById('detail-delete-book-btn');  if (deleteBookBtn) {    deleteBookBtn.addEventListener('click', async () => {      const bookId = userState.selectedBookId;      if (!bookId) return;      const book = userState.books.find(b => b.id === bookId);      if (confirm('Tem certeza de que deseja excluir o livro "' + book.title + '"?\n\nTodas as receitas salvas nele serão perdidas definitivamente.')) {        try {          await api.delete(`/livros/excluir/${bookId}`);          userState.books = userState.books.filter(b => b.id !== bookId);          delete userState.recipes[bookId];          showEmptyState();          renderBooks();        } catch (err) {          alert("Erro ao excluir livro: " + err.message);        }      }    });  }  const newBookBtnMain = document.getElementById('new-book-btn');  const newBookForm = document.getElementById('new-book-form');  if (newBookBtnMain) {    newBookBtnMain.addEventListener('click', () => openModal('add-book-modal'));  }  if (newBookForm) {    newBookForm.addEventListener('submit', async (e) => {      e.preventDefault();      const title = document.getElementById('book-title').value.trim();      const emoji = document.getElementById('book-emoji-select').value;      const visibility = document.getElementById('book-visibility').value;      if (!title) return;      try {        const response = await api.post("/livros/cadastrar", {          titulo: title,          emoji,          tag: visibility        });        const newBook = {          id: response.id,          title: response.titulo,          emoji: response.emoji,          tag: response.tag,          count: 0        };        userState.books.push(newBook);        userState.recipes[response.id] = [];        closeModal('add-book-modal');        newBookForm.reset();        userState.selectedBookId = response.id;        renderBooks();        showBookDetail(response.id);      } catch (err) {        alert("Erro ao criar livro: " + err.message);      }    });  }  const detailAddRecipeBtn = document.getElementById('detail-add-recipe-btn');  const newRecipeForm = document.getElementById('new-recipe-form');  if (detailAddRecipeBtn) {    detailAddRecipeBtn.addEventListener('click', () => openModal('add-recipe-modal'));  }  if (newRecipeForm) {    newRecipeForm.addEventListener('submit', async (e) => {      e.preventDefault();      const bookId = userState.selectedBookId;      if (!bookId) return;      const title = document.getElementById('recipe-title-input').value.trim();      const time = parseInt(document.getElementById('recipe-time-input').value);      const difficulty = document.getElementById('recipe-difficulty-input').value;      const category = document.getElementById('recipe-category-input').value.trim();      const ingredientsText = document.getElementById('recipe-ingredients-input').value.trim();      const stepsText = document.getElementById('recipe-steps-input').value.trim();      if (!title || !ingredientsText || !stepsText) return;      const ingredients = ingredientsText.split('\n').map(l => l.trim().replace(/^[-*•\d.]\s*/, '')).filter(l => l !== '');      const steps = stepsText.split('\n').map(l => l.trim().replace(/^\d+[\s.)]*/, '')).filter(l => l !== '');      try {        await api.post("/receitas/cadastrar", {          titulo: title,          tempoPreparo: time,          dificuldade: difficulty,          categorias: [category],          ingredientes: ingredients,          modoPreparo: steps.join('\n'),          livroId: bookId,          criadaPorIA: false,          publica: false        });        closeModal('add-recipe-modal');        newRecipeForm.reset();        showBookDetail(bookId);        const books = await api.get("/livros/listar");        userState.books = books.map(b => ({          id: b.id,          title: b.titulo,          emoji: b.emoji || 'fa-solid fa-book',          tag: b.tag,          count: b._count.receitas        }));        renderBooks();      } catch (err) {        alert("Erro ao adicionar receita: " + err.message);      }    });  }  async function deleteRecipeFromBook(bookId, recipeId) {    try {      await api.delete(`/receitas/excluir/${recipeId}`);      userState.recipes[bookId] = userState.recipes[bookId].filter(rec => rec.id !== recipeId);      const book = userState.books.find(b => b.id === bookId);      if (book) {        book.count = userState.recipes[bookId].length;      }      renderBooks();      showBookDetail(bookId);    } catch (err) {      alert("Erro ao remover receita: " + err.message);    }  }  const recipeDetailTitle = document.getElementById('recipe-detail-title');  const recipeDetailBadge = document.getElementById('recipe-detail-badge');  const recipeDetailTime = document.getElementById('recipe-detail-time');  const recipeDetailDifficulty = document.getElementById('recipe-detail-difficulty');  const recipeDetailDietTag = document.getElementById('recipe-detail-diet-tag');  const recipeDetailIngredients = document.getElementById('recipe-detail-ingredients-list');  const recipeDetailSteps = document.getElementById('recipe-detail-steps-list');  function openRecipeDetailsModal(rec) {    userState.selectedRecipe = rec;    recipeDetailTitle.textContent = rec.title;    const activeBook = userState.books.find(b => b.id === userState.selectedBookId);    recipeDetailBadge.innerHTML = `<i class="fa-solid fa-bookmark"></i> Livro: ${activeBook ? activeBook.title : 'Coleção'}`;    recipeDetailTime.textContent = rec.time + ' min';    recipeDetailDifficulty.textContent = rec.difficulty;    recipeDetailDietTag.style.display = 'inline-flex';    recipeDetailDietTag.textContent = rec.category;    recipeDetailIngredients.innerHTML = '';    rec.ingredients.forEach(ing => {      const li = document.createElement('li');      li.textContent = ing;      recipeDetailIngredients.appendChild(li);    });    recipeDetailSteps.innerHTML = '';    rec.steps.forEach(step => {      const li = document.createElement('li');      li.textContent = step;      recipeDetailSteps.appendChild(li);    });    selectedRating = 0;    updateStarsUI(0);    if (submitRatingBtn) submitRatingBtn.style.display = 'none';    api.get(`/avaliacoes/listar?receitaId=${rec.id}`).then(ratings => {      const currentUser = api.getUser();      const existing = ratings.find(r => r.usuarioId === currentUser.id);      if (existing) {        selectedRating = existing.nota;        updateStarsUI(existing.nota);      }    }).catch(err => {    });    openModal('recipe-details-modal');  }  async function loadInitialData() {    const user = api.getUser();    if (!user) {      window.location.href = "../../login/index.html";      return;    }    const navAvatar = document.querySelector('.user-avatar');    if (navAvatar && user.foto) navAvatar.src = user.foto;    const navName = document.querySelector('.user-name');    if (navName) navName.textContent = user.nome;    try {      const profileData = await api.get("/usuarios/perfil");      userState.isPro = profileData.plano === "PRO";      updatePlanUI();      const books = await api.get("/livros/listar");      userState.books = books.map(b => ({        id: b.id,        title: b.titulo,        emoji: b.emoji || 'fa-solid fa-book',        tag: b.tag,        count: b._count.receitas      }));      renderBooks();    } catch (err) {    }  }  let selectedRating = 0;  const ratingStarsContainer = document.getElementById('recipe-rating-stars');  const submitRatingBtn = document.getElementById('recipe-submit-rating');  function initRatingSystem() {    if (!ratingStarsContainer || !submitRatingBtn) return;    const stars = ratingStarsContainer.querySelectorAll('i');    stars.forEach(star => {      star.addEventListener('click', () => {        const rating = parseInt(star.dataset.rating);        selectedRating = rating;        updateStarsUI(rating);        submitRatingBtn.style.display = 'block';      });    });    submitRatingBtn.addEventListener('click', async () => {      const rec = userState.selectedRecipe;      if (!rec || selectedRating === 0) return;      try {        await api.post("/avaliacoes/cadastrar", {          receitaId: rec.id,          nota: selectedRating,          comentario: ""        });        alert("Avaliação enviada com sucesso!");        submitRatingBtn.style.display = 'none';      } catch (err) {        alert("Erro ao enviar avaliação: " + err.message);      }    });  }  function updateStarsUI(rating) {    if (!ratingStarsContainer) return;    const stars = ratingStarsContainer.querySelectorAll('i');    stars.forEach(star => {      const starRating = parseInt(star.dataset.rating);      if (starRating <= rating) {        star.className = 'fa-solid fa-star';        star.style.color = 'var(--accent)';      } else {        star.className = 'fa-regular fa-star';        star.style.color = '';      }    });  }  initRatingSystem();  loadInitialData();  showEmptyState();});

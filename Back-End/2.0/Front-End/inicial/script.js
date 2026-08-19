@@ -1,312 +1,1 @@
-
-
-const customCursor = document.createElement('div');
-customCursor.className = 'custom-cursor';
-document.body.appendChild(customCursor);
-
-document.addEventListener('mousemove', (e) => {
-  customCursor.style.left = e.clientX + 'px';
-  customCursor.style.top = e.clientY + 'px';
-});
-
-function updateCursorHoverListeners() {
-  const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], .social-btn, .plan-btn, .hamburger, .mobile-close');
-  interactives.forEach(el => {
-    if (el.dataset.cursorBound) return;
-    el.dataset.cursorBound = 'true';
-    el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));
-    el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));
-  });
-}
-
-updateCursorHoverListeners();
-setInterval(updateCursorHoverListeners, 1000);
-
-document.addEventListener('mouseleave', () => {
-  customCursor.style.display = 'none';
-});
-document.addEventListener('mouseenter', () => {
-  customCursor.style.display = 'block';
-});
-
-const navbar = document.getElementById('navbar');
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 60) {
-    navbar.classList.add('scrolled');
-  } else {
-    navbar.classList.remove('scrolled');
-  }
-});
-
-const hamburger = document.getElementById('hamburger');
-const mobileMenu = document.getElementById('mobileMenu');
-const mobileClose = document.getElementById('mobileClose');
-
-hamburger.addEventListener('click', () => {
-  mobileMenu.classList.add('open');
-  document.body.style.overflow = 'hidden';
-});
-
-mobileClose.addEventListener('click', () => {
-  mobileMenu.classList.remove('open');
-  document.body.style.overflow = '';
-});
-
-mobileMenu.querySelectorAll('a').forEach(link => {
-  link.addEventListener('click', () => {
-    mobileMenu.classList.remove('open');
-    document.body.style.overflow = '';
-  });
-});
-
-const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry, i) => {
-    if (entry.isIntersecting) {
-      
-      const siblings = entry.target.parentElement.querySelectorAll('.reveal, .reveal-left, .reveal-right');
-      let delay = 0;
-      siblings.forEach((sib, idx) => {
-        if (sib === entry.target) delay = idx * 80;
-      });
-
-      const existingDelay = entry.target.style.transitionDelay;
-      if (!existingDelay) {
-        entry.target.style.transitionDelay = delay + 'ms';
-      }
-
-      entry.target.classList.add('visible');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, {
-  threshold: 0.12,
-  rootMargin: '0px 0px -40px 0px'
-});
-
-revealElements.forEach(el => revealObserver.observe(el));
-
-const faqItems = document.querySelectorAll('.faq-item');
-
-faqItems.forEach(item => {
-  const question = item.querySelector('.faq-question');
-  question.addEventListener('click', () => {
-    const isOpen = item.classList.contains('open');
-    
-    faqItems.forEach(i => i.classList.remove('open'));
-    
-    if (!isOpen) item.classList.add('open');
-  });
-});
-
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if (href === '#') return;
-    e.preventDefault();
-    const target = document.querySelector(href);
-    if (target) {
-      const offset = 80;
-      const top = target.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
-    }
-  });
-});
-
-function animateCounter(el, target, suffix = '') {
-  let current = 0;
-  const increment = target / 60;
-  const interval = setInterval(() => {
-    current += increment;
-    if (current >= target) {
-      current = target;
-      clearInterval(interval);
-    }
-    el.textContent = Math.floor(current).toLocaleString('pt-BR') + suffix;
-  }, 25);
-}
-
-const statsObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const statNums = document.querySelectorAll('.stat-num');
-      statNums[0] && animateCounter(statNums[0], 12, 'k+');
-      statNums[1] && animateCounter(statNums[1], 98, 'k');
-      statsObserver.disconnect();
-    }
-  });
-}, { threshold: 0.5 });
-
-const heroStats = document.querySelector('.hero-stats');
-if (heroStats) statsObserver.observe(heroStats);
-
-document.querySelectorAll('.feature-card').forEach(card => {
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-    const rotateX = ((y - cy) / cy) * -6;
-    const rotateY = ((x - cx) / cx) * 6;
-    card.style.transform = `translateY(-6px) perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-  });
-});
-
-document.querySelectorAll('.plan-card').forEach(card => {
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    card.style.setProperty('--gx', x + '%');
-    card.style.setProperty('--gy', y + '%');
-    card.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(224,133,122,0.08) 0%, rgba(242,244,243,0.03) 60%)`;
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.background = '';
-  });
-});
-
-const typingDots = document.querySelector('.typing-indicator');
-if (typingDots) {
-  
-  setInterval(() => {
-    typingDots.style.opacity = '0';
-    setTimeout(() => { typingDots.style.opacity = '1'; }, 300);
-  }, 4000);
-}
-
-let ticking = false;
-window.addEventListener('scroll', () => {
-  if (!ticking) {
-    requestAnimationFrame(() => {
-      const scrolled = window.scrollY;
-      const heroVisual = document.querySelector('.hero-visual');
-      if (heroVisual && scrolled < window.innerHeight) {
-        heroVisual.style.transform = `translateY(${scrolled * 0.08}px)`;
-      }
-      ticking = false;
-    });
-    ticking = true;
-  }
-});
-
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('.nav-links a');
-
-const activeObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      navLinks.forEach(link => link.style.color = '');
-      const id = entry.target.getAttribute('id');
-      const activeLink = document.querySelector(`.nav-links a[href="#${id}"]`);
-      if (activeLink) activeLink.style.color = 'var(--light)';
-    }
-  });
-}, { threshold: 0.5 });
-
-sections.forEach(sec => activeObserver.observe(sec));
-
-const cursorGlow = document.createElement('div');
-cursorGlow.style.cssText = `
-  position: fixed;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(224, 133, 122, 0.06) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  transform: translate(-50%, -50%);
-  transition: left 0.15s ease, top 0.15s ease;
-`;
-document.body.appendChild(cursorGlow);
-
-document.addEventListener('mousemove', (e) => {
-  cursorGlow.style.left = e.clientX + 'px';
-  cursorGlow.style.top = e.clientY + 'px';
-});
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDoi7oFnxm_M3uRHtv8FW5utfNQIiwlXVM",
-  authDomain: "sabore-be19b.firebaseapp.com",
-  projectId: "sabore-be19b",
-  storageBucket: "sabore-be19b.firebasestorage.app",
-  messagingSenderId: "304349731243",
-  appId: "1:304349731243:web:8dc64e1a2550821dd75aee"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-const localUser = api.getUser();
-const navCta = document.getElementById('navCta');
-const mobileSignup = document.getElementById('mobileSignup');
-const mobileLogin = document.getElementById('mobileLogin');
-
-if (localUser) {
-  const displayName = localUser.nome || 'Cozinheiro';
-  
-  if (navCta) {
-    navCta.innerHTML = `
-      <span class="user-greeting" style="font-size: 0.9rem; font-weight: 500; color: var(--light); margin-right: 15px;">Olá, ${displayName}!</span>
-      <a href="../Dashboard/home/index.html" class="btn-nav-login" style="margin-right: 10px; text-decoration: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 18px; border-radius: 40px; cursor: none;">Dashboard</a>
-      <button id="btnLogout" class="btn-nav-signup" style="background: transparent; border: 1px solid rgba(242,244,243,0.2); color: var(--light) !important; padding: 8px 18px; cursor: none;">Sair</button>
-    `;
-    document.getElementById('btnLogout').addEventListener('click', () => {
-      api.clearToken();
-      api.clearUser();
-      localStorage.removeItem("sabore_user_avatar");
-      if (typeof auth !== 'undefined') {
-        auth.signOut().then(() => { window.location.reload(); }).catch(() => { window.location.reload(); });
-      } else {
-        window.location.reload();
-      }
-    });
-  }
-
-  if (mobileSignup && mobileLogin) {
-    mobileSignup.textContent = `Olá, ${displayName}!`;
-    mobileSignup.href = '../Dashboard/home/index.html';
-    mobileLogin.textContent = 'Sair';
-    mobileLogin.href = '#';
-    mobileLogin.addEventListener('click', (e) => {
-      e.preventDefault();
-      api.clearToken();
-      api.clearUser();
-      localStorage.removeItem("sabore_user_avatar");
-      if (typeof auth !== 'undefined') {
-        auth.signOut().then(() => { window.location.reload(); }).catch(() => { window.location.reload(); });
-      } else {
-        window.location.reload();
-      }
-    });
-  }
-} else {
-  if (navCta) {
-    navCta.innerHTML = `
-      <a href="../login/index.html" class="btn-nav-login">Entrar</a>
-      <a href="../cadastro/index.html" class="btn-nav-signup">Criar Conta</a>
-    `;
-  }
-  if (mobileSignup && mobileLogin) {
-    mobileSignup.textContent = 'Criar Conta';
-    mobileSignup.href = '../cadastro/index.html';
-    mobileLogin.textContent = 'Entrar';
-    mobileLogin.href = '../login/index.html';
-  }
-}
-
-// Sincroniza o estado do Firebase Auth (Google) com o estado local
-if (typeof auth !== 'undefined') {
-  auth.onAuthStateChanged((user) => {
-    if (user && !localUser) {
-      auth.signOut().then(() => { window.location.reload(); });
-    }
-  });
-}
-
-
+const customCursor = document.createElement('div');customCursor.className = 'custom-cursor';document.body.appendChild(customCursor);document.addEventListener('mousemove', (e) => {  customCursor.style.left = e.clientX + 'px';  customCursor.style.top = e.clientY + 'px';});function updateCursorHoverListeners() {  const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], .social-btn, .plan-btn, .hamburger, .mobile-close');  interactives.forEach(el => {    if (el.dataset.cursorBound) return;    el.dataset.cursorBound = 'true';    el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));    el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));  });}updateCursorHoverListeners();setInterval(updateCursorHoverListeners, 1000);document.addEventListener('mouseleave', () => {  customCursor.style.display = 'none';});document.addEventListener('mouseenter', () => {  customCursor.style.display = 'block';});const navbar = document.getElementById('navbar');window.addEventListener('scroll', () => {  if (window.scrollY > 60) {    navbar.classList.add('scrolled');  } else {    navbar.classList.remove('scrolled');  }});const hamburger = document.getElementById('hamburger');const mobileMenu = document.getElementById('mobileMenu');const mobileClose = document.getElementById('mobileClose');hamburger.addEventListener('click', () => {  mobileMenu.classList.add('open');  document.body.style.overflow = 'hidden';});mobileClose.addEventListener('click', () => {  mobileMenu.classList.remove('open');  document.body.style.overflow = '';});mobileMenu.querySelectorAll('a').forEach(link => {  link.addEventListener('click', () => {    mobileMenu.classList.remove('open');    document.body.style.overflow = '';  });});const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');const revealObserver = new IntersectionObserver((entries) => {  entries.forEach((entry, i) => {    if (entry.isIntersecting) {      const siblings = entry.target.parentElement.querySelectorAll('.reveal, .reveal-left, .reveal-right');      let delay = 0;      siblings.forEach((sib, idx) => {        if (sib === entry.target) delay = idx * 80;      });      const existingDelay = entry.target.style.transitionDelay;      if (!existingDelay) {        entry.target.style.transitionDelay = delay + 'ms';      }      entry.target.classList.add('visible');      revealObserver.unobserve(entry.target);    }  });}, {  threshold: 0.12,  rootMargin: '0px 0px -40px 0px'});revealElements.forEach(el => revealObserver.observe(el));const faqItems = document.querySelectorAll('.faq-item');faqItems.forEach(item => {  const question = item.querySelector('.faq-question');  question.addEventListener('click', () => {    const isOpen = item.classList.contains('open');    faqItems.forEach(i => i.classList.remove('open'));    if (!isOpen) item.classList.add('open');  });});document.querySelectorAll('a[href^="#"]').forEach(anchor => {  anchor.addEventListener('click', function(e) {    const href = this.getAttribute('href');    if (href === '#') return;    e.preventDefault();    const target = document.querySelector(href);    if (target) {      const offset = 80;      const top = target.getBoundingClientRect().top + window.scrollY - offset;      window.scrollTo({ top, behavior: 'smooth' });    }  });});function animateCounter(el, target, suffix = '') {  let current = 0;  const increment = target / 60;  const interval = setInterval(() => {    current += increment;    if (current >= target) {      current = target;      clearInterval(interval);    }    el.textContent = Math.floor(current).toLocaleString('pt-BR') + suffix;  }, 25);}const statsObserver = new IntersectionObserver((entries) => {  entries.forEach(entry => {    if (entry.isIntersecting) {      const statNums = document.querySelectorAll('.stat-num');      statNums[0] && animateCounter(statNums[0], 12, 'k+');      statNums[1] && animateCounter(statNums[1], 98, 'k');      statsObserver.disconnect();    }  });}, { threshold: 0.5 });const heroStats = document.querySelector('.hero-stats');if (heroStats) statsObserver.observe(heroStats);document.querySelectorAll('.feature-card').forEach(card => {  card.addEventListener('mousemove', (e) => {    const rect = card.getBoundingClientRect();    const x = e.clientX - rect.left;    const y = e.clientY - rect.top;    const cx = rect.width / 2;    const cy = rect.height / 2;    const rotateX = ((y - cy) / cy) * -6;    const rotateY = ((x - cx) / cx) * 6;    card.style.transform = `translateY(-6px) perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;  });  card.addEventListener('mouseleave', () => {    card.style.transform = '';  });});document.querySelectorAll('.plan-card').forEach(card => {  card.addEventListener('mousemove', (e) => {    const rect = card.getBoundingClientRect();    const x = ((e.clientX - rect.left) / rect.width) * 100;    const y = ((e.clientY - rect.top) / rect.height) * 100;    card.style.setProperty('--gx', x + '%');    card.style.setProperty('--gy', y + '%');    card.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(224,133,122,0.08) 0%, rgba(242,244,243,0.03) 60%)`;  });  card.addEventListener('mouseleave', () => {    card.style.background = '';  });});const typingDots = document.querySelector('.typing-indicator');if (typingDots) {  setInterval(() => {    typingDots.style.opacity = '0';    setTimeout(() => { typingDots.style.opacity = '1'; }, 300);  }, 4000);}let ticking = false;window.addEventListener('scroll', () => {  if (!ticking) {    requestAnimationFrame(() => {      const scrolled = window.scrollY;      const heroVisual = document.querySelector('.hero-visual');      if (heroVisual && scrolled < window.innerHeight) {        heroVisual.style.transform = `translateY(${scrolled * 0.08}px)`;      }      ticking = false;    });    ticking = true;  }});const sections = document.querySelectorAll('section[id]');const navLinks = document.querySelectorAll('.nav-links a');const activeObserver = new IntersectionObserver((entries) => {  entries.forEach(entry => {    if (entry.isIntersecting) {      navLinks.forEach(link => link.style.color = '');      const id = entry.target.getAttribute('id');      const activeLink = document.querySelector(`.nav-links a[href="#${id}"]`);      if (activeLink) activeLink.style.color = 'var(--light)';    }  });}, { threshold: 0.5 });sections.forEach(sec => activeObserver.observe(sec));const cursorGlow = document.createElement('div');cursorGlow.style.cssText = `  position: fixed;  width: 300px;  height: 300px;  border-radius: 50%;  background: radial-gradient(circle, rgba(224, 133, 122, 0.06) 0%, transparent 70%);  pointer-events: none;  z-index: 0;  transform: translate(-50%, -50%);  transition: left 0.15s ease, top 0.15s ease;`;document.body.appendChild(cursorGlow);document.addEventListener('mousemove', (e) => {  cursorGlow.style.left = e.clientX + 'px';  cursorGlow.style.top = e.clientY + 'px';});const firebaseConfig = {  apiKey: "AIzaSyDoi7oFnxm_M3uRHtv8FW5utfNQIiwlXVM",  authDomain: "sabore-be19b.firebaseapp.com",  projectId: "sabore-be19b",  storageBucket: "sabore-be19b.firebasestorage.app",  messagingSenderId: "304349731243",  appId: "1:304349731243:web:8dc64e1a2550821dd75aee"};firebase.initializeApp(firebaseConfig);const auth = firebase.auth();const localUser = api.getUser();const navCta = document.getElementById('navCta');const mobileSignup = document.getElementById('mobileSignup');const mobileLogin = document.getElementById('mobileLogin');if (localUser) {  const displayName = localUser.nome || 'Cozinheiro';  if (navCta) {    navCta.innerHTML = `      <span class="user-greeting" style="font-size: 0.9rem; font-weight: 500; color: var(--light); margin-right: 15px;">Olá, ${displayName}!</span>      <a href="../Dashboard/home/index.html" class="btn-nav-login" style="margin-right: 10px; text-decoration: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 18px; border-radius: 40px; cursor: none;">Dashboard</a>      <button id="btnLogout" class="btn-nav-signup" style="background: transparent; border: 1px solid rgba(242,244,243,0.2); color: var(--light) !important; padding: 8px 18px; cursor: none;">Sair</button>    `;    document.getElementById('btnLogout').addEventListener('click', () => {      api.clearToken();      api.clearUser();      localStorage.removeItem("sabore_user_avatar");      if (typeof auth !== 'undefined') {        auth.signOut().then(() => { window.location.reload(); }).catch(() => { window.location.reload(); });      } else {        window.location.reload();      }    });  }  if (mobileSignup && mobileLogin) {    mobileSignup.textContent = `Olá, ${displayName}!`;    mobileSignup.href = '../Dashboard/home/index.html';    mobileLogin.textContent = 'Sair';    mobileLogin.href = '#';    mobileLogin.addEventListener('click', (e) => {      e.preventDefault();      api.clearToken();      api.clearUser();      localStorage.removeItem("sabore_user_avatar");      if (typeof auth !== 'undefined') {        auth.signOut().then(() => { window.location.reload(); }).catch(() => { window.location.reload(); });      } else {        window.location.reload();      }    });  }} else {  if (navCta) {    navCta.innerHTML = `      <a href="../login/index.html" class="btn-nav-login">Entrar</a>      <a href="../cadastro/index.html" class="btn-nav-signup">Criar Conta</a>    `;  }  if (mobileSignup && mobileLogin) {    mobileSignup.textContent = 'Criar Conta';    mobileSignup.href = '../cadastro/index.html';    mobileLogin.textContent = 'Entrar';    mobileLogin.href = '../login/index.html';  }}if (typeof auth !== 'undefined') {  auth.onAuthStateChanged((user) => {    if (user && !localUser) {      auth.signOut().then(() => { window.location.reload(); });    }  });}

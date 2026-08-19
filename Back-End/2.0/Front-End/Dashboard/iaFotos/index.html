@@ -1,296 +1,1 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ — Reconhecimento por Fotos com IA</title>
-  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <div class="dashboard-container">
-
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <a href="../../inicial/index.html" class="logo-area">
-          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
-        </a>
-        <p class="sidebar-slogan">Saboreie novas possibilities</p>
-      </div>
-
-      <nav class="sidebar-menu">
-        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
-        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
-        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
-        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
-        <a href="#" class="menu-item active" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
-        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
-        <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
-        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
-        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
-        <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
-      </nav>
-
-      <div class="sidebar-footer-promo">
-        <div class="promo-card-compact">
-          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
-          <div class="promo-info">
-            <h4>Libere a cozinha!</h4>
-            <p>Tenha recursos ilimitados</p>
-            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar PRO</button>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <main class="main-content">
-
-      <header class="navbar">
-        <div class="navbar-left">
-          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
-          <div class="nav-welcome-text">
-            <h2>IA por Fotos <i class="fa-solid fa-camera" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
-            <p>Escaneie e identifique receitas a partir de imagens</p>
-          </div>
-        </div>
-
-        <div class="navbar-right">
-          <button class="nav-action-btn" id="notifications-btn" title="Notificações">
-            <i class="fa-solid fa-bell"></i>
-            <span class="badge-dot"></span>
-          </button>
-          <button class="nav-action-btn" id="settings-btn" title="Configurações">
-            <i class="fa-solid fa-gear"></i>
-          </button>
-          
-          <div class="user-profile-badge" id="profile-dropdown-trigger">
-            <div class="user-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" alt="Avatar Davi" class="user-avatar">
-              <span class="user-status-dot online"></span>
-            </div>
-            <div class="user-meta">
-              <span class="user-name">Davi</span>
-              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>
-            </div>
-            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
-          </div>
-        </div>
-      </header>
-
-      <div class="dashboard-body">
-
-        <div class="ia-fotos-grid">
-
-          <div class="ia-panel-left">
-            
-            <div class="setup-widget">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload da Imagem</h3>
-              </div>
-
-              <div class="upload-zone" id="photo-upload-zone">
-                <i class="fa-solid fa-camera-retro"></i>
-                <p class="zone-title">Arraste uma foto de comida aqui</p>
-                <p class="zone-subtitle">ou clique para selecionar do dispositivo</p>
-                <input type="file" id="photo-file-input" accept="image/*" class="hidden">
-              </div>
-
-              <div class="scan-preview-container hidden" id="photo-preview-container">
-                <div class="image-wrapper">
-                  <img src="" id="photo-preview-img" alt="Preview da Receita">
-
-                  <div class="scanner-line hidden" id="scanner-line"></div>
-
-                  <div class="bounding-boxes-container" id="bounding-boxes-container"></div>
-                </div>
-                
-                <div class="preview-actions">
-                  <button type="button" class="btn-remove-photo" id="remove-photo-btn">
-                    <i class="fa-solid fa-trash"></i> Remover Foto
-                  </button>
-                </div>
-              </div>
-            </div>
-
-
-
-          </div>
-
-          <div class="ia-panel-right">
-            
-            <div class="results-container-panel" id="results-container-panel">
-
-              <div class="state-view state-idle" id="state-idle">
-                <div class="idle-content">
-                  <div class="idle-circle-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                  <h3>Aguardando Imagem</h3>
-                  <p>Envie uma foto de ingredientes ou de um prato finalizado. A IA do Saboré irá escaneá-la para identificar ingredientes e estruturar a receita perfeita.</p>
-                </div>
-              </div>
-
-              <div class="state-view state-scanning hidden" id="state-scanning">
-                <div class="scanning-content">
-                  <div class="loader-spinner">
-                    <div class="spinner-circle"></div>
-                    <div class="spinner-logo"><i class="fa-solid fa-camera"></i></div>
-                  </div>
-                  <h3>Analisando a foto...</h3>
-                  <div class="scan-status-log" id="scan-status-log">
-                    <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo pixels da imagem...</p>
-                    <p class="status-line"><i class="fa-regular fa-circle"></i> Detectando contornos e formas...</p>
-                    <p class="status-line"><i class="fa-regular fa-circle"></i> Combinando com base de dados alimentícia...</p>
-                    <p class="status-line"><i class="fa-regular fa-circle"></i> Finalizando rótulos de confiança...</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="state-view state-results hidden" id="state-results">
-                <div class="results-header">
-                  <span class="detection-badge"><i class="fa-solid fa-circle-check"></i> Análise Concluída</span>
-                  <h2 id="detected-food-title">Pizza Margherita Identificada!</h2>
-                  <p>Encontramos os seguintes ingredientes e proporções na imagem:</p>
-                </div>
-
-                <div class="detection-results-list" id="detection-results-list">
-                  
-                </div>
-
-                <div class="results-actions">
-                  <button class="btn-primary-action-full" id="btn-generate-recipe">
-                    <span>✨ Gerar Receita Completa com IA</span>
-                  </button>
-                  <button class="btn-secondary-action-full" id="btn-reset-scan">
-                    <i class="fa-solid fa-rotate-left"></i> Analisar Outra Imagem
-                  </button>
-                </div>
-              </div>
-
-              <div class="state-view state-recipe hidden" id="state-recipe">
-                <div class="recipe-result-header">
-                  <span class="recipe-ai-badge"><i class="fa-solid fa-robot"></i> Receita Gerada por IA</span>
-                  <h2 id="result-recipe-title">Pizza Margherita Tradicional</h2>
-                  
-                  <div class="recipe-quick-tags">
-                    <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="result-recipe-time">30 min</span></span>
-                    <span class="q-tag"><i class="fa-solid fa-utensils"></i> <span id="result-recipe-servings">2 porções</span></span>
-                    <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="result-recipe-difficulty">Fácil</span></span>
-                    <span class="q-tag vegetarian-tag" id="result-recipe-diet-tag"><i class="fa-solid fa-leaf"></i> Vegetariano</span>
-                  </div>
-                </div>
-
-                <div class="recipe-result-body">
-                  <div class="recipe-ingredients-side">
-                    <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
-                    <ul id="result-ingredients-list">
-                      
-                    </ul>
-                  </div>
-
-                  <div class="recipe-steps-side">
-                    <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
-                    <ol id="result-steps-list">
-                      
-                    </ol>
-                  </div>
-                </div>
-
-                <div class="recipe-result-footer">
-                  <button class="btn-secondary-modal" id="btn-back-to-results"><i class="fa-solid fa-chevron-left"></i> Voltar</button>
-                  <button class="btn-primary-modal" id="save-recipe-btn"><i class="fa-solid fa-bookmark"></i> Salvar na Coleção</button>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </main>
-
-  </div>
-
-  <div class="modal-overlay" id="save-to-book-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Salvar no Livro de Receitas</h3>
-        <p>Escolha em qual coleção salvar esta receita:</p>
-      </div>
-      <div class="book-selection-list" id="save-book-options-container">
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="notifications-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Notificações</h3>
-        <p>Acompanhe suas novidades</p>
-      </div>
-      <div class="notifications-list">
-        <div class="notif-item unread">
-          <span class="notif-icon"><i class="fa-solid fa-star"></i></span>
-          <div class="notif-info">
-            <p><strong>Chef Saboré IA</strong> atualizou sua receita recomendada de Risoto de Cogumelos.</p>
-            <span class="notif-time">há 30 minutos</span>
-          </div>
-        </div>
-        <div class="notif-item">
-          <span class="notif-icon"><i class="fa-solid fa-user-group"></i></span>
-          <div class="notif-info">
-            <p><strong>Júlia</strong> curtiu o seu livro de receitas "Fitness".</p>
-            <span class="notif-time">há 5 horas</span>
-          </div>
-        </div>
-        <div class="notif-item">
-          <span class="notif-icon"><i class="fa-solid fa-gem"></i></span>
-          <div class="notif-info">
-            <p><strong>Plano PRO ativado!</strong> Agora você tem acesso a estatísticas detalhadas e geração ilimitada.</p>
-            <span class="notif-time">há 3 dias</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="celebration-modal">
-    <div class="celebration-card">
-      <div class="fireworks-canvas"></div>
-      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>
-      <h2>Parabéns, Davi! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>
-      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>
-      
-      <div class="pro-features-grid">
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <h4>IA Ilimitada</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-video"></i>
-          <h4>Importar Links</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-chart-pie"></i>
-          <h4>Estatísticas</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-infinity"></i>
-          <h4>Livros Infinitos</h4>
-        </div>
-      </div>
-
-      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>
-    </div>
-  </div>
-
-  <script src="../../assets/js/api.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+<!DOCTYPE html><html lang="pt-BR"><head>  <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>SABORÉ — Reconhecimento por Fotos com IA</title>  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">  <link rel="stylesheet" href="style.css"></head><body>  <div class="dashboard-container">    <aside class="sidebar">      <div class="sidebar-header">        <a href="../../inicial/index.html" class="logo-area">          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">        </a>        <p class="sidebar-slogan">Saboreie novas possibilities</p>      </div>      <nav class="sidebar-menu">        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>        <a href="#" class="menu-item active" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>        <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>        <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>      </nav>      <div class="sidebar-footer-promo">        <div class="promo-card-compact">          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>          <div class="promo-info">            <h4>Libere a cozinha!</h4>            <p>Tenha recursos ilimitados</p>            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar PRO</button>          </div>        </div>      </div>    </aside>    <main class="main-content">      <header class="navbar">        <div class="navbar-left">          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>          <div class="nav-welcome-text">            <h2>IA por Fotos <i class="fa-solid fa-camera" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>            <p>Escaneie e identifique receitas a partir de imagens</p>          </div>        </div>        <div class="navbar-right">          <button class="nav-action-btn" id="notifications-btn" title="Notificações">            <i class="fa-solid fa-bell"></i>            <span class="badge-dot"></span>          </button>          <button class="nav-action-btn" id="settings-btn" title="Configurações">            <i class="fa-solid fa-gear"></i>          </button>          <div class="user-profile-badge" id="profile-dropdown-trigger">            <div class="user-avatar-wrap">              <img src="" alt="Avatar Davi" class="user-avatar">              <span class="user-status-dot online"></span>            </div>            <div class="user-meta">              <span class="user-name">Davi</span>              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>            </div>            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>          </div>        </div>      </header>      <div class="dashboard-body">        <div class="ia-fotos-grid">          <div class="ia-panel-left">            <div class="setup-widget">              <div class="widget-header">                <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload da Imagem</h3>              </div>              <div class="upload-zone" id="photo-upload-zone">                <i class="fa-solid fa-camera-retro"></i>                <p class="zone-title">Arraste uma foto de comida aqui</p>                <p class="zone-subtitle">ou clique para selecionar do dispositivo</p>                <input type="file" id="photo-file-input" accept="image/*" class="hidden">              </div>              <div class="scan-preview-container hidden" id="photo-preview-container">                <div class="image-wrapper">                  <img src="" id="photo-preview-img" alt="Preview da Receita">                  <div class="scanner-line hidden" id="scanner-line"></div>                  <div class="bounding-boxes-container" id="bounding-boxes-container"></div>                </div>                <div class="preview-actions">                  <button type="button" class="btn-remove-photo" id="remove-photo-btn">                    <i class="fa-solid fa-trash"></i> Remover Foto                  </button>                </div>              </div>            </div>          </div>          <div class="ia-panel-right">            <div class="results-container-panel" id="results-container-panel">              <div class="state-view state-idle" id="state-idle">                <div class="idle-content">                  <div class="idle-circle-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>                  <h3>Aguardando Imagem</h3>                  <p>Envie uma foto de ingredientes ou de um prato finalizado. A IA do Saboré irá escaneá-la para identificar ingredientes e estruturar a receita perfeita.</p>                </div>              </div>              <div class="state-view state-scanning hidden" id="state-scanning">                <div class="scanning-content">                  <div class="loader-spinner">                    <div class="spinner-circle"></div>                    <div class="spinner-logo"><i class="fa-solid fa-camera"></i></div>                  </div>                  <h3>Analisando a foto...</h3>                  <div class="scan-status-log" id="scan-status-log">                    <p class="status-line active"><i class="fa-solid fa-circle-notch fa-spin"></i> Lendo pixels da imagem...</p>                    <p class="status-line"><i class="fa-regular fa-circle"></i> Detectando contornos e formas...</p>                    <p class="status-line"><i class="fa-regular fa-circle"></i> Combinando com base de dados alimentícia...</p>                    <p class="status-line"><i class="fa-regular fa-circle"></i> Finalizando rótulos de confiança...</p>                  </div>                </div>              </div>              <div class="state-view state-results hidden" id="state-results">                <div class="results-header">                  <span class="detection-badge"><i class="fa-solid fa-circle-check"></i> Análise Concluída</span>                  <h2 id="detected-food-title">Pizza Margherita Identificada!</h2>                  <p>Encontramos os seguintes ingredientes e proporções na imagem:</p>                </div>                <div class="detection-results-list" id="detection-results-list">                </div>                <div class="results-actions">                  <button class="btn-primary-action-full" id="btn-generate-recipe">                    <span>✨ Gerar Receita Completa com IA</span>                  </button>                  <button class="btn-secondary-action-full" id="btn-reset-scan">                    <i class="fa-solid fa-rotate-left"></i> Analisar Outra Imagem                  </button>                </div>              </div>              <div class="state-view state-recipe hidden" id="state-recipe">                <div class="recipe-result-header">                  <span class="recipe-ai-badge"><i class="fa-solid fa-robot"></i> Receita Gerada por IA</span>                  <h2 id="result-recipe-title">Pizza Margherita Tradicional</h2>                  <div class="recipe-quick-tags">                    <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="result-recipe-time">30 min</span></span>                    <span class="q-tag"><i class="fa-solid fa-utensils"></i> <span id="result-recipe-servings">2 porções</span></span>                    <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="result-recipe-difficulty">Fácil</span></span>                    <span class="q-tag vegetarian-tag" id="result-recipe-diet-tag"><i class="fa-solid fa-leaf"></i> Vegetariano</span>                  </div>                </div>                <div class="recipe-result-body">                  <div class="recipe-ingredients-side">                    <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>                    <ul id="result-ingredients-list">                    </ul>                  </div>                  <div class="recipe-steps-side">                    <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>                    <ol id="result-steps-list">                    </ol>                  </div>                </div>                <div class="recipe-result-footer">                  <button class="btn-secondary-modal" id="btn-back-to-results"><i class="fa-solid fa-chevron-left"></i> Voltar</button>                  <button class="btn-primary-modal" id="save-recipe-btn"><i class="fa-solid fa-bookmark"></i> Salvar na Coleção</button>                </div>              </div>            </div>          </div>        </div>      </div>    </main>  </div>  <div class="modal-overlay" id="save-to-book-modal">    <div class="modal-card small-modal">      <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>      <div class="modal-header-simple">        <h3>Salvar no Livro de Receitas</h3>        <p>Escolha em qual coleção salvar esta receita:</p>      </div>      <div class="book-selection-list" id="save-book-options-container">      </div>    </div>  </div>  <div class="modal-overlay" id="notifications-modal">    <div class="modal-card small-modal">      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>      <div class="modal-header-simple">        <h3>Notificações</h3>        <p>Acompanhe suas novidades</p>      </div>      <div class="notifications-list">        <div class="notif-item unread">          <span class="notif-icon"><i class="fa-solid fa-star"></i></span>          <div class="notif-info">            <p><strong>Chef Saboré IA</strong> atualizou sua receita recomendada de Risoto de Cogumelos.</p>            <span class="notif-time">há 30 minutos</span>          </div>        </div>        <div class="notif-item">          <span class="notif-icon"><i class="fa-solid fa-user-group"></i></span>          <div class="notif-info">            <p><strong>Júlia</strong> curtiu o seu livro de receitas "Fitness".</p>            <span class="notif-time">há 5 horas</span>          </div>        </div>        <div class="notif-item">          <span class="notif-icon"><i class="fa-solid fa-gem"></i></span>          <div class="notif-info">            <p><strong>Plano PRO ativado!</strong> Agora você tem acesso a estatísticas detalhadas e geração ilimitada.</p>            <span class="notif-time">há 3 dias</span>          </div>        </div>      </div>    </div>  </div>  <div class="modal-overlay" id="celebration-modal">    <div class="celebration-card">      <div class="fireworks-canvas"></div>      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>      <h2>Parabéns, Davi! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>      <div class="pro-features-grid">        <div class="pro-feat-item">          <i class="fa-solid fa-wand-magic-sparkles"></i>          <h4>IA Ilimitada</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-video"></i>          <h4>Importar Links</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-chart-pie"></i>          <h4>Estatísticas</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-infinity"></i>          <h4>Livros Infinitos</h4>        </div>      </div>      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>    </div>  </div>  <script src="../../assets/js/api.js"></script>  <script src="script.js"></script></body></html>

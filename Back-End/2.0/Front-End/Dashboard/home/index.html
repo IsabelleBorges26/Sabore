@@ -1,790 +1,605 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SABORÉ - Home</title>
+    <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <a href="../../inicial/index.html" class="logo-area">
+            <img
+              src="../../assets/LOGO_SABORÉ-SEM FUNDO.png"
+              alt="Saboré Logo"
+              class="sidebar-logo"
+            />
+          </a>
+          <p class="sidebar-slogan">Saboreie novas possibilidades</p>
+        </div>
+        <nav class="sidebar-menu">
+          <a href="#" class="menu-item active" data-target="home"
+            ><i class="fa-solid fa-house"></i> Home</a
+          >
+          <a href="../livros/index.html" class="menu-item" data-target="livros"
+            ><i class="fa-solid fa-book"></i> Meus Livros</a
+          >
+          <a
+            href="../explorar/index.html"
+            class="menu-item"
+            data-target="explorar"
+            ><i class="fa-solid fa-compass"></i> Explorar Receitas</a
+          >
+          <a
+            href="../chefIA/index.html"
+            class="menu-item"
+            data-target="ia-receitas"
+            ><i class="fa-solid fa-robot"></i> IA de Receitas</a
+          >
+          <a
+            href="../iaFotos/index.html"
+            class="menu-item"
+            data-target="ia-foto"
+            ><i class="fa-solid fa-camera"></i> IA por Foto</a
+          >
+          <a
+            href="../importVideo/index.html"
+            class="menu-item"
+            data-target="importar"
+            ><i class="fa-solid fa-video"></i> Importar Vídeo</a
+          >
+          <a
+            href="../favoritos/index.html"
+            class="menu-item"
+            data-target="favoritas"
+            ><i class="fa-solid fa-heart"></i> Favoritas</a
+          >
+          <a href="../perfil/index.html" class="menu-item" data-target="perfil"
+            ><i class="fa-solid fa-user"></i> Perfil</a
+          >
+          <a href="#pro" class="menu-item pro-menu-item" data-target="pro"
+            ><i class="fa-solid fa-gem"></i> Plano PRO</a
+          >
+          <a
+            href="../configuracoes/index.html"
+            class="menu-item"
+            data-target="config"
+            ><i class="fa-solid fa-gear"></i> Configurações</a
+          >
+        </nav>
+        <div class="sidebar-footer-promo">
+          <div class="promo-card-compact">
+            <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
+            <div class="promo-info">
+              <h4>Libere a cozinha!</h4>
+              <p>Tenha recursos ilimitados</p>
+              <button class="btn-promo-action" id="sidebar-upgrade-btn">
+                <i class="fa-solid fa-crown"></i> Virar PRO
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+      <main class="main-content">
+        <header class="navbar">
+          <div class="navbar-left">
+            <button class="hamburger-btn" id="mobile-toggle">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="nav-welcome-text">
+              <h2>
+                Olá, <span id="welcome-name">Usuário</span>
+                <i
+                  class="fa-solid fa-utensils"
+                  style="
+                    color: var(--accent);
+                    margin-left: 4px;
+                    font-size: 1.1rem;
+                  "
+                ></i>
+              </h2>
+              <p>O que vamos cozinhar hoje?</p>
+            </div>
+          </div>
+          <div class="navbar-center">
+            <div class="search-bar">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input
+                type="text"
+                id="global-search"
+                placeholder="Pesquisar receitas, ingredientes ou categorias..."
+              />
+              <span class="search-shortcut">Ctrl K</span>
+            </div>
+          </div>
+          <div class="navbar-right">
+            <button
+              class="nav-action-btn"
+              id="notifications-btn"
+              title="Notificações"
+            >
+              <i class="fa-solid fa-bell"></i>
+              <span class="badge-dot"></span>
+            </button>
+            <button
+              class="nav-action-btn"
+              id="settings-btn"
+              title="Configurações"
+            >
+              <i class="fa-solid fa-gear"></i>
+            </button>
+            <div class="user-profile-badge" id="profile-dropdown-trigger">
+              <div class="user-avatar-wrap">
+                <img src="" alt="Avatar Davi" class="user-avatar" />
+                <span class="user-status-dot online"></span>
+              </div>
+              <div class="user-meta">
+                <span class="user-name"></span>
+                <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>
+              </div>
+              <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+            </div>
+          </div>
+        </header>
+        <div class="dashboard-body">
+          <section class="quick-actions-bar">
+            <button class="quick-action-card qa-ai" id="qa-generate-ia">
+              <span class="qa-icon"
+                ><i class="fa-solid fa-wand-magic-sparkles"></i
+              ></span>
+              <div class="qa-details">
+                <h3>Gerar Receita com IA</h3>
+                <p>Crie um prato em segundos</p>
+              </div>
+            </button>
+            <button class="quick-action-card qa-photo" id="qa-analyze-photo">
+              <span class="qa-icon"><i class="fa-solid fa-camera"></i></span>
+              <div class="qa-details">
+                <h3>Analisar Foto</h3>
+                <p>Reconheça pratos de comida</p>
+              </div>
+            </button>
+            <button class="quick-action-card qa-import" id="qa-import-video">
+              <span class="qa-icon"><i class="fa-solid fa-video"></i></span>
+              <div class="qa-details">
+                <h3>Importar Receita</h3>
+                <p>Extraia de links do TikTok ou Insta</p>
+              </div>
+            </button>
+          </section>
+          <div class="dashboard-grid">
+            <div class="main-column">
+              <section class="card-section" id="section-livros">
+                <div class="section-title-wrap">
+                  <h3>
+                    <i class="fa-solid fa-book"></i> Meus Livros de Receitas
+                  </h3>
+                  <button class="btn-text-action" id="new-book-btn">
+                    <i class="fa-solid fa-plus"></i> Novo Livro
+                  </button>
+                </div>
+                <div class="books-scroll-grid" id="books-list-container"></div>
+              </section>
+              <section class="card-section" id="section-favoritas">
+                <div class="section-title-wrap">
+                  <h3><i class="fa-solid fa-heart"></i> Favoritas Recentes</h3>
+                  <button class="btn-text-action">Ver Todas</button>
+                </div>
+                <div class="recipes-grid" id="favorites-container">
+                </div>
+              </section>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ - Home</title>
-  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-  <div class="dashboard-container">
-
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <a href="../../inicial/index.html" class="logo-area">
-          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
-        </a>
-        <p class="sidebar-slogan">Saboreie novas possibilidades</p>
-      </div>
-
-      <nav class="sidebar-menu">
-        <a href="#" class="menu-item active" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
-        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus
-          Livros</a>
-        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar
-          Receitas</a>
-        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de
-          Receitas</a>
-        <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
-        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar
-          Vídeo</a>
-        <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
-        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
-        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
-        <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
-      </nav>
-
-      <div class="sidebar-footer-promo">
-        <div class="promo-card-compact">
-          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
-          <div class="promo-info">
-            <h4>Libere a cozinha!</h4>
-            <p>Tenha recursos ilimitados</p>
-            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar
-              PRO</button>
+            </div>
+            <div class="side-column">
+              <section class="widget-card">
+                <div class="widget-header">
+                  <h3>
+                    <i class="fa-solid fa-basket-shopping"></i> Dispensa de
+                    Ingredientes
+                  </h3>
+                </div>
+                <div
+                  class="ingredients-list"
+                  id="widget-ingredients-container"
+                ></div>
+                <div class="add-ingredient-inline-wrap">
+                  <input
+                    type="text"
+                    id="add-ing-input"
+                    placeholder="Adicionar ingrediente..."
+                  />
+                  <button id="add-ing-btn">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+                <div class="widget-actions">
+                  <button
+                    class="btn-widget-outline"
+                    id="manage-ingredients-btn"
+                  >
+                    Gerenciar Todos
+                  </button>
+                  <button class="btn-widget-filled" id="generate-dispensa-btn">
+                    ⚡ Gerar com estes
+                  </button>
+                </div>
+              </section>
+              <section class="widget-card">
+                <div class="widget-header">
+                  <h3>
+                    <i class="fa-solid fa-chart-simple"></i> Suas Estatísticas
+                  </h3>
+                  <span class="badge-pro-inline">PRO</span>
+                </div>
+                <div class="stats-panel-grid">
+                  <div class="stat-bubble-item">
+                    <span class="stat-count-num">0</span>
+                    <span class="stat-count-label">Salvas</span>
+                  </div>
+                  <div class="stat-bubble-item">
+                    <span class="stat-count-num">0</span>
+                    <span class="stat-count-label">Criadas</span>
+                  </div>
+                  <div class="stat-bubble-item">
+                    <span class="stat-count-num">0</span>
+                    <span class="stat-count-label">Geradas IA</span>
+                  </div>
+                  <div class="stat-bubble-item">
+                    <span class="stat-count-num">0</span>
+                    <span class="stat-count-label">Livros</span>
+                  </div>
+                </div>
+              </section>
+              <section class="widget-card">
+                <div class="widget-header">
+                  <h3>
+                    <i class="fa-solid fa-clock-rotate-left"></i> Atividade
+                    Recente
+                  </h3>
+                </div>
+                <div class="activity-feed-timeline"></div>
+              </section>
+              <section class="upgrade-widget-card" id="upgrade-pro-section">
+                <div class="upgrade-glow"></div>
+                <div class="upgrade-content">
+                  <div class="up-badge">
+                    <i class="fa-solid fa-gem"></i> SABORÉ PRO
+                  </div>
+                  <h3>Seja um cozinheiro sem limites</h3>
+                  <ul class="upgrade-features-list">
+                    <li>
+                      <i class="fa-solid fa-check"></i> IA de Receitas Ilimitada
+                    </li>
+                    <li>
+                      <i class="fa-solid fa-check"></i> Importador de Vídeos
+                    </li>
+                    <li><i class="fa-solid fa-check"></i> Livros Infinitos</li>
+                    <li>
+                      <i class="fa-solid fa-check"></i> Estatísticas Avançadas
+                    </li>
+                  </ul>
+                  <button
+                    class="btn-upgrade-pro"
+                    id="dashboard-upgrade-action-btn"
+                  >
+                    <i class="fa-solid fa-gem"></i> Tornar-se PRO
+                  </button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div class="modal-overlay" id="ai-generator-modal">
+      <div class="modal-card">
+        <button class="modal-close-btn" id="close-ai-modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="ai-inputs-view" id="ai-form-container">
+          <div class="ai-header" style="margin-bottom: 24px">
+            <span class="ai-tag"
+              ><i class="fa-solid fa-robot"></i> Chef IA Saboré</span
+            >
+            <h2>Crie uma receita em segundos</h2>
+            <p>
+              Fale o que tem na dispensa e deixe o resto com a nossa
+              inteligência artificial.
+            </p>
+          </div>
+          <form class="ai-generator-form" id="ai-recipe-form">
+            <div class="form-group">
+              <label for="ai-ingredients"
+                ><i class="fa-solid fa-kitchen-set"></i> Ingredientes
+                disponíveis</label
+              >
+              <input
+                type="text"
+                id="ai-ingredients"
+                placeholder="Ex: frango, brócolis, queijo, tomate..."
+                required
+              />
+              <small>Separe por vírgulas para melhores resultados.</small>
+            </div>
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="ai-time"
+                  ><i class="fa-solid fa-clock"></i> Tempo máximo (min)</label
+                >
+                <div class="range-slider-wrap">
+                  <input
+                    type="range"
+                    id="ai-time"
+                    min="5"
+                    max="120"
+                    step="5"
+                    value="30"
+                  />
+                  <span class="range-value" id="ai-time-val">30 min</span>
+                </div>
+              </div>
+              <div class="form-group flex-1">
+                <label for="ai-diet"
+                  ><i class="fa-solid fa-leaf"></i> Restrição alimentar</label
+                >
+                <select id="ai-diet">
+                  <option value="none">Nenhuma</option>
+                  <option value="vegano">Vegano</option>
+                  <option value="vegetariano">Vegetariano</option>
+                  <option value="lowcarb">Low Carb</option>
+                  <option value="glutenfree">Sem Glúten</option>
+                  <option value="fit">Fitness / Hipercalórico</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn-generate-ai">
+              <span>✨ Gerar Receita com IA</span>
+            </button>
+          </form>
+        </div>
+        <div class="ai-loading-view hidden" id="ai-loading-container">
+          <div class="loader-spinner">
+            <div class="spinner-circle"></div>
+            <div class="spinner-logo"><i class="fa-solid fa-robot"></i></div>
+          </div>
+          <h3>O Chef IA está cozinhando...</h3>
+          <p class="loading-status-text" id="ai-loading-step">
+            Analisando seus ingredientes...
+          </p>
+        </div>
+        <div class="ai-recipe-result-view hidden" id="ai-result-container">
+          <div class="recipe-result-header">
+            <span class="recipe-ai-badge"
+              ><i class="fa-solid fa-wand-magic-sparkles"></i> IA Culinária
+              Saboré</span
+            >
+            <h2 id="result-recipe-title">Frango ao Limão Gratinado</h2>
+            <div class="recipe-quick-tags">
+              <span class="q-tag"
+                ><i class="fa-regular fa-clock"></i>
+                <span id="result-recipe-time">35 min</span></span
+              >
+              <span class="q-tag"
+                ><i class="fa-solid fa-utensils"></i>
+                <span id="result-recipe-servings">4 porções</span></span
+              >
+              <span class="q-tag"
+                ><i class="fa-solid fa-gauge-simple"></i>
+                <span id="result-recipe-difficulty">Fácil</span></span
+              >
+              <span class="q-tag vegetarian-tag" id="result-recipe-diet-tag"
+                ><i class="fa-solid fa-leaf"></i> Vegano</span
+              >
+            </div>
+          </div>
+          <div class="recipe-result-body">
+            <div class="recipe-ingredients-side">
+              <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
+              <ul id="result-ingredients-list"></ul>
+            </div>
+            <div class="recipe-steps-side">
+              <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
+              <ol id="result-steps-list"></ol>
+            </div>
+          </div>
+          <div class="recipe-result-footer">
+            <button class="btn-secondary-modal" id="regenerate-recipe-btn">
+              <i class="fa-solid fa-arrows-rotate"></i> Gerar Outra
+            </button>
+            <button class="btn-primary-modal" id="save-recipe-btn">
+              <i class="fa-solid fa-bookmark"></i> Salvar na Coleção
+            </button>
           </div>
         </div>
       </div>
-    </aside>
-
-    <main class="main-content">
-
-      <header class="navbar">
-        <div class="navbar-left">
-          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
-          <div class="nav-welcome-text">
-            <h2>Olá, Davi <i class="fa-solid fa-utensils"
-                style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
-            <p>O que vamos cozinhar hoje?</p>
-          </div>
+    </div>
+    <div class="modal-overlay" id="add-book-modal">
+      <div class="modal-card small-modal">
+        <button class="modal-close-btn" id="close-book-modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="modal-header-simple">
+          <h3>Criar Novo Livro de Receitas</h3>
+          <p>Organize suas coleções culinárias</p>
         </div>
-
-        <div class="navbar-center">
-          <div class="search-bar">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="global-search" placeholder="Pesquisar receitas, ingredientes ou categorias...">
-            <span class="search-shortcut">Ctrl K</span>
+        <form id="new-book-form" class="modal-simple-form">
+          <div class="form-group-simple">
+            <label for="book-title">Nome do Livro</label>
+            <input
+              type="text"
+              id="book-title"
+              placeholder="Ex: Jantares Especiais, Lanches Rápidos..."
+              required
+            />
           </div>
-        </div>
-
-        <div class="navbar-right">
-          <button class="nav-action-btn" id="notifications-btn" title="Notificações">
-            <i class="fa-solid fa-bell"></i>
-            <span class="badge-dot"></span>
-          </button>
-          <button class="nav-action-btn" id="settings-btn" title="Configurações">
-            <i class="fa-solid fa-gear"></i>
-          </button>
-
-          <div class="user-profile-badge" id="profile-dropdown-trigger">
-            <div class="user-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80"
-                alt="Avatar Davi" class="user-avatar">
-              <span class="user-status-dot online"></span>
-            </div>
-            <div class="user-meta">
-              <span class="user-name">Davi</span>
-              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>
-            </div>
-            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+          <div class="form-group-simple">
+            <label for="book-emoji-select">Ícone do Livro</label>
+            <select id="book-emoji-select">
+              <option value="fa-solid fa-mug-hot">Café / Matinal</option>
+              <option value="fa-solid fa-cake-candles">
+                Doces / Sobremesas
+              </option>
+              <option value="fa-solid fa-leaf">Saudável / Fit</option>
+              <option value="fa-solid fa-pizza-slice">Pizza / Massas</option>
+              <option value="fa-solid fa-bowl-food">
+                Prato Feito / Jantar
+              </option>
+              <option value="fa-solid fa-martini-glass-citrus">
+                Bebidas / Drinks
+              </option>
+            </select>
           </div>
-        </div>
-      </header>
-
-      <div class="dashboard-body">
-
-        <section class="quick-actions-bar">
-          <button class="quick-action-card qa-ai" id="qa-generate-ia">
-            <span class="qa-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-            <div class="qa-details">
-              <h3>Gerar Receita com IA</h3>
-              <p>Crie um prato em segundos</p>
-            </div>
-          </button>
-          <button class="quick-action-card qa-photo" id="qa-analyze-photo">
-            <span class="qa-icon"><i class="fa-solid fa-camera"></i></span>
-            <div class="qa-details">
-              <h3>Analisar Foto</h3>
-              <p>Reconheça pratos de comida</p>
-            </div>
-          </button>
-          <button class="quick-action-card qa-import" id="qa-import-video">
-            <span class="qa-icon"><i class="fa-solid fa-video"></i></span>
-            <div class="qa-details">
-              <h3>Importar Receita</h3>
-              <p>Extraia de links do TikTok ou Insta</p>
-            </div>
-          </button>
-        </section>
-
-        <div class="dashboard-grid">
-
-          <div class="main-column">
-
-            <section class="card-section" id="section-livros">
-              <div class="section-title-wrap">
-                <h3><i class="fa-solid fa-book"></i> Meus Livros de Receitas</h3>
-                <button class="btn-text-action" id="new-book-btn"><i class="fa-solid fa-plus"></i> Novo Livro</button>
-              </div>
-
-              <div class="books-scroll-grid" id="books-list-container">
-                
-                <div class="book-card-item b-1">
-                  <div class="book-cover"><i class="fa-solid fa-mug-hot"></i></div>
-                  <div class="book-info-area">
-                    <h4>Café da Manhã</h4>
-                    <p>12 receitas</p>
-                  </div>
-                  <span class="book-badge">Pessoal</span>
-                </div>
-
-                <div class="book-card-item b-2">
-                  <div class="book-cover"><i class="fa-solid fa-leaf"></i></div>
-                  <div class="book-info-area">
-                    <h4>Fitness</h4>
-                    <p>31 receitas</p>
-                  </div>
-                  <span class="book-badge pro">PRO</span>
-                </div>
-
-                <div class="book-card-item b-3">
-                  <div class="book-cover"><i class="fa-solid fa-cake-candles"></i></div>
-                  <div class="book-info-area">
-                    <h4>Sobremesas</h4>
-                    <p>18 receitas</p>
-                  </div>
-                  <span class="book-badge fav">Favorito</span>
-                </div>
-
-                <div class="book-card-item b-4">
-                  <div class="book-cover"><i class="fa-solid fa-heart"></i></div>
-                  <div class="book-info-area">
-                    <h4>Favoritas</h4>
-                    <p>42 receitas</p>
-                  </div>
-                  <span class="book-badge public">Público</span>
-                </div>
-
-                <div class="book-card-item b-5">
-                  <div class="book-cover"><i class="fa-solid fa-bolt"></i></div>
-                  <div class="book-info-area">
-                    <h4>Receitas Rápidas</h4>
-                    <p>24 receitas</p>
-                  </div>
-                  <span class="book-badge">Pessoal</span>
-                </div>
-              </div>
-            </section>
-
-            <section class="card-section" id="section-favoritas">
-              <div class="section-title-wrap">
-                <h3><i class="fa-solid fa-heart"></i> Favoritas Recentes</h3>
-                <button class="btn-text-action">Ver Todas</button>
-              </div>
-
-              <div class="recipes-grid" id="favorites-container">
-                
-                <article class="recipe-card" data-title="Lasanha de Berinjela" data-category="Almoço">
-                  <div class="recipe-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=400&q=80"
-                      alt="Lasanha" class="recipe-img">
-                    <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-                  </div>
-                  <div class="recipe-content-area">
-                    <span class="recipe-category">Almoço</span>
-                    <h4>Lasanha de Berinjela</h4>
-                    <div class="recipe-meta-bottom">
-                      <span><i class="fa-regular fa-clock"></i> 45 min</span>
-                      <span class="recipe-difficulty easy">Fácil</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="recipe-card" data-title="Bolo de Cenoura Fit" data-category="Sobremesa">
-                  <div class="recipe-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=400&q=80"
-                      alt="Bolo de Cenoura" class="recipe-img">
-                    <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-                  </div>
-                  <div class="recipe-content-area">
-                    <span class="recipe-category">Sobremesa</span>
-                    <h4>Bolo de Cenoura Fit</h4>
-                    <div class="recipe-meta-bottom">
-                      <span><i class="fa-regular fa-clock"></i> 35 min</span>
-                      <span class="recipe-difficulty medium">Médio</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="recipe-card" data-title="Omelete de Espinafre" data-category="Café da Manhã">
-                  <div class="recipe-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=400&q=80"
-                      alt="Omelete" class="recipe-img">
-                    <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-                  </div>
-                  <div class="recipe-content-area">
-                    <span class="recipe-category">Café da Manhã</span>
-                    <h4>Omelete de Espinafre</h4>
-                    <div class="recipe-meta-bottom">
-                      <span><i class="fa-regular fa-clock"></i> 15 min</span>
-                      <span class="recipe-difficulty easy">Fácil</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="recipe-card" data-title="Salmão ao Molho de Maracujá" data-category="Jantar">
-                  <div class="recipe-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1485921325814-a5add4c8c24e?auto=format&fit=crop&w=400&q=80"
-                      alt="Salmão" class="recipe-img">
-                    <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-                  </div>
-                  <div class="recipe-content-area">
-                    <span class="recipe-category">Jantar</span>
-                    <h4>Salmão Grelhado</h4>
-                    <div class="recipe-meta-bottom">
-                      <span><i class="fa-regular fa-clock"></i> 25 min</span>
-                      <span class="recipe-difficulty medium">Médio</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="recipe-card" data-title="Panqueca de Banana" data-category="Café da Manhã">
-                  <div class="recipe-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=400&q=80"
-                      alt="Panqueca" class="recipe-img">
-                    <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-                  </div>
-                  <div class="recipe-content-area">
-                    <span class="recipe-category">Café da Manhã</span>
-                    <h4>Panqueca de Banana</h4>
-                    <div class="recipe-meta-bottom">
-                      <span><i class="fa-regular fa-clock"></i> 10 min</span>
-                      <span class="recipe-difficulty easy">Fácil</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="recipe-card" data-title="Nhoque de Batata Doce" data-category="Massa">
-                  <div class="recipe-image-wrap">
-                    <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=400&q=80"
-                      alt="Nhoque" class="recipe-img">
-                    <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-                  </div>
-                  <div class="recipe-content-area">
-                    <span class="recipe-category">Massa</span>
-                    <h4>Nhoque de Batata Doce</h4>
-                    <div class="recipe-meta-bottom">
-                      <span><i class="fa-regular fa-clock"></i> 50 min</span>
-                      <span class="recipe-difficulty hard">Difícil</span>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            </section>
-
-            <section class="card-section">
-              <div class="section-title-wrap">
-                <h3><i class="fa-solid fa-fire"></i> Em Alta na Comunidade</h3>
-              </div>
-
-              <div class="trending-scroll-grid" id="trending-container">
-                <article class="trending-card" data-title="Risoto de Cogumelos" data-category="Jantar">
-                  <div class="trend-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=400&q=80"
-                      alt="Risoto" class="trend-img">
-                    <div class="trend-likes-badge"><i class="fa-solid fa-thumbs-up"></i> 1.2k</div>
-                  </div>
-                  <div class="trend-content-area">
-                    <h4>Risoto de Cogumelos</h4>
-                    <div class="trend-meta">
-                      <span><i class="fa-regular fa-clock"></i> 30m</span> ·
-                      <span class="difficulty-text">Médio</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="trending-card" data-title="Brownie de Chocolate Belga" data-category="Sobremesa">
-                  <div class="trend-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1564355808539-22fda35bed7e?auto=format&fit=crop&w=400&q=80"
-                      alt="Brownie" class="trend-img">
-                    <div class="trend-likes-badge"><i class="fa-solid fa-thumbs-up"></i> 952</div>
-                  </div>
-                  <div class="trend-content-area">
-                    <h4>Brownie Belga</h4>
-                    <div class="trend-meta">
-                      <span><i class="fa-regular fa-clock"></i> 25m</span> ·
-                      <span class="difficulty-text">Fácil</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="trending-card" data-title="Suco Verde Detox" data-category="Bebida">
-                  <div class="trend-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1610970881699-44a5587caaec?auto=format&fit=crop&w=400&q=80"
-                      alt="Suco Verde" class="trend-img">
-                    <div class="trend-likes-badge"><i class="fa-solid fa-thumbs-up"></i> 748</div>
-                  </div>
-                  <div class="trend-content-area">
-                    <h4>Suco Verde Detox</h4>
-                    <div class="trend-meta">
-                      <span><i class="fa-regular fa-clock"></i> 5m</span> ·
-                      <span class="difficulty-text">Fácil</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article class="trending-card" data-title="Hambúrguer Artesanal Blend" data-category="Lanches">
-                  <div class="trend-image-wrap">
-                    <img
-                      src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80"
-                      alt="Burguer" class="trend-img">
-                    <div class="trend-likes-badge"><i class="fa-solid fa-thumbs-up"></i> 2.1k</div>
-                  </div>
-                  <div class="trend-content-area">
-                    <h4>Blend Burger</h4>
-                    <div class="trend-meta">
-                      <span><i class="fa-regular fa-clock"></i> 20m</span> ·
-                      <span class="difficulty-text">Médio</span>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            </section>
-
-            <section class="card-section">
-              <div class="section-title-wrap">
-                <h3><i class="fa-solid fa-star"></i> Recomendadas para você</h3>
-              </div>
-
-              <div class="recommendations-scroll-grid" id="recommendations-container">
-                <article class="recommend-card" data-title="Ceviche Clássico Peruano">
-                  <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80"
-                    alt="Ceviche" class="rec-img">
-                  <div class="rec-overlay">
-                    <span class="rec-badge">Sugerido por IA</span>
-                    <h4>Ceviche Clássico</h4>
-                    <p>Combina com seu gosto por frutos do mar</p>
-                  </div>
-                </article>
-
-                <article class="recommend-card" data-title="Bowl de Quinoa com Legumes">
-                  <img
-                    src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80"
-                    alt="Quinoa" class="rec-img">
-                  <div class="rec-overlay">
-                    <span class="rec-badge">Rápido e Fit</span>
-                    <h4>Quinoa Bowl</h4>
-                    <p>Usa arroz/ingredientes na sua despensa</p>
-                  </div>
-                </article>
-
-                <article class="recommend-card" data-title="Espaguete Carbonara">
-                  <img
-                    src="https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=400&q=80"
-                    alt="Carbonara" class="rec-img">
-                  <div class="rec-overlay">
-                    <span class="rec-badge font-accent">Mais curtido</span>
-                    <h4>Carbonara Tradicional</h4>
-                    <p>Usa o queijo e ovos salvos</p>
-                  </div>
-                </article>
-              </div>
-            </section>
-
+          <div class="form-group-simple">
+            <label for="book-visibility">Visibilidade</label>
+            <select id="book-visibility">
+              <option value="Pessoal">Privado (Apenas eu)</option>
+              <option value="Favorito">Favorito (Visível no topo)</option>
+              <option value="Público">
+                Público (Compartilhado com amigos)
+              </option>
+            </select>
           </div>
-
-          <div class="side-column">
-
-            <section class="widget-card">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-basket-shopping"></i> Dispensa de Ingredientes</h3>
-              </div>
-
-              <div class="ingredients-list" id="widget-ingredients-container">
-                <label class="ingredient-checkbox">
-                  <input type="checkbox" checked value="Ovo">
-                  <span class="custom-chk"></span>
-                  <span class="ing-name">Ovo</span>
-                  <button class="ing-delete-btn"><i class="fa-solid fa-xmark"></i></button>
-                </label>
-
-                <label class="ingredient-checkbox">
-                  <input type="checkbox" checked value="Tomate">
-                  <span class="custom-chk"></span>
-                  <span class="ing-name">Tomate</span>
-                  <button class="ing-delete-btn"><i class="fa-solid fa-xmark"></i></button>
-                </label>
-
-                <label class="ingredient-checkbox">
-                  <input type="checkbox" checked value="Queijo">
-                  <span class="custom-chk"></span>
-                  <span class="ing-name">Queijo</span>
-                  <button class="ing-delete-btn"><i class="fa-solid fa-xmark"></i></button>
-                </label>
-
-                <label class="ingredient-checkbox">
-                  <input type="checkbox" checked value="Arroz">
-                  <span class="custom-chk"></span>
-                  <span class="ing-name">Arroz</span>
-                  <button class="ing-delete-btn"><i class="fa-solid fa-xmark"></i></button>
-                </label>
-
-                <label class="ingredient-checkbox">
-                  <input type="checkbox" checked value="Frango">
-                  <span class="custom-chk"></span>
-                  <span class="ing-name">Frango</span>
-                  <button class="ing-delete-btn"><i class="fa-solid fa-xmark"></i></button>
-                </label>
-              </div>
-
-              <div class="add-ingredient-inline-wrap">
-                <input type="text" id="add-ing-input" placeholder="Adicionar ingrediente...">
-                <button id="add-ing-btn"><i class="fa-solid fa-plus"></i></button>
-              </div>
-
-              <div class="widget-actions">
-                <button class="btn-widget-outline" id="manage-ingredients-btn">Gerenciar Todos</button>
-                <button class="btn-widget-filled" id="generate-dispensa-btn">⚡ Gerar com estes</button>
-              </div>
-            </section>
-
-            <section class="widget-card">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-chart-simple"></i> Suas Estatísticas</h3>
-                <span class="badge-pro-inline">PRO</span>
-              </div>
-
-              <div class="stats-panel-grid">
-                <div class="stat-bubble-item">
-                  <span class="stat-count-num">48</span>
-                  <span class="stat-count-label">Salvas</span>
-                </div>
-
-                <div class="stat-bubble-item">
-                  <span class="stat-count-num">12</span>
-                  <span class="stat-count-label">Criadas</span>
-                </div>
-
-                <div class="stat-bubble-item">
-                  <span class="stat-count-num">27</span>
-                  <span class="stat-count-label">Geradas IA</span>
-                </div>
-
-                <div class="stat-bubble-item">
-                  <span class="stat-count-num">6</span>
-                  <span class="stat-count-label">Livros</span>
-                </div>
-              </div>
-            </section>
-
-            <section class="widget-card">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-clock-rotate-left"></i> Atividade Recente</h3>
-              </div>
-
-              <div class="activity-feed-timeline">
-                <div class="activity-item">
-                  <span class="activity-dot active"></span>
-                  <div class="activity-detail">
-                    <p>Você gerou: <strong>Lasanha Fitness</strong></p>
-                    <span class="activity-time">há 2 horas</span>
-                  </div>
-                </div>
-
-                <div class="activity-item">
-                  <span class="activity-dot"></span>
-                  <div class="activity-detail">
-                    <p>Você salvou: <strong>Bolo de Cenoura</strong></p>
-                    <span class="activity-time">ontem</span>
-                  </div>
-                </div>
-
-                <div class="activity-item">
-                  <span class="activity-dot"></span>
-                  <div class="activity-detail">
-                    <p>Criou o livro: <strong>Café da Manhã</strong></p>
-                    <span class="activity-time">há 3 dias</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section class="upgrade-widget-card" id="upgrade-pro-section">
-              <div class="upgrade-glow"></div>
-              <div class="upgrade-content">
-                <div class="up-badge"><i class="fa-solid fa-gem"></i> SABORÉ PRO</div>
-                <h3>Seja um cozinheiro sem limites</h3>
-                <ul class="upgrade-features-list">
-                  <li><i class="fa-solid fa-check"></i> IA de Receitas Ilimitada</li>
-                  <li><i class="fa-solid fa-check"></i> Importador de Vídeos</li>
-                  <li><i class="fa-solid fa-check"></i> Livros Infinitos</li>
-                  <li><i class="fa-solid fa-check"></i> Estatísticas Avançadas</li>
-                </ul>
-                <button class="btn-upgrade-pro" id="dashboard-upgrade-action-btn"><i class="fa-solid fa-gem"></i>
-                  Tornar-se PRO</button>
-              </div>
-            </section>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </main>
-
-  </div>
-
-  <div class="modal-overlay" id="ai-generator-modal">
-    <div class="modal-card">
-      <button class="modal-close-btn" id="close-ai-modal"><i class="fa-solid fa-xmark"></i></button>
-
-      <div class="ai-inputs-view" id="ai-form-container">
-        <div class="ai-header" style="margin-bottom: 24px;">
-          <span class="ai-tag"><i class="fa-solid fa-robot"></i> Chef IA Saboré</span>
-          <h2>Crie uma receita em segundos</h2>
-          <p>Fale o que tem na dispensa e deixe o resto com a nossa inteligência artificial.</p>
-        </div>
-        <form class="ai-generator-form" id="ai-recipe-form">
-          <div class="form-group">
-            <label for="ai-ingredients"><i class="fa-solid fa-kitchen-set"></i> Ingredientes disponíveis</label>
-            <input type="text" id="ai-ingredients" placeholder="Ex: frango, brócolis, queijo, tomate..." required>
-            <small>Separe por vírgulas para melhores resultados.</small>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label for="ai-time"><i class="fa-solid fa-clock"></i> Tempo máximo (min)</label>
-              <div class="range-slider-wrap">
-                <input type="range" id="ai-time" min="5" max="120" step="5" value="30">
-                <span class="range-value" id="ai-time-val">30 min</span>
-              </div>
-            </div>
-
-            <div class="form-group flex-1">
-              <label for="ai-diet"><i class="fa-solid fa-leaf"></i> Restrição alimentar</label>
-              <select id="ai-diet">
-                <option value="none">Nenhuma</option>
-                <option value="vegano">Vegano</option>
-                <option value="vegetariano">Vegetariano</option>
-                <option value="lowcarb">Low Carb</option>
-                <option value="glutenfree">Sem Glúten</option>
-                <option value="fit">Fitness / Hipercalórico</option>
-              </select>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-generate-ai">
-            <span>✨ Gerar Receita com IA</span>
+          <button type="submit" class="btn-primary-modal-full">
+            Criar Livro
           </button>
         </form>
       </div>
-
-      <div class="ai-loading-view hidden" id="ai-loading-container">
-        <div class="loader-spinner">
-          <div class="spinner-circle"></div>
-          <div class="spinner-logo"><i class="fa-solid fa-robot"></i></div>
+    </div>
+    <div class="modal-overlay" id="photo-modal">
+      <div class="modal-card small-modal">
+        <button class="modal-close-btn" id="close-photo-modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="modal-header-simple">
+          <h3><i class="fa-solid fa-camera"></i> Analisar Imagem com IA</h3>
+          <p>Tire ou faça o upload de uma foto para identificar a receita</p>
         </div>
-        <h3>O Chef IA está cozinhando...</h3>
-        <p class="loading-status-text" id="ai-loading-step">Analisando seus ingredientes...</p>
-      </div>
-
-      <div class="ai-recipe-result-view hidden" id="ai-result-container">
-        <div class="recipe-result-header">
-          <span class="recipe-ai-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> IA Culinária Saboré</span>
-          <h2 id="result-recipe-title">Frango ao Limão Gratinado</h2>
-          <div class="recipe-quick-tags">
-            <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="result-recipe-time">35 min</span></span>
-            <span class="q-tag"><i class="fa-solid fa-utensils"></i> <span id="result-recipe-servings">4
-                porções</span></span>
-            <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span
-                id="result-recipe-difficulty">Fácil</span></span>
-            <span class="q-tag vegetarian-tag" id="result-recipe-diet-tag"><i class="fa-solid fa-leaf"></i>
-              Vegano</span>
+        <div class="modal-upload-area">
+          <div class="upload-zone" id="photo-upload-zone">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>Arraste uma foto de comida aqui ou clique para selecionar</p>
+            <input
+              type="file"
+              id="photo-file-input"
+              accept="image/*"
+              class="hidden"
+            />
+          </div>
+          <div class="upload-preview hidden" id="photo-preview-container">
+            <img src="" id="photo-preview-img" alt="Preview" />
+            <button
+              type="button"
+              class="btn-remove-photo"
+              id="remove-photo-btn"
+            >
+              <i class="fa-solid fa-trash"></i> Remover
+            </button>
           </div>
         </div>
-
-        <div class="recipe-result-body">
-          <div class="recipe-ingredients-side">
-            <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
-            <ul id="result-ingredients-list">
-              
-            </ul>
-          </div>
-
-          <div class="recipe-steps-side">
-            <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
-            <ol id="result-steps-list">
-              
-            </ol>
-          </div>
-        </div>
-
-        <div class="recipe-result-footer">
-          <button class="btn-secondary-modal" id="regenerate-recipe-btn"><i class="fa-solid fa-arrows-rotate"></i> Gerar
-            Outra</button>
-          <button class="btn-primary-modal" id="save-recipe-btn"><i class="fa-solid fa-bookmark"></i> Salvar na
-            Coleção</button>
-        </div>
+        <button
+          type="button"
+          class="btn-primary-modal-full"
+          id="analyze-photo-action-btn"
+        >
+          Analisar Foto
+        </button>
       </div>
     </div>
-  </div>
-
-  <div class="modal-overlay" id="add-book-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-book-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Criar Novo Livro de Receitas</h3>
-        <p>Organize suas coleções culinárias</p>
-      </div>
-      <form id="new-book-form" class="modal-simple-form">
-        <div class="form-group-simple">
-          <label for="book-title">Nome do Livro</label>
-          <input type="text" id="book-title" placeholder="Ex: Jantares Especiais, Lanches Rápidos..." required>
+    <div class="modal-overlay" id="video-modal">
+      <div class="modal-card small-modal">
+        <button class="modal-close-btn" id="close-video-modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="modal-header-simple">
+          <h3><i class="fa-solid fa-video"></i> Importar Receita por Vídeo</h3>
+          <p>Cole o link do vídeo do TikTok, Instagram ou YouTube</p>
         </div>
-        <div class="form-group-simple">
-          <label for="book-emoji-select">Ícone do Livro</label>
-          <select id="book-emoji-select">
-            <option value="fa-solid fa-mug-hot">Café / Matinal</option>
-            <option value="fa-solid fa-cake-candles">Doces / Sobremesas</option>
-            <option value="fa-solid fa-leaf">Saudável / Fit</option>
-            <option value="fa-solid fa-pizza-slice">Pizza / Massas</option>
-            <option value="fa-solid fa-bowl-food">Prato Feito / Jantar</option>
-            <option value="fa-solid fa-martini-glass-citrus">Bebidas / Drinks</option>
-          </select>
-        </div>
-        <div class="form-group-simple">
-          <label for="book-visibility">Visibilidade</label>
-          <select id="book-visibility">
-            <option value="Pessoal">Privado (Apenas eu)</option>
-            <option value="Favorito">Favorito (Visível no topo)</option>
-            <option value="Público">Público (Compartilhado com amigos)</option>
-          </select>
-        </div>
-        <button type="submit" class="btn-primary-modal-full">Criar Livro</button>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="photo-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-photo-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3><i class="fa-solid fa-camera"></i> Analisar Imagem com IA</h3>
-        <p>Tire ou faça o upload de uma foto para identificar a receita</p>
-      </div>
-      <div class="modal-upload-area">
-        <div class="upload-zone" id="photo-upload-zone">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          <p>Arraste uma foto de comida aqui ou clique para selecionar</p>
-          <input type="file" id="photo-file-input" accept="image/*" class="hidden">
-        </div>
-        <div class="upload-preview hidden" id="photo-preview-container">
-          <img src="" id="photo-preview-img" alt="Preview">
-          <button type="button" class="btn-remove-photo" id="remove-photo-btn"><i class="fa-solid fa-trash"></i>
-            Remover</button>
-        </div>
-      </div>
-      <button type="button" class="btn-primary-modal-full" id="analyze-photo-action-btn">Analisar Foto</button>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="video-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-video-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3><i class="fa-solid fa-video"></i> Importar Receita por Vídeo</h3>
-        <p>Cole o link do vídeo do TikTok, Instagram ou YouTube</p>
-      </div>
-      <form id="video-import-form" class="modal-simple-form">
-        <div class="form-group-simple">
-          <label for="video-url">Link do vídeo</label>
-          <input type="url" id="video-url" placeholder="https://www.tiktok.com/@chef/video/..." required>
-        </div>
-        <button type="submit" class="btn-primary-modal-full">Extrair Receita</button>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="notifications-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Notificações</h3>
-        <p>Acompanhe suas novidades</p>
-      </div>
-      <div class="notifications-list">
-        <div class="notif-item unread">
-          <span class="notif-icon"><i class="fa-solid fa-star"></i></span>
-          <div class="notif-info">
-            <p><strong>Chef Saboré IA</strong> atualizou sua receita recomendada de Risoto de Cogumelos.</p>
-            <span class="notif-time">há 30 minutos</span>
+        <form id="video-import-form" class="modal-simple-form">
+          <div class="form-group-simple">
+            <label for="video-url">Link do vídeo</label>
+            <input
+              type="url"
+              id="video-url"
+              placeholder="https://www.tiktok.com/@chef/video/..."
+              required
+            />
           </div>
+          <button type="submit" class="btn-primary-modal-full">
+            Extrair Receita
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="modal-overlay" id="notifications-modal">
+      <div class="modal-card small-modal">
+        <button class="modal-close-btn" id="close-notif-modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="modal-header-simple">
+          <h3>Notificações</h3>
+          <p>Acompanhe suas novidades</p>
         </div>
-        <div class="notif-item">
-          <span class="notif-icon"><i class="fa-solid fa-user-group"></i></span>
-          <div class="notif-info">
-            <p><strong>Júlia</strong> curtiu o seu livro de receitas "Fitness".</p>
-            <span class="notif-time">há 5 horas</span>
-          </div>
-        </div>
-        <div class="notif-item">
-          <span class="notif-icon"><i class="fa-solid fa-gem"></i></span>
-          <div class="notif-info">
-            <p><strong>Plano PRO ativado!</strong> Agora você tem acesso a estatísticas detalhadas e geração ilimitada.
-            </p>
-            <span class="notif-time">há 3 dias</span>
+        <div class="notifications-list">
+          <div
+            class="book-detail-empty"
+            style="
+              padding: 20px;
+              text-align: center;
+              color: rgba(242, 244, 243, 0.5);
+            "
+          >
+            <p>Nenhuma notificação no momento.</p>
           </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="modal-overlay" id="celebration-modal">
-    <div class="celebration-card">
-      <div class="fireworks-canvas"></div>
-      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>
-      <h2>Parabéns, Davi! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>
-      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>
-
-      <div class="pro-features-grid">
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <h4>IA Ilimitada</h4>
+    <div class="modal-overlay" id="celebration-modal">
+      <div class="celebration-card">
+        <div class="fireworks-canvas"></div>
+        <div class="celebration-icon">
+          <i class="fa-solid fa-circle-check"></i>
         </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-video"></i>
-          <h4>Importar Links</h4>
+        <h2>
+          Parabéns!
+          <i
+            class="fa-solid fa-gift"
+            style="color: var(--secondary); margin-left: 4px"
+          ></i>
+        </h2>
+        <p class="celebration-subtitle">
+          Você agora é um usuário <strong>Saboré PRO</strong>!
+        </p>
+        <div class="pro-features-grid">
+          <div class="pro-feat-item">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <h4>IA Ilimitada</h4>
+          </div>
+          <div class="pro-feat-item">
+            <i class="fa-solid fa-video"></i>
+            <h4>Importar Links</h4>
+          </div>
+          <div class="pro-feat-item">
+            <i class="fa-solid fa-chart-pie"></i>
+            <h4>Estatísticas</h4>
+          </div>
+          <div class="pro-feat-item">
+            <i class="fa-solid fa-infinity"></i>
+            <h4>Livros Infinitos</h4>
+          </div>
         </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-chart-pie"></i>
-          <h4>Estatísticas</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-infinity"></i>
-          <h4>Livros Infinitos</h4>
-        </div>
+        <button class="btn-celebration-close" id="close-celebration-btn">
+          Entrar na minha cozinha PRO
+        </button>
       </div>
-
-      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>
     </div>
-  </div>
-
-  <script src="../../assets/js/api.js"></script>
-  <script src="script.js"></script>
-</body>
-
+    <script src="../../assets/js/api.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>

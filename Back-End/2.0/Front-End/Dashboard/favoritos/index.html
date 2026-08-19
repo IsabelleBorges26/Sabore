@@ -1,307 +1,1 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ — Receitas Favoritas</title>
-  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <div class="dashboard-container">
-
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <a href="../../inicial/index.html" class="logo-area">
-          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
-        </a>
-        <p class="sidebar-slogan">Saboreie novas possibilidades</p>
-      </div>
-
-      <nav class="sidebar-menu">
-        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
-        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
-        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
-        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
-        <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
-        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
-        <a href="#" class="menu-item active" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
-        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
-        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
-        <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
-      </nav>
-
-      <div class="sidebar-footer-promo">
-        <div class="promo-card-compact">
-          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
-          <div class="promo-info">
-            <h4>Libere a cozinha!</h4>
-            <p>Tenha recursos ilimitados</p>
-            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar PRO</button>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <main class="main-content">
-
-      <header class="navbar">
-        <div class="navbar-left">
-          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
-          <div class="nav-welcome-text">
-            <h2>Favoritas <i class="fa-solid fa-heart" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
-            <p>Suas receitas preferidas salvas em um só lugar</p>
-          </div>
-        </div>
-
-        <div class="navbar-right">
-          <button class="nav-action-btn" id="notifications-btn" title="Notificações">
-            <i class="fa-solid fa-bell"></i>
-            <span class="badge-dot"></span>
-          </button>
-          <button class="nav-action-btn" id="settings-btn" title="Configurações">
-            <i class="fa-solid fa-gear"></i>
-          </button>
-          
-          <div class="user-profile-badge" id="profile-dropdown-trigger">
-            <div class="user-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" alt="Avatar Davi" class="user-avatar">
-              <span class="user-status-dot online"></span>
-            </div>
-            <div class="user-meta">
-              <span class="user-name">Davi</span>
-              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>
-            </div>
-            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
-          </div>
-        </div>
-      </header>
-
-      <div class="dashboard-body">
-
-        <section class="card-section">
-          <div class="section-title-wrap">
-            <div class="title-details">
-              <h3><i class="fa-solid fa-folder-heart"></i> Coleção de Favoritas</h3>
-              <p class="section-desc-sub" style="margin-top: 2px;">Você possui <strong id="favorites-count-label">6</strong> receitas salvas como favoritas.</p>
-            </div>
-          </div>
-
-          <div class="favorites-filters-bar">
-            <button class="filter-tab-btn active" data-filter="all">Todas</button>
-            <button class="filter-tab-btn" data-filter="Café da Manhã">Café da Manhã</button>
-            <button class="filter-tab-btn" data-filter="Almoço">Almoço</button>
-            <button class="filter-tab-btn" data-filter="Jantar">Jantar</button>
-            <button class="filter-tab-btn" data-filter="Sobremesa">Sobremesas</button>
-            <button class="filter-tab-btn" data-filter="Massa">Massas</button>
-          </div>
-
-          <div class="recipes-grid" id="favorites-container">
-            
-            <article class="recipe-card" data-title="Lasanha de Berinjela" data-category="Almoço" data-id="1">
-              <div class="recipe-image-wrap">
-                <img src="https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=400&q=80" alt="Lasanha" class="recipe-img">
-                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-              </div>
-              <div class="recipe-content-area">
-                <span class="recipe-category">Almoço</span>
-                <h4>Lasanha de Berinjela</h4>
-                <div class="recipe-meta-bottom">
-                  <span><i class="fa-regular fa-clock"></i> 45 min</span>
-                  <span class="recipe-difficulty easy">Fácil</span>
-                </div>
-              </div>
-            </article>
-
-            <article class="recipe-card" data-title="Bolo de Cenoura Fit" data-category="Sobremesa" data-id="2">
-              <div class="recipe-image-wrap">
-                <img src="https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=400&q=80" alt="Bolo de Cenoura" class="recipe-img">
-                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-              </div>
-              <div class="recipe-content-area">
-                <span class="recipe-category">Sobremesa</span>
-                <h4>Bolo de Cenoura Fit</h4>
-                <div class="recipe-meta-bottom">
-                  <span><i class="fa-regular fa-clock"></i> 35 min</span>
-                  <span class="recipe-difficulty medium">Médio</span>
-                </div>
-              </div>
-            </article>
-
-            <article class="recipe-card" data-title="Omelete de Espinafre" data-category="Café da Manhã" data-id="3">
-              <div class="recipe-image-wrap">
-                <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=400&q=80" alt="Omelete" class="recipe-img">
-                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-              </div>
-              <div class="recipe-content-area">
-                <span class="recipe-category">Café da Manhã</span>
-                <h4>Omelete de Espinafre</h4>
-                <div class="recipe-meta-bottom">
-                  <span><i class="fa-regular fa-clock"></i> 15 min</span>
-                  <span class="recipe-difficulty easy">Fácil</span>
-                </div>
-              </div>
-            </article>
-
-            <article class="recipe-card" data-title="Salmão ao Molho de Maracujá" data-category="Jantar" data-id="4">
-              <div class="recipe-image-wrap">
-                <img src="https://images.unsplash.com/photo-1485921325814-a5add4c8c24e?auto=format&fit=crop&w=400&q=80" alt="Salmão" class="recipe-img">
-                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-              </div>
-              <div class="recipe-content-area">
-                <span class="recipe-category">Jantar</span>
-                <h4>Salmão Grelhado</h4>
-                <div class="recipe-meta-bottom">
-                  <span><i class="fa-regular fa-clock"></i> 25 min</span>
-                  <span class="recipe-difficulty medium">Médio</span>
-                </div>
-              </div>
-            </article>
-
-            <article class="recipe-card" data-title="Panqueca de Banana" data-category="Café da Manhã" data-id="5">
-              <div class="recipe-image-wrap">
-                <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=400&q=80" alt="Panqueca" class="recipe-img">
-                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-              </div>
-              <div class="recipe-content-area">
-                <span class="recipe-category">Café da Manhã</span>
-                <h4>Panqueca de Banana</h4>
-                <div class="recipe-meta-bottom">
-                  <span><i class="fa-regular fa-clock"></i> 10 min</span>
-                  <span class="recipe-difficulty easy">Fácil</span>
-                </div>
-              </div>
-            </article>
-
-            <article class="recipe-card" data-title="Nhoque de Batata Doce" data-category="Massa" data-id="6">
-              <div class="recipe-image-wrap">
-                <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=400&q=80" alt="Nhoque" class="recipe-img">
-                <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
-              </div>
-              <div class="recipe-content-area">
-                <span class="recipe-category">Massa</span>
-                <h4>Nhoque de Batata Doce</h4>
-                <div class="recipe-meta-bottom">
-                  <span><i class="fa-regular fa-clock"></i> 50 min</span>
-                  <span class="recipe-difficulty hard">Difícil</span>
-                </div>
-              </div>
-            </article>
-
-          </div>
-        </section>
-
-      </div>
-
-    </main>
-
-  </div>
-
-  <div class="modal-overlay" id="recipe-details-modal">
-    <div class="modal-card">
-      <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>
-      
-      <div class="recipe-details-view" id="recipe-detail-view-container">
-        <div class="recipe-result-header">
-          <span class="recipe-ai-badge"><i class="fa-solid fa-heart"></i> Receita Favorita</span>
-          <h2 id="recipe-detail-title">Nome do Prato</h2>
-          
-          <div class="recipe-quick-tags">
-            <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="recipe-detail-time">30 min</span></span>
-            <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="recipe-detail-difficulty">Fácil</span></span>
-            <span class="q-tag vegetarian-tag" id="recipe-detail-diet-tag"><i class="fa-solid fa-leaf"></i> Vegetariano</span>
-          </div>
-        </div>
-
-        <div class="recipe-result-body">
-          <div class="recipe-ingredients-side">
-            <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
-            <ul id="recipe-detail-ingredients-list">
-              
-            </ul>
-          </div>
-
-          <div class="recipe-steps-side">
-            <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
-            <ol id="recipe-detail-steps-list">
-              
-            </ol>
-          </div>
-        </div>
-
-        <div class="recipe-result-footer">
-          <button class="btn-secondary-modal" id="recipe-detail-close-btn" style="width: 100%; text-align: center; display: block;">Fechar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="notifications-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Notificações</h3>
-        <p>Acompanhe suas novidades</p>
-      </div>
-      <div class="notifications-list">
-        <div class="notif-item unread">
-          <span class="notif-icon"><i class="fa-solid fa-star"></i></span>
-          <div class="notif-info">
-            <p><strong>Chef Saboré IA</strong> atualizou sua receita recomendada de Risoto de Cogumelos.</p>
-            <span class="notif-time">há 30 minutos</span>
-          </div>
-        </div>
-        <div class="notif-item">
-          <span class="notif-icon"><i class="fa-solid fa-user-group"></i></span>
-          <div class="notif-info">
-            <p><strong>Júlia</strong> curtiu o seu livro de receitas "Fitness".</p>
-            <span class="notif-time">há 5 horas</span>
-          </div>
-        </div>
-        <div class="notif-item">
-          <span class="notif-icon"><i class="fa-solid fa-gem"></i></span>
-          <div class="notif-info">
-            <p><strong>Plano PRO ativado!</strong> Agora você tem acesso a estatísticas detalhadas e geração ilimitada.</p>
-            <span class="notif-time">há 3 dias</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="celebration-modal">
-    <div class="celebration-card">
-      <div class="fireworks-canvas"></div>
-      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>
-      <h2>Parabéns, Davi! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>
-      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>
-      
-      <div class="pro-features-grid">
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <h4>IA Ilimitada</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-video"></i>
-          <h4>Importar Links</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-chart-pie"></i>
-          <h4>Estatísticas</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-infinity"></i>
-          <h4>Livros Infinitos</h4>
-        </div>
-      </div>
-
-      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>
-    </div>
-  </div>
-
-  <script src="../../assets/js/api.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+<!DOCTYPE html><html lang="pt-BR"><head>  <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>SABORÉ — Receitas Favoritas</title>  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">  <link rel="stylesheet" href="style.css"></head><body>  <div class="dashboard-container">    <aside class="sidebar">      <div class="sidebar-header">        <a href="../../inicial/index.html" class="logo-area">          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">        </a>        <p class="sidebar-slogan">Saboreie novas possibilidades</p>      </div>      <nav class="sidebar-menu">        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>        <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>        <a href="#" class="menu-item active" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>        <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>      </nav>      <div class="sidebar-footer-promo">        <div class="promo-card-compact">          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>          <div class="promo-info">            <h4>Libere a cozinha!</h4>            <p>Tenha recursos ilimitados</p>            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar PRO</button>          </div>        </div>      </div>    </aside>    <main class="main-content">      <header class="navbar">        <div class="navbar-left">          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>          <div class="nav-welcome-text">            <h2>Favoritas <i class="fa-solid fa-heart" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>            <p>Suas receitas preferidas salvas em um só lugar</p>          </div>        </div>        <div class="navbar-right">          <button class="nav-action-btn" id="notifications-btn" title="Notificações">            <i class="fa-solid fa-bell"></i>            <span class="badge-dot"></span>          </button>          <button class="nav-action-btn" id="settings-btn" title="Configurações">            <i class="fa-solid fa-gear"></i>          </button>          <div class="user-profile-badge" id="profile-dropdown-trigger">            <div class="user-avatar-wrap">              <img src="" alt="Avatar Davi" class="user-avatar">              <span class="user-status-dot online"></span>            </div>            <div class="user-meta">              <span class="user-name">Davi</span>              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>            </div>            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>          </div>        </div>      </header>      <div class="dashboard-body">        <section class="card-section">          <div class="section-title-wrap">            <div class="title-details">              <h3><i class="fa-solid fa-folder-heart"></i> Coleção de Favoritas</h3>              <p class="section-desc-sub" style="margin-top: 2px;">Você possui <strong id="favorites-count-label">6</strong> receitas salvas como favoritas.</p>            </div>          </div>          <div class="favorites-filters-bar">            <button class="filter-tab-btn active" data-filter="all">Todas</button>            <button class="filter-tab-btn" data-filter="Café da Manhã">Café da Manhã</button>            <button class="filter-tab-btn" data-filter="Almoço">Almoço</button>            <button class="filter-tab-btn" data-filter="Jantar">Jantar</button>            <button class="filter-tab-btn" data-filter="Sobremesa">Sobremesas</button>            <button class="filter-tab-btn" data-filter="Massa">Massas</button>          </div>          <div class="recipes-grid" id="favorites-container">          </div>        </section>      </div>    </main>  </div>  <div class="modal-overlay" id="recipe-details-modal">    <div class="modal-card">      <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>      <div class="recipe-details-view" id="recipe-detail-view-container">        <div class="recipe-result-header">          <span class="recipe-ai-badge"><i class="fa-solid fa-heart"></i> Receita Favorita</span>          <h2 id="recipe-detail-title">Nome do Prato</h2>          <div class="recipe-quick-tags">            <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="recipe-detail-time">30 min</span></span>            <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="recipe-detail-difficulty">Fácil</span></span>            <span class="q-tag vegetarian-tag" id="recipe-detail-diet-tag"><i class="fa-solid fa-leaf"></i> Vegetariano</span>          </div>        </div>        <div class="recipe-result-body">          <div class="recipe-ingredients-side">            <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>            <ul id="recipe-detail-ingredients-list">            </ul>          </div>          <div class="recipe-steps-side">            <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>            <ol id="recipe-detail-steps-list">            </ol>          </div>        </div>        <div class="recipe-result-footer">          <button class="btn-secondary-modal" id="recipe-detail-close-btn" style="width: 100%; text-align: center; display: block;">Fechar</button>        </div>      </div>    </div>  </div>  <div class="modal-overlay" id="notifications-modal">    <div class="modal-card small-modal">      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>      <div class="modal-header-simple">        <h3>Notificações</h3>        <p>Acompanhe suas novidades</p>      </div>      <div class="notifications-list">        <div class="book-detail-empty" style="padding: 20px; text-align: center; color: rgba(242, 244, 243, 0.5);">          <p>Nenhuma notificação no momento.</p>        </div>      </div>    </div>  </div>  <div class="modal-overlay" id="celebration-modal">    <div class="celebration-card">      <div class="fireworks-canvas"></div>      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>      <h2>Parabéns! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>      <div class="pro-features-grid">        <div class="pro-feat-item">          <i class="fa-solid fa-wand-magic-sparkles"></i>          <h4>IA Ilimitada</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-video"></i>          <h4>Importar Links</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-chart-pie"></i>          <h4>Estatísticas</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-infinity"></i>          <h4>Livros Infinitos</h4>        </div>      </div>      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>    </div>  </div>  <script src="../../assets/js/api.js"></script>  <script src="script.js"></script></body></html>

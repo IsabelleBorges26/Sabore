@@ -1,346 +1,1 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ — Explorar Receitas</title>
-  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <div class="dashboard-container">
-
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <a href="../../inicial/index.html" class="logo-area">
-          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
-        </a>
-        <p class="sidebar-slogan">Saboreie novas possibilidades</p>
-      </div>
-
-      <nav class="sidebar-menu">
-        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
-        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
-        <a href="#" class="menu-item active" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
-        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
-        <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
-        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
-        <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
-        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
-        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
-        <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
-      </nav>
-
-      <div class="sidebar-footer-promo">
-        <div class="promo-card-compact">
-          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
-          <div class="promo-info">
-            <h4>Libere a cozinha!</h4>
-            <p>Tenha recursos ilimitados</p>
-            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar PRO</button>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <main class="main-content">
-
-      <header class="navbar">
-        <div class="navbar-left">
-          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
-          <div class="nav-welcome-text">
-            <h2>Explorar <i class="fa-solid fa-compass" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
-            <p>Descubra e inspire-se com a comunidade</p>
-          </div>
-        </div>
-
-        <div class="navbar-center">
-          <div class="search-bar">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="global-search" placeholder="Pesquisar receitas, chefs ou ingredientes da comunidade...">
-            <span class="search-shortcut">Ctrl K</span>
-          </div>
-        </div>
-
-        <div class="navbar-right">
-          <button class="nav-action-btn" id="notifications-btn" title="Notificações">
-            <i class="fa-solid fa-bell"></i>
-            <span class="badge-dot"></span>
-          </button>
-          <button class="nav-action-btn" id="settings-btn" title="Configurações">
-            <i class="fa-solid fa-gear"></i>
-          </button>
-          
-          <div class="user-profile-badge" id="profile-dropdown-trigger">
-            <div class="user-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" alt="Avatar Davi" class="user-avatar">
-              <span class="user-status-dot online"></span>
-            </div>
-            <div class="user-meta">
-              <span class="user-name">Davi</span>
-              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>
-            </div>
-            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
-          </div>
-        </div>
-      </header>
-
-      <div class="dashboard-body">
-
-        <div class="dashboard-grid">
-
-          <div class="main-column">
-
-            <section class="explore-hero-card">
-              <div class="explore-hero-glow"></div>
-              <div class="explore-hero-content">
-                <span class="explore-hero-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> Tendências Culinárias</span>
-                <h2>Descubra seu próximo prato favorito</h2>
-                <p>Navegue pelas melhores receitas criadas e compartilhadas por cozinheiros profissionais e amadores da comunidade Saboré.</p>
-              </div>
-            </section>
-
-            <section class="card-section">
-              <div class="section-title-wrap">
-                <h3><i class="fa-solid fa-tags"></i> Categorias Populares</h3>
-              </div>
-              <div class="categories-scroll-carousel" id="categories-carousel-list">
-                
-              </div>
-            </section>
-
-            <section class="card-section">
-              <div class="section-title-wrap" style="margin-bottom: 8px;">
-                <div class="title-details">
-                  <h3><i class="fa-solid fa-fire"></i> Receitas em Destaque</h3>
-                  <p class="section-desc-sub" style="margin-top: 2px;">O que a comunidade está cozinhando e curtindo ultimamente.</p>
-                </div>
-                
-                <div class="explore-feed-controls">
-                  <button class="feed-filter-btn active" data-feed="all">Tudo</button>
-                  <button class="feed-filter-btn" data-feed="fit">Saudável</button>
-                  <button class="feed-filter-btn" data-feed="vegetariano">Vegetariano</button>
-                  <button class="feed-filter-btn" data-feed="doce">Doces</button>
-                  <button class="feed-filter-btn" data-feed="facil">Fáceis</button>
-                </div>
-              </div>
-
-              <div class="explore-recipes-grid" id="explore-recipes-container">
-                
-              </div>
-            </section>
-
-            <section class="card-section">
-              <div class="section-title-wrap">
-                <div class="title-details">
-                  <h3><i class="fa-solid fa-award"></i> Chefs em Destaque</h3>
-                  <p class="section-desc-sub" style="margin-top: 2px;">Cozinheiros talentosos que você precisa seguir e acompanhar.</p>
-                </div>
-              </div>
-              <div class="chefs-scroll-row" id="chefs-spotlight-container">
-                
-              </div>
-            </section>
-
-          </div>
-
-          <div class="side-column">
-
-            <section class="widget-card">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-hashtag"></i> Hashtags em Alta</h3>
-              </div>
-              <div class="tag-cloud-container" id="popular-tags-cloud">
-                
-              </div>
-            </section>
-
-            <section class="weekly-challenge-card">
-              <div class="challenge-glow"></div>
-              <div class="challenge-content">
-                <div class="challenge-badge"><i class="fa-solid fa-trophy"></i> DESAFIO DA SEMANA</div>
-                <h3>Receita de Inverno ❄️</h3>
-                <p>Crie e compartilhe um prato quente ou bebida cremosa e ganhe a insígnia de **Chef Invernal**!</p>
-                <div class="challenge-stats">
-                  <span><i class="fa-solid fa-user-group"></i> 2.4k cozinhando</span>
-                  <span><i class="fa-solid fa-thumbs-up"></i> 142 receitas</span>
-                </div>
-                <button class="btn-challenge-action" id="challenge-join-btn">Participar do Desafio</button>
-              </div>
-            </section>
-
-            <section class="widget-card">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-chart-line"></i> Atividade Saboré</h3>
-              </div>
-              <div class="timeline-activity-list">
-                <div class="timeline-item">
-                  <div class="timeline-dot"></div>
-                  <div class="timeline-desc">
-                    <p><strong>Carlos</strong> acabou de postar <em>"Risoto de Limão Siciliano"</em></p>
-                    <span>há 2 min</span>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-dot"></div>
-                  <div class="timeline-desc">
-                    <p><strong>Mariana</strong> atingiu <em>500 seguidores</em> em seu perfil</p>
-                    <span>há 15 min</span>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-dot"></div>
-                  <div class="timeline-desc">
-                    <p><strong>Davi</strong> (você) salvou <em>Salada César Fit</em></p>
-                    <span>há 2 horas</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </main>
-
-  </div>
-
-  <div class="modal-overlay" id="recipe-details-modal">
-    <div class="modal-card">
-      <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>
-      
-      <div class="ai-recipe-result-view" id="recipe-detail-view-container">
-        <div class="recipe-result-header">
-          <div class="recipe-header-author-wrap">
-            <img src="" id="recipe-detail-author-avatar" alt="Chef Avatar" class="detail-author-img">
-            <span id="recipe-detail-author-name">Chef Name</span>
-          </div>
-          <h2 id="recipe-detail-title">Nome do Prato</h2>
-          <div class="recipe-quick-tags">
-            <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="recipe-detail-time">35 min</span></span>
-            <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="recipe-detail-difficulty">Médio</span></span>
-            <span class="q-tag vegetarian-tag" id="recipe-detail-diet-tag">Vegano</span>
-          </div>
-        </div>
-
-        <div class="recipe-result-body">
-          <div class="recipe-ingredients-side">
-            <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>
-            <ul id="recipe-detail-ingredients-list">
-              
-            </ul>
-          </div>
-          
-          <div class="recipe-steps-side">
-            <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>
-            <ol id="recipe-detail-steps-list">
-              
-            </ol>
-          </div>
-        </div>
-
-        <div class="recipe-rating-section" style="padding: 15px 25px; border-top: 1px solid rgba(242, 244, 243, 0.1); margin-top: 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
-          <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-light);"><i class="fa-solid fa-star" style="color: var(--accent);"></i> Avaliar esta Receita</h4>
-          <div class="rating-stars" id="recipe-rating-stars" style="display: flex; gap: 8px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">
-            <i class="fa-regular fa-star" data-rating="1"></i>
-            <i class="fa-regular fa-star" data-rating="2"></i>
-            <i class="fa-regular fa-star" data-rating="3"></i>
-            <i class="fa-regular fa-star" data-rating="4"></i>
-            <i class="fa-regular fa-star" data-rating="5"></i>
-          </div>
-          <button class="btn-primary-modal" id="recipe-submit-rating" style="padding: 8px 16px; font-size: 0.8rem; border-radius: 6px; display: none;">Enviar Nota</button>
-        </div>
-
-        <div class="recipe-result-footer">
-          <button class="btn-secondary-modal" id="recipe-detail-close-btn">Fechar</button>
-          <button class="btn-primary-modal" id="recipe-detail-save-btn"><i class="fa-solid fa-folder-plus"></i> Salvar no Livro</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="save-to-book-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Salvar no Livro de Receitas</h3>
-        <p>Escolha em qual coleção salvar esta receita:</p>
-      </div>
-      <div class="book-selection-list" id="save-book-options-container">
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="notifications-modal">
-    <div class="modal-card small-modal">
-      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-header-simple">
-        <h3>Notificações</h3>
-        <p>Acompanhe suas novidades</p>
-      </div>
-      <div class="notifications-list">
-        <div class="notif-item unread">
-          <span class="notif-icon"><i class="fa-solid fa-star"></i></span>
-          <div class="notif-info">
-            <p><strong>Chef Saboré IA</strong> atualizou sua receita recomendada de Risoto de Cogumelos.</p>
-            <span class="notif-time">há 30 minutos</span>
-          </div>
-        </div>
-        <div class="notif-item">
-          <span class="notif-icon"><i class="fa-solid fa-user-group"></i></span>
-          <div class="notif-info">
-            <p><strong>Júlia</strong> curtiu o seu livro de receitas "Fitness".</p>
-            <span class="notif-time">há 5 horas</span>
-          </div>
-        </div>
-        <div class="notif-item">
-          <span class="notif-icon"><i class="fa-solid fa-gem"></i></span>
-          <div class="notif-info">
-            <p><strong>Plano PRO ativado!</strong> Agora você tem acesso a estatísticas detalhadas e geração ilimitada.</p>
-            <span class="notif-time">há 3 dias</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="celebration-modal">
-    <div class="celebration-card">
-      <div class="fireworks-canvas"></div>
-      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>
-      <h2>Parabéns, Davi! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>
-      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>
-      
-      <div class="pro-features-grid">
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <h4>IA Ilimitada</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-video"></i>
-          <h4>Importar Links</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-chart-pie"></i>
-          <h4>Estatísticas</h4>
-        </div>
-        <div class="pro-feat-item">
-          <i class="fa-solid fa-infinity"></i>
-          <h4>Livros Infinitos</h4>
-        </div>
-      </div>
-
-      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>
-    </div>
-  </div>
-
-  <script src="../../assets/js/api.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+<!DOCTYPE html><html lang="pt-BR"><head>  <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>SABORÉ — Explorar Receitas</title>  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">  <link rel="stylesheet" href="style.css"></head><body>  <div class="dashboard-container">    <aside class="sidebar">      <div class="sidebar-header">        <a href="../../inicial/index.html" class="logo-area">          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">        </a>        <p class="sidebar-slogan">Saboreie novas possibilidades</p>      </div>      <nav class="sidebar-menu">        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>        <a href="#" class="menu-item active" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>        <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>        <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>        <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>      </nav>      <div class="sidebar-footer-promo">        <div class="promo-card-compact">          <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>          <div class="promo-info">            <h4>Libere a cozinha!</h4>            <p>Tenha recursos ilimitados</p>            <button class="btn-promo-action" id="sidebar-upgrade-btn"><i class="fa-solid fa-crown"></i> Virar PRO</button>          </div>        </div>      </div>    </aside>    <main class="main-content">      <header class="navbar">        <div class="navbar-left">          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>          <div class="nav-welcome-text">            <h2>Explorar <i class="fa-solid fa-compass" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>            <p>Descubra e inspire-se com a comunidade</p>          </div>        </div>        <div class="navbar-center">          <div class="search-bar">            <i class="fa-solid fa-magnifying-glass"></i>            <input type="text" id="global-search" placeholder="Pesquisar receitas, chefs ou ingredientes da comunidade...">            <span class="search-shortcut">Ctrl K</span>          </div>        </div>        <div class="navbar-right">          <button class="nav-action-btn" id="notifications-btn" title="Notificações">            <i class="fa-solid fa-bell"></i>            <span class="badge-dot"></span>          </button>          <button class="nav-action-btn" id="settings-btn" title="Configurações">            <i class="fa-solid fa-gear"></i>          </button>          <div class="user-profile-badge" id="profile-dropdown-trigger">            <div class="user-avatar-wrap">              <img src="" alt="Avatar Davi" class="user-avatar">              <span class="user-status-dot online"></span>            </div>            <div class="user-meta">              <span class="user-name"></span>              <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>            </div>            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>          </div>        </div>      </header>      <div class="dashboard-body">        <div class="dashboard-grid">          <div class="main-column">            <section class="explore-hero-card">              <div class="explore-hero-glow"></div>              <div class="explore-hero-content">                <span class="explore-hero-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> Tendências Culinárias</span>                <h2>Descubra seu próximo prato favorito</h2>                <p>Navegue pelas melhores receitas criadas e compartilhadas por cozinheiros profissionais e amadores da comunidade Saboré.</p>              </div>            </section>            <section class="card-section">              <div class="section-title-wrap">                <h3><i class="fa-solid fa-tags"></i> Categorias Populares</h3>              </div>              <div class="categories-scroll-carousel" id="categories-carousel-list">              </div>            </section>            <section class="card-section">              <div class="section-title-wrap" style="margin-bottom: 8px;">                <div class="title-details">                  <h3><i class="fa-solid fa-fire"></i> Receitas em Destaque</h3>                  <p class="section-desc-sub" style="margin-top: 2px;">O que a comunidade está cozinhando e curtindo ultimamente.</p>                </div>                <div class="explore-feed-controls">                  <button class="feed-filter-btn active" data-feed="all">Tudo</button>                  <button class="feed-filter-btn" data-feed="fit">Saudável</button>                  <button class="feed-filter-btn" data-feed="vegetariano">Vegetariano</button>                  <button class="feed-filter-btn" data-feed="doce">Doces</button>                  <button class="feed-filter-btn" data-feed="facil">Fáceis</button>                </div>              </div>              <div class="explore-recipes-grid" id="explore-recipes-container">              </div>            </section>            <section class="card-section">              <div class="section-title-wrap">                <div class="title-details">                  <h3><i class="fa-solid fa-award"></i> Chefs em Destaque</h3>                  <p class="section-desc-sub" style="margin-top: 2px;">Cozinheiros talentosos que você precisa seguir e acompanhar.</p>                </div>              </div>              <div class="chefs-scroll-row" id="chefs-spotlight-container">              </div>            </section>          </div>          <div class="side-column">            <section class="widget-card">              <div class="widget-header">                <h3><i class="fa-solid fa-hashtag"></i> Hashtags em Alta</h3>              </div>              <div class="tag-cloud-container" id="popular-tags-cloud">              </div>            </section>            <section class="weekly-challenge-card">              <div class="challenge-glow"></div>              <div class="challenge-content">                <div class="challenge-badge"><i class="fa-solid fa-trophy"></i> DESAFIO DA SEMANA</div>                <h3>Receita de Inverno ❄️</h3>                <p>Crie e compartilhe um prato quente ou bebida cremosa e ganhe a insígnia de **Chef Invernal**!</p>                <div class="challenge-stats">                  <span><i class="fa-solid fa-user-group"></i> 2.4k cozinhando</span>                  <span><i class="fa-solid fa-thumbs-up"></i> 142 receitas</span>                </div>                <button class="btn-challenge-action" id="challenge-join-btn">Participar do Desafio</button>              </div>            </section>            <section class="widget-card">              <div class="widget-header">                <h3><i class="fa-solid fa-chart-line"></i> Atividade Saboré</h3>              </div>              <div class="timeline-activity-list">                <div class="book-detail-empty" style="padding: 15px; text-align: center; color: rgba(242, 244, 243, 0.5); font-size: 0.85rem;">                  <p>Nenhuma atividade recente.</p>                </div>              </div>            </section>          </div>        </div>      </div>    </main>  </div>  <div class="modal-overlay" id="recipe-details-modal">    <div class="modal-card">      <button class="modal-close-btn" id="close-details-modal"><i class="fa-solid fa-xmark"></i></button>      <div class="ai-recipe-result-view" id="recipe-detail-view-container">        <div class="recipe-result-header">          <div class="recipe-header-author-wrap">            <img src="" id="recipe-detail-author-avatar" alt="Chef Avatar" class="detail-author-img">            <span id="recipe-detail-author-name">Chef Name</span>          </div>          <h2 id="recipe-detail-title">Nome do Prato</h2>          <div class="recipe-quick-tags">            <span class="q-tag"><i class="fa-regular fa-clock"></i> <span id="recipe-detail-time">35 min</span></span>            <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="recipe-detail-difficulty">Médio</span></span>            <span class="q-tag vegetarian-tag" id="recipe-detail-diet-tag">Vegano</span>          </div>        </div>        <div class="recipe-result-body">          <div class="recipe-ingredients-side">            <h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3>            <ul id="recipe-detail-ingredients-list">            </ul>          </div>          <div class="recipe-steps-side">            <h3><i class="fa-solid fa-kitchen-set"></i> Modo de Preparo</h3>            <ol id="recipe-detail-steps-list">            </ol>          </div>        </div>        <div class="recipe-rating-section" style="padding: 15px 25px; border-top: 1px solid rgba(242, 244, 243, 0.1); margin-top: 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">          <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-light);"><i class="fa-solid fa-star" style="color: var(--accent);"></i> Avaliar esta Receita</h4>          <div class="rating-stars" id="recipe-rating-stars" style="display: flex; gap: 8px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">            <i class="fa-regular fa-star" data-rating="1"></i>            <i class="fa-regular fa-star" data-rating="2"></i>            <i class="fa-regular fa-star" data-rating="3"></i>            <i class="fa-regular fa-star" data-rating="4"></i>            <i class="fa-regular fa-star" data-rating="5"></i>          </div>          <button class="btn-primary-modal" id="recipe-submit-rating" style="padding: 8px 16px; font-size: 0.8rem; border-radius: 6px; display: none;">Enviar Nota</button>        </div>        <div class="recipe-result-footer">          <button class="btn-secondary-modal" id="recipe-detail-close-btn">Fechar</button>          <button class="btn-primary-modal" id="recipe-detail-save-btn"><i class="fa-solid fa-folder-plus"></i> Salvar no Livro</button>        </div>      </div>    </div>  </div>  <div class="modal-overlay" id="save-to-book-modal">    <div class="modal-card small-modal">      <button class="modal-close-btn" id="close-save-modal"><i class="fa-solid fa-xmark"></i></button>      <div class="modal-header-simple">        <h3>Salvar no Livro de Receitas</h3>        <p>Escolha em qual coleção salvar esta receita:</p>      </div>      <div class="book-selection-list" id="save-book-options-container">      </div>    </div>  </div>  <div class="modal-overlay" id="notifications-modal">    <div class="modal-card small-modal">      <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>      <div class="modal-header-simple">        <h3>Notificações</h3>        <p>Acompanhe suas novidades</p>      </div>      <div class="notifications-list">        <div class="book-detail-empty" style="padding: 20px; text-align: center; color: rgba(242, 244, 243, 0.5);">          <p>Nenhuma notificação no momento.</p>        </div>      </div>    </div>  </div>  <div class="modal-overlay" id="celebration-modal">    <div class="celebration-card">      <div class="fireworks-canvas"></div>      <div class="celebration-icon"><i class="fa-solid fa-circle-check"></i></div>      <h2>Parabéns! <i class="fa-solid fa-gift" style="color: var(--secondary); margin-left: 4px;"></i></h2>      <p class="celebration-subtitle">Você agora é um usuário <strong>Saboré PRO</strong>!</p>      <div class="pro-features-grid">        <div class="pro-feat-item">          <i class="fa-solid fa-wand-magic-sparkles"></i>          <h4>IA Ilimitada</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-video"></i>          <h4>Importar Links</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-chart-pie"></i>          <h4>Estatísticas</h4>        </div>        <div class="pro-feat-item">          <i class="fa-solid fa-infinity"></i>          <h4>Livros Infinitos</h4>        </div>      </div>      <button class="btn-celebration-close" id="close-celebration-btn">Entrar na minha cozinha PRO</button>    </div>  </div>  <script src="../../assets/js/api.js"></script>  <script src="script.js"></script></body></html>

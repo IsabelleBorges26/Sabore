@@ -1,612 +1,1 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ — Descubra, Crie e Saboreie Novas Receitas Todos os Dias</title>
-  <link rel="icon" type="image/png" href="../assets/LOGO SABORÉ.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-  <div class="mobile-menu" id="mobileMenu">
-    <span class="mobile-close" id="mobileClose">✕</span>
-    <a href="#inicio">Início</a>
-    <a href="#funcionalidades">Funcionalidades</a>
-    <a href="#recursos">Recursos</a>
-    <a href="#planos">Planos</a>
-    <a href="../cadastro/index.html" id="mobileSignup">Criar Conta</a>
-    <a href="../login/index.html" id="mobileLogin">Entrar</a>
-  </div>
-
-  <nav class="navbar" id="navbar">
-    <a href="#" class="nav-logo"><img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ" class="brand-logo-img"></a>
-    <ul class="nav-links">
-      <li><a href="#inicio">Home</a></li>
-      <li><a href="#funcionalidades">Funcionalidades</a></li>
-      <li><a href="#recursos">Recursos</a></li>
-      <li><a href="#planos">Planos</a></li>
-    </ul>
-    <div class="nav-cta" id="navCta">
-      <a href="../login/index.html" class="btn-nav-login">Entrar</a>
-      <a href="../cadastro/index.html" class="btn-nav-signup">Criar Conta</a>
-    </div>
-    <div class="hamburger" id="hamburger">
-      <span></span><span></span><span></span>
-    </div>
-  </nav>
-
-  <section class="hero" id="inicio">
-    <div class="hero-content">
-      <div class="hero-badge">✨ Plataforma Inteligente de Receitas</div>
-      <h1 class="hero-title">
-        Descubra, Crie e<br>Saboreie Novas Receitas<br><em>Todos os Dias</em>
-      </h1>
-      <p class="hero-sub">
-        Salve, organize, favorite e descubra receitas incríveis. Com Inteligência Artificial, transformamos qualquer
-        conteúdo em receitas prontas para você.
-      </p>
-      <div class="hero-btns">
-        <a href="../cadastro/index.html" class="btn-primary">
-          <span>Começar de graça</span> →
-        </a>
-        <a href="#funcionalidades" class="btn-secondary">
-          Conhecer Recursos
-        </a>
-      </div>
-      <div class="hero-stats">
-        <div class="stat-item">
-          <span class="stat-num">12k+</span>
-          <span class="stat-label">Usuários ativos</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num">98k</span>
-          <span class="stat-label">Receitas salvas</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num">4.9★</span>
-          <span class="stat-label">Avaliação média</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="hero-visual">
-      <div class="floating-card fc-top">
-        <div class="fc-ai-label">🤖 IA Culinária</div>
-        <div class="fc-ai-text">Receita gerada!</div>
-        <div class="fc-ai-sub">Risoto de cogumelos • 35min</div>
-      </div>
-
-      <div class="food-bowl-container">
-        <img src="../assets/Prato Comida.png" alt="Saboré Prato de Comida Delicioso" class="food-bowl-img">
-        <img src="../assets/suco.png" alt="Suco Refrescante" class="hero-juice-img">
-        <img src="../assets/sobremesa.png" alt="Sobremesa Deliciosa" class="hero-dessert-img">
-      </div>
-
-      <div class="mockup-tablet">
-        <div class="tablet-content">
-          <div class="tablet-title">Meus Livros 📚</div>
-          <div class="tablet-grid">
-            <div class="tablet-book tb-1">
-              <div class="tablet-book-name">Jantar de Semana</div>
-              <div class="tablet-book-count">24 receitas</div>
-            </div>
-            <div class="tablet-book tb-2">
-              <div class="tablet-book-name">Doces & Bolos</div>
-              <div class="tablet-book-count">18 receitas</div>
-            </div>
-            <div class="tablet-book tb-3">
-              <div class="tablet-book-name">Café da Manhã</div>
-              <div class="tablet-book-count">12 receitas</div>
-            </div>
-            <div class="tablet-book tb-4">
-              <div class="tablet-book-name">Diet & Fit</div>
-              <div class="tablet-book-count">31 receitas</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="floating-card fc-bottom">
-        <div class="fc-stars">★★★★★</div>
-        <div class="fc-review">"Revolucionou minha cozinha!"</div>
-        <div class="fc-user">— Maria S., usuária PRO</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="problems" id="problemas">
-    <div class="problems-header reveal">
-      <div class="section-tag">O problema real</div>
-      <h2 class="section-title">Você já se perdeu em<br>meio a tantas <em>receitas?</em></h2>
-      <p class="section-sub">Reconhecemos os desafios que todo cozinheiro enfrenta no dia a dia.</p>
-    </div>
-    <div class="problems-grid">
-      <div class="problem-card reveal">
-        <img src="../assets/img01.png" alt="Receitas espalhadas" class="problem-icon-img">
-        <h3 class="problem-title">Receitas espalhadas por toda parte</h3>
-        <p class="problem-text">
-          Print no celular, link salvo no Instagram, caderninho na gaveta, site favoritado... e você nunca acha quando
-          precisa.
-        </p>
-      </div>
-      <div class="problem-card reveal" style="transition-delay: 0.2s">
-        <img src="../assets/img02.png" alt="Não sabe o que cozinhar hoje" class="problem-icon-img">
-        <h3 class="problem-title">Não sabe o que cozinhar hoje</h3>
-        <p class="problem-text">Você olha para a geladeira e trava. Tem ingredientes mas não sabe o que fazer. A
-          inspiração não vem.</p>
-      </div>
-      <div class="problem-card reveal" style="transition-delay: 0.3s">
-        <img src="../assets/img03.png" alt="Sempre as mesmas receitas" class="problem-icon-img">
-        <h3 class="problem-title">Sempre as mesmas receitas</h3>
-        <p class="problem-text">O macarrão de todo dia, a salada de sempre. Você quer variar mas não tem tempo de
-          pesquisar.</p>
-      </div>
-      <div class="problem-card reveal" style="transition-delay: 0.4s">
-        <img src="../assets/img04.png" alt="Apps limitados e genéricos" class="problem-icon-img">
-        <h3 class="problem-title">Apps limitados e genéricos</h3>
-        <p class="problem-text">Os apps existentes não personalizam, não entendem seu gosto, não salvam o que você quer
-          do jeito que você quer.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="features" id="funcionalidades">
-    <div class="features-header reveal">
-      <div class="section-tag">Funcionalidades</div>
-      <h2 class="section-title">Tudo que você precisa<br>para <em>cozinhar melhor</em></h2>
-      <p class="section-sub">Uma plataforma completa pensada para quem ama cozinhar — e para quem ainda está aprendendo.
-      </p>
-    </div>
-    <div class="features-grid">
-      <div class="feature-card reveal" style="transition-delay: 0.05s">
-        <img src="../assets/img_01.png" alt="Salvar Receitas" class="feature-icon-img">
-        <div class="feature-title">Salvar Receitas</div>
-        <p class="feature-text">Salve qualquer receita da web com um clique. Organize tudo em um só lugar, sem perder
-          nada.</p>
-      </div>
-      <div class="feature-card reveal" style="transition-delay: 0.1s">
-        <img src="../assets/img_02.png" alt="Livros de Receitas" class="feature-icon-img">
-        <div class="feature-title">Livros de Receitas</div>
-        <p class="feature-text">Crie coleções temáticas: jantar de domingo, dieta, sobremesas, viagens. Organize como
-          quiser.</p>
-      </div>
-      <div class="feature-card reveal" style="transition-delay: 0.15s">
-        <img src="../assets/img_03.png" alt="Favoritos" class="feature-icon-img">
-        <div class="feature-title">Favoritos</div>
-        <p class="feature-text">Marque suas receitas preferidas e acesse instantaneamente. Encontre sempre o que mais te
-          agrada.</p>
-      </div>
-      <div class="feature-card reveal" style="transition-delay: 0.2s">
-        <img src="../assets/img_04.png" alt="IA de Receitas" class="feature-icon-img">
-        <div class="feature-title">IA de Receitas</div>
-        <p class="feature-text">Diga o que tem na geladeira e nossa IA cria receitas personalizadas só para você em
-          segundos.</p>
-      </div>
-      <div class="feature-card reveal" style="transition-delay: 0.25s">
-        <img src="../assets/img_05.png" alt="IA por Foto" class="feature-icon-img">
-        <div class="feature-title">IA por Foto</div>
-        <p class="feature-text">Fotografe um prato em qualquer restaurante e nossa IA identifica os ingredientes e gera
-          a receita.</p>
-      </div>
-      <div class="feature-card reveal" style="transition-delay: 0.3s">
-        <img src="../assets/img_06.png" alt="Importar por Link" class="feature-icon-img">
-        <div class="feature-title">Importar por Link</div>
-        <p class="feature-text">Cole um link do TikTok, Instagram ou YouTube. O Saboré extrai e organiza a receita
-          automaticamente.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="ai-section" id="recursos">
-    <div class="ai-inner">
-      <div class="ai-visual reveal-left">
-        <div class="ai-terminal">
-          <div class="terminal-bar">
-            <span class="dot dot-r"></span>
-            <span class="dot dot-y"></span>
-            <span class="dot dot-g"></span>
-            <span class="terminal-title"><img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"
-                class="terminal-logo-img"> AI • Chef Virtual</span>
-          </div>
-          <div class="terminal-body">
-            <div class="chat-bubble">
-              <div class="bubble-avatar ai-avatar">S</div>
-              <div class="bubble-text ai-bubble">Olá! O que você tem na geladeira hoje? Posso criar uma receita
-                personalizada pra você! 🍳</div>
-            </div>
-            <div class="chat-bubble user">
-              <div class="bubble-avatar user-avatar">👤</div>
-              <div class="bubble-text user-bubble">Tenho frango, brócolis, alho, limão e queijo parmesão.</div>
-            </div>
-            <div class="chat-bubble">
-              <div class="bubble-avatar ai-avatar">S</div>
-              <div class="bubble-text ai-bubble">Perfeito! Vou criar um <strong>Frango ao Limão com Brócolis
-                  Gratinado</strong>. Tempo: 35 min, nível: fácil. Quer ver a receita completa? ✨</div>
-            </div>
-            <div class="chat-bubble">
-              <div class="bubble-avatar ai-avatar">S</div>
-              <div class="typing-indicator">
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="reveal-right">
-        <div class="section-tag">Inteligência Artificial</div>
-        <h2 class="section-title">Um chef pessoal<br>sempre <em>disponível</em></h2>
-        <p class="section-sub">Nossa IA culinária aprende seus gostos, considera seus ingredientes disponíveis e cria
-          receitas únicas para você.</p>
-        <div class="ai-features-list">
-          <div class="ai-feat">
-            <div class="ai-feat-icon"><i class="fa-solid fa-brain"></i></div>
-            <div class="ai-feat-text">
-              <h4>Aprende seus gostos</h4>
-              <p>Quanto mais você usa, mais personalizada fica sua experiência.</p>
-            </div>
-          </div>
-          <div class="ai-feat">
-            <div class="ai-feat-icon"><i class="fa-solid fa-carrot"></i></div>
-            <div class="ai-feat-text">
-              <h4>Receitas com o que você tem</h4>
-              <p>Diga os ingredientes disponíveis e receba sugestões criativas na hora.</p>
-            </div>
-          </div>
-          <div class="ai-feat">
-            <div class="ai-feat-icon"><i class="fa-solid fa-camera"></i></div>
-            <div class="ai-feat-text">
-              <h4>Reconhecimento por foto</h4>
-              <p>Fotografe qualquer prato e descubra como reproduzi-lo em casa.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="import-section">
-    <div class="import-inner">
-      <div class="import-header reveal">
-        <div class="section-tag">Importação inteligente</div>
-        <h2 class="section-title">Qualquer vídeo vira<br>uma receita <em>organizada</em></h2>
-        <p class="section-sub">Cole o link de qualquer vídeo do TikTok, Instagram ou YouTube. O Saboré transforma
-          automaticamente em receita estruturada.</p>
-      </div>
-
-      <div class="import-flow reveal">
-        <div class="import-source">
-          <div class="source-icon si-tiktok">
-            <img src="../assets/Logo TikTok.png" alt="TikTok" class="import-source-img">
-          </div>
-          <span class="source-label">TikTok</span>
-        </div>
-
-        <div class="import-arrow">
-          <div class="arrow-line">
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-          </div>
-          <span class="arrow-label">import</span>
-        </div>
-
-        <div class="import-source">
-          <div class="source-icon si-instagram">
-            <img src="../assets/Logo Instagram.png" alt="Instagram" class="import-source-img">
-          </div>
-          <span class="source-label">Instagram</span>
-        </div>
-
-        <div class="import-arrow">
-          <div class="arrow-line">
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-          </div>
-          <span class="arrow-label">import</span>
-        </div>
-
-        <div class="import-source">
-          <div class="source-icon si-youtube">
-            <img src="../assets/Logo Youtube.png" alt="YouTube" class="import-source-img">
-          </div>
-          <span class="source-label">YouTube</span>
-        </div>
-
-        <div class="import-arrow">
-          <div class="arrow-line">
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-          </div>
-          <span class="arrow-label">→ <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"
-              class="arrow-logo-img"></span>
-        </div>
-
-        <div class="import-result">
-          <div class="result-badge">Receita pronta</div>
-          <div class="result-title"><i class="fa-solid fa-bowl-food title-icon"></i> Pad Thai Vegetariano</div>
-          <div class="result-tags">
-            <span class="result-tag"><i class="fa-regular fa-clock"></i> 25 min</span>
-            <span class="result-tag"><i class="fa-solid fa-leaf vegan-leaf"></i> Vegano</span>
-            <span class="result-tag"><i class="fa-solid fa-users"></i> 4 porções</span>
-            <span class="result-tag"><i class="fa-solid fa-gauge-simple"></i> Fácil</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="books-section">
-    <div class="books-header reveal">
-      <div class="section-tag">Livros de receitas</div>
-      <h2 class="section-title">Organize como<br>um <em>profissional</em></h2>
-      <p class="section-sub">Crie coleções temáticas, compartilhe com amigos e inspire-se com as coleções da comunidade.
-      </p>
-    </div>
-
-    <div class="books-scroll-container">
-      <div class="books-track">
-        
-        <div class="book-card bc-1">
-          <span class="book-icon"><i class="fa-solid fa-bowl-food"></i></span>
-          <div class="book-name">Jantar da Família</div>
-          <div class="book-count">24 receitas</div>
-          <span class="book-card-tag">Pessoal</span>
-        </div>
-        <div class="book-card bc-2">
-          <span class="book-icon"><i class="fa-solid fa-cake-candles"></i></span>
-          <div class="book-name">Doces & Sobremesas</div>
-          <div class="book-count">18 receitas</div>
-          <span class="book-card-tag">Favorito</span>
-        </div>
-        <div class="book-card bc-3">
-          <span class="book-icon"><i class="fa-solid fa-mug-hot"></i></span>
-          <div class="book-name">Café da Manhã</div>
-          <div class="book-count">12 receitas</div>
-          <span class="book-card-tag">Pessoal</span>
-        </div>
-        <div class="book-card bc-4">
-          <span class="book-icon"><i class="fa-solid fa-leaf"></i></span>
-          <div class="book-name">Fit & Saudável</div>
-          <div class="book-count">31 receitas</div>
-          <span class="book-card-tag">PRO</span>
-        </div>
-        <div class="book-card bc-5">
-          <span class="book-icon"><i class="fa-solid fa-globe"></i></span>
-          <div class="book-name">Comida do Mundo</div>
-          <div class="book-count">45 receitas</div>
-          <span class="book-card-tag">Público</span>
-        </div>
-        <div class="book-card bc-6">
-          <span class="book-icon"><i class="fa-solid fa-pizza-slice"></i></span>
-          <div class="book-name">Fins de Semana</div>
-          <div class="book-count">22 receitas</div>
-          <span class="book-card-tag">Pessoal</span>
-        </div>
-        
-        <div class="book-card bc-1">
-          <span class="book-icon"><i class="fa-solid fa-bowl-food"></i></span>
-          <div class="book-name">Jantar da Família</div>
-          <div class="book-count">24 receitas</div>
-          <span class="book-card-tag">Pessoal</span>
-        </div>
-        <div class="book-card bc-2">
-          <span class="book-icon"><i class="fa-solid fa-cake-candles"></i></span>
-          <div class="book-name">Doces & Sobremesas</div>
-          <div class="book-count">18 receitas</div>
-          <span class="book-card-tag">Favorito</span>
-        </div>
-        <div class="book-card bc-3">
-          <span class="book-icon"><i class="fa-solid fa-mug-hot"></i></span>
-          <div class="book-name">Café da Manhã</div>
-          <div class="book-count">12 receitas</div>
-          <span class="book-card-tag">Pessoal</span>
-        </div>
-        <div class="book-card bc-4">
-          <span class="book-icon"><i class="fa-solid fa-leaf"></i></span>
-          <div class="book-name">Fit & Saudável</div>
-          <div class="book-count">31 receitas</div>
-          <span class="book-card-tag">PRO</span>
-        </div>
-        <div class="book-card bc-5">
-          <span class="book-icon"><i class="fa-solid fa-globe"></i></span>
-          <div class="book-name">Comida do Mundo</div>
-          <div class="book-count">45 receitas</div>
-          <span class="book-card-tag">Público</span>
-        </div>
-        <div class="book-card bc-6">
-          <span class="book-icon"><i class="fa-solid fa-pizza-slice"></i></span>
-          <div class="book-name">Fins de Semana</div>
-          <div class="book-count">22 receitas</div>
-          <span class="book-card-tag">Pessoal</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="plans-section" id="planos">
-    <div class="plans-header reveal">
-      <div class="section-tag">Planos</div>
-      <h2 class="section-title">Comece grátis.<br><em>Escale quando quiser.</em></h2>
-      <p class="section-sub">Sem cartão de crédito. Sem pegadinhas. Comece hoje mesmo.</p>
-    </div>
-    <div class="plans-grid">
-      <div class="plan-card reveal" style="transition-delay: 0.1s">
-        <div class="plan-name">Gratuito</div>
-        <div class="plan-price">R$0</div>
-        <div class="plan-period">para sempre</div>
-        <div class="plan-divider"></div>
-        <ul class="plan-features">
-          <li>Salvar até 50 receitas</li>
-          <li>3 livros de receitas</li>
-          <li>Importação por link (5/mês)</li>
-          <li>Favoritos ilimitados</li>
-          <li class="disabled">IA de Receitas</li>
-          <li class="disabled">IA por Foto</li>
-          <li class="disabled">Receitas ilimitadas</li>
-        </ul>
-        <a href="../cadastro/index.html" class="plan-btn plan-btn-outline">Começar grátis</a>
-      </div>
-      <div class="plan-card featured reveal" style="transition-delay: 0.2s">
-        <div class="plan-badge">Mais popular</div>
-        <div class="plan-name">PRO</div>
-        <div class="plan-price">R$19</div>
-        <div class="plan-period">por mês · cancele quando quiser</div>
-        <div class="plan-divider"></div>
-        <ul class="plan-features">
-          <li>Receitas ilimitadas</li>
-          <li>Livros ilimitados</li>
-          <li>Importação ilimitada</li>
-          <li>Favoritos & coleções</li>
-          <li>🤖 IA de Receitas</li>
-          <li>📷 IA por Foto</li>
-          <li>Suporte prioritário</li>
-        </ul>
-        <a href="../cadastro/index.html" class="plan-btn plan-btn-filled">Assinar o PRO</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="faq-section">
-    <div class="faq-header reveal">
-      <div class="section-tag">Dúvidas</div>
-      <h2 class="section-title">Perguntas <em>frequentes</em></h2>
-    </div>
-
-    <div class="faq-list reveal">
-      <div class="faq-item">
-        <div class="faq-question">
-          O Saboré funciona no celular?
-          <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">Sim! O Saboré é totalmente responsivo e funciona perfeitamente em qualquer dispositivo —
-          celular, tablet ou computador. Também temos aplicativos nativos para iOS e Android.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">
-          Posso importar receitas de qualquer site?
-          <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">Nosso importador suporta TikTok, Instagram, YouTube e mais de 200 sites de receitas. Se
-          o site tiver receita estruturada, importamos automaticamente.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">
-          A IA cria receitas vegetarianas e com restrições?
-          <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">Com certeza! Você pode configurar suas preferências alimentares — vegetariano, vegano,
-          sem glúten, sem lactose, low carb — e a IA sempre respeitará esses filtros ao criar receitas.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">
-          Posso compartilhar meus livros de receitas?
-          <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">Sim! Você pode tornar seus livros públicos e compartilhá-los com amigos, família ou a
-          comunidade. Também pode importar livros de outros usuários com um clique.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">
-          Como funciona o cancelamento do plano PRO?
-          <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">Você pode cancelar a qualquer momento, sem burocracia. Após o cancelamento, suas
-          receitas permanecem salvas e você continua com os benefícios até o fim do período pago.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">
-          Meus dados ficam seguros?
-          <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">Absolutamente. Usamos criptografia de ponta a ponta, backups automáticos diários e nunca
-          vendemos seus dados. Sua conta e suas receitas são 100% suas.</div>
-      </div>
-    </div>
-  </section>
-
-  <section
-    style="padding: 80px 60px; text-align: center; background: linear-gradient(135deg, rgba(224,133,122,0.08) 0%, transparent 60%);">
-    <div class="reveal">
-      <div class="section-tag" style="justify-content: center;">Comece agora</div>
-      <h2 class="section-title" style="margin: 0 auto;">Pronto para transformar<br>sua <em>cozinha?</em></h2>
-      <p class="section-sub" style="margin: 16px auto 40px; text-align: center;">Mais de 12.000 pessoas já organizaram
-        sua vida culinária com o Saboré. É a sua vez.</p>
-      <a href="../cadastro/index.html" class="btn-primary" style="font-size: 1.05rem; padding: 18px 48px;">
-        Criar conta grátis →
-      </a>
-      <p style="margin-top: 16px; font-size: 0.8rem; color: rgba(242,244,243,0.35);">Sem cartão de crédito ·
-        Configuração em 2 minutos</p>
-    </div>
-  </section>
-
-  <footer>
-    <div class="footer-inner">
-      <div>
-        <div class="footer-brand-name"><img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"
-            class="footer-logo-img"></div>
-        <p class="footer-tagline">A plataforma inteligente que transforma a forma como você cozinha, organiza e descobre
-          receitas.</p>
-        <div class="footer-socials">
-          <a class="social-btn" href="#">📸</a>
-          <a class="social-btn" href="#">🎵</a>
-          <a class="social-btn" href="#">▶</a>
-          <a class="social-btn" href="#">🐦</a>
-        </div>
-      </div>
-      <div>
-        <div class="footer-col-title">Produto</div>
-        <ul class="footer-links">
-          <li><a href="#">Funcionalidades</a></li>
-          <li><a href="#">Planos</a></li>
-          <li><a href="#">Novidades</a></li>
-          <li><a href="#">Roadmap</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="footer-col-title">Empresa</div>
-        <ul class="footer-links">
-          <li><a href="#">Sobre nós</a></li>
-          <li><a href="#">Blog</a></li>
-          <li><a href="#">Carreiras</a></li>
-          <li><a href="#">Contato</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="footer-col-title">Legal</div>
-        <ul class="footer-links">
-          <li><a href="#">Privacidade</a></li>
-          <li><a href="#">Termos de Uso</a></li>
-          <li><a href="#">Cookies</a></li>
-          <li><a href="#">LGPD</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span class="footer-copy">© 2025 <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"
-          class="copyright-logo-img">. Todos os direitos reservados.</span>
-      <span class="footer-love">Feito com <span>♥</span> para quem ama cozinhar</span>
-    </div>
-  </footer>
-
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="../assets/js/api.js"></script>
-  <script src="script.js"></script>
-</body>
-
-</html>
+<!DOCTYPE html><html lang="pt-BR"><head>  <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>SABORÉ — Descubra, Crie e Saboreie Novas Receitas Todos os Dias</title>  <link rel="icon" type="image/png" href="../assets/LOGO SABORÉ.png">  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">  <link rel="stylesheet" href="style.css"></head><body>  <div class="mobile-menu" id="mobileMenu">    <span class="mobile-close" id="mobileClose">✕</span>    <a href="#inicio">Início</a>    <a href="#funcionalidades">Funcionalidades</a>    <a href="#recursos">Recursos</a>    <a href="#planos">Planos</a>    <a href="../cadastro/index.html" id="mobileSignup">Criar Conta</a>    <a href="../login/index.html" id="mobileLogin">Entrar</a>  </div>  <nav class="navbar" id="navbar">    <a href="#" class="nav-logo"><img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ" class="brand-logo-img"></a>    <ul class="nav-links">      <li><a href="#inicio">Home</a></li>      <li><a href="#funcionalidades">Funcionalidades</a></li>      <li><a href="#recursos">Recursos</a></li>      <li><a href="#planos">Planos</a></li>    </ul>    <div class="nav-cta" id="navCta">      <a href="../login/index.html" class="btn-nav-login">Entrar</a>      <a href="../cadastro/index.html" class="btn-nav-signup">Criar Conta</a>    </div>    <div class="hamburger" id="hamburger">      <span></span><span></span><span></span>    </div>  </nav>  <section class="hero" id="inicio">    <div class="hero-content">      <div class="hero-badge">✨ Plataforma Inteligente de Receitas</div>      <h1 class="hero-title">        Descubra, Crie e<br>Saboreie Novas Receitas<br><em>Todos os Dias</em>      </h1>      <p class="hero-sub">        Salve, organize, favorite e descubra receitas incríveis. Com Inteligência Artificial, transformamos qualquer        conteúdo em receitas prontas para você.      </p>      <div class="hero-btns">        <a href="../cadastro/index.html" class="btn-primary">          <span>Começar de graça</span> →        </a>        <a href="#funcionalidades" class="btn-secondary">          Conhecer Recursos        </a>      </div>      <div class="hero-stats">        <div class="stat-item">          <span class="stat-num">12k+</span>          <span class="stat-label">Usuários ativos</span>        </div>        <div class="stat-item">          <span class="stat-num">98k</span>          <span class="stat-label">Receitas salvas</span>        </div>        <div class="stat-item">          <span class="stat-num">4.9★</span>          <span class="stat-label">Avaliação média</span>        </div>      </div>    </div>    <div class="hero-visual">      <div class="floating-card fc-top">        <div class="fc-ai-label">🤖 IA Culinária</div>        <div class="fc-ai-text">Receita gerada!</div>        <div class="fc-ai-sub">Risoto de cogumelos • 35min</div>      </div>      <div class="food-bowl-container">        <img src="../assets/Prato Comida.png" alt="Saboré Prato de Comida Delicioso" class="food-bowl-img">        <img src="../assets/suco.png" alt="Suco Refrescante" class="hero-juice-img">        <img src="../assets/sobremesa.png" alt="Sobremesa Deliciosa" class="hero-dessert-img">      </div>      <div class="mockup-tablet">        <div class="tablet-content">          <div class="tablet-title">Meus Livros 📚</div>          <div class="tablet-grid">            <div class="tablet-book tb-1">              <div class="tablet-book-name">Jantar de Semana</div>              <div class="tablet-book-count">24 receitas</div>            </div>            <div class="tablet-book tb-2">              <div class="tablet-book-name">Doces & Bolos</div>              <div class="tablet-book-count">18 receitas</div>            </div>            <div class="tablet-book tb-3">              <div class="tablet-book-name">Café da Manhã</div>              <div class="tablet-book-count">12 receitas</div>            </div>            <div class="tablet-book tb-4">              <div class="tablet-book-name">Diet & Fit</div>              <div class="tablet-book-count">31 receitas</div>            </div>          </div>        </div>      </div>      <div class="floating-card fc-bottom">        <div class="fc-stars">★★★★★</div>        <div class="fc-review">"Revolucionou minha cozinha!"</div>        <div class="fc-user">— Maria S., usuária PRO</div>      </div>    </div>  </section>  <section class="problems" id="problemas">    <div class="problems-header reveal">      <div class="section-tag">O problema real</div>      <h2 class="section-title">Você já se perdeu em<br>meio a tantas <em>receitas?</em></h2>      <p class="section-sub">Reconhecemos os desafios que todo cozinheiro enfrenta no dia a dia.</p>    </div>    <div class="problems-grid">      <div class="problem-card reveal">        <img src="../assets/img01.png" alt="Receitas espalhadas" class="problem-icon-img">        <h3 class="problem-title">Receitas espalhadas por toda parte</h3>        <p class="problem-text">          Print no celular, link salvo no Instagram, caderninho na gaveta, site favoritado... e você nunca acha quando          precisa.        </p>      </div>      <div class="problem-card reveal" style="transition-delay: 0.2s">        <img src="../assets/img02.png" alt="Não sabe o que cozinhar hoje" class="problem-icon-img">        <h3 class="problem-title">Não sabe o que cozinhar hoje</h3>        <p class="problem-text">Você olha para a geladeira e trava. Tem ingredientes mas não sabe o que fazer. A          inspiração não vem.</p>      </div>      <div class="problem-card reveal" style="transition-delay: 0.3s">        <img src="../assets/img03.png" alt="Sempre as mesmas receitas" class="problem-icon-img">        <h3 class="problem-title">Sempre as mesmas receitas</h3>        <p class="problem-text">O macarrão de todo dia, a salada de sempre. Você quer variar mas não tem tempo de          pesquisar.</p>      </div>      <div class="problem-card reveal" style="transition-delay: 0.4s">        <img src="../assets/img04.png" alt="Apps limitados e genéricos" class="problem-icon-img">        <h3 class="problem-title">Apps limitados e genéricos</h3>        <p class="problem-text">Os apps existentes não personalizam, não entendem seu gosto, não salvam o que você quer          do jeito que você quer.</p>      </div>    </div>  </section>  <section class="features" id="funcionalidades">    <div class="features-header reveal">      <div class="section-tag">Funcionalidades</div>      <h2 class="section-title">Tudo que você precisa<br>para <em>cozinhar melhor</em></h2>      <p class="section-sub">Uma plataforma completa pensada para quem ama cozinhar — e para quem ainda está aprendendo.      </p>    </div>    <div class="features-grid">      <div class="feature-card reveal" style="transition-delay: 0.05s">        <img src="../assets/img_01.png" alt="Salvar Receitas" class="feature-icon-img">        <div class="feature-title">Salvar Receitas</div>        <p class="feature-text">Salve qualquer receita da web com um clique. Organize tudo em um só lugar, sem perder          nada.</p>      </div>      <div class="feature-card reveal" style="transition-delay: 0.1s">        <img src="../assets/img_02.png" alt="Livros de Receitas" class="feature-icon-img">        <div class="feature-title">Livros de Receitas</div>        <p class="feature-text">Crie coleções temáticas: jantar de domingo, dieta, sobremesas, viagens. Organize como          quiser.</p>      </div>      <div class="feature-card reveal" style="transition-delay: 0.15s">        <img src="../assets/img_03.png" alt="Favoritos" class="feature-icon-img">        <div class="feature-title">Favoritos</div>        <p class="feature-text">Marque suas receitas preferidas e acesse instantaneamente. Encontre sempre o que mais te          agrada.</p>      </div>      <div class="feature-card reveal" style="transition-delay: 0.2s">        <img src="../assets/img_04.png" alt="IA de Receitas" class="feature-icon-img">        <div class="feature-title">IA de Receitas</div>        <p class="feature-text">Diga o que tem na geladeira e nossa IA cria receitas personalizadas só para você em          segundos.</p>      </div>      <div class="feature-card reveal" style="transition-delay: 0.25s">        <img src="../assets/img_05.png" alt="IA por Foto" class="feature-icon-img">        <div class="feature-title">IA por Foto</div>        <p class="feature-text">Fotografe um prato em qualquer restaurante e nossa IA identifica os ingredientes e gera          a receita.</p>      </div>      <div class="feature-card reveal" style="transition-delay: 0.3s">        <img src="../assets/img_06.png" alt="Importar por Link" class="feature-icon-img">        <div class="feature-title">Importar por Link</div>        <p class="feature-text">Cole um link do TikTok, Instagram ou YouTube. O Saboré extrai e organiza a receita          automaticamente.</p>      </div>    </div>  </section>  <section class="ai-section" id="recursos">    <div class="ai-inner">      <div class="ai-visual reveal-left">        <div class="ai-terminal">          <div class="terminal-bar">            <span class="dot dot-r"></span>            <span class="dot dot-y"></span>            <span class="dot dot-g"></span>            <span class="terminal-title"><img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"                class="terminal-logo-img"> AI • Chef Virtual</span>          </div>          <div class="terminal-body">            <div class="chat-bubble">              <div class="bubble-avatar ai-avatar">S</div>              <div class="bubble-text ai-bubble">Olá! O que você tem na geladeira hoje? Posso criar uma receita                personalizada pra você! 🍳</div>            </div>            <div class="chat-bubble user">              <div class="bubble-avatar user-avatar">👤</div>              <div class="bubble-text user-bubble">Tenho frango, brócolis, alho, limão e queijo parmesão.</div>            </div>            <div class="chat-bubble">              <div class="bubble-avatar ai-avatar">S</div>              <div class="bubble-text ai-bubble">Perfeito! Vou criar um <strong>Frango ao Limão com Brócolis                  Gratinado</strong>. Tempo: 35 min, nível: fácil. Quer ver a receita completa? ✨</div>            </div>            <div class="chat-bubble">              <div class="bubble-avatar ai-avatar">S</div>              <div class="typing-indicator">                <span class="typing-dot"></span>                <span class="typing-dot"></span>                <span class="typing-dot"></span>              </div>            </div>          </div>        </div>      </div>      <div class="reveal-right">        <div class="section-tag">Inteligência Artificial</div>        <h2 class="section-title">Um chef pessoal<br>sempre <em>disponível</em></h2>        <p class="section-sub">Nossa IA culinária aprende seus gostos, considera seus ingredientes disponíveis e cria          receitas únicas para você.</p>        <div class="ai-features-list">          <div class="ai-feat">            <div class="ai-feat-icon"><i class="fa-solid fa-brain"></i></div>            <div class="ai-feat-text">              <h4>Aprende seus gostos</h4>              <p>Quanto mais você usa, mais personalizada fica sua experiência.</p>            </div>          </div>          <div class="ai-feat">            <div class="ai-feat-icon"><i class="fa-solid fa-carrot"></i></div>            <div class="ai-feat-text">              <h4>Receitas com o que você tem</h4>              <p>Diga os ingredientes disponíveis e receba sugestões criativas na hora.</p>            </div>          </div>          <div class="ai-feat">            <div class="ai-feat-icon"><i class="fa-solid fa-camera"></i></div>            <div class="ai-feat-text">              <h4>Reconhecimento por foto</h4>              <p>Fotografe qualquer prato e descubra como reproduzi-lo em casa.</p>            </div>          </div>        </div>      </div>    </div>  </section>  <section class="import-section">    <div class="import-inner">      <div class="import-header reveal">        <div class="section-tag">Importação inteligente</div>        <h2 class="section-title">Qualquer vídeo vira<br>uma receita <em>organizada</em></h2>        <p class="section-sub">Cole o link de qualquer vídeo do TikTok, Instagram ou YouTube. O Saboré transforma          automaticamente em receita estruturada.</p>      </div>      <div class="import-flow reveal">        <div class="import-source">          <div class="source-icon si-tiktok">            <img src="../assets/Logo TikTok.png" alt="TikTok" class="import-source-img">          </div>          <span class="source-label">TikTok</span>        </div>        <div class="import-arrow">          <div class="arrow-line">            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>          </div>          <span class="arrow-label">import</span>        </div>        <div class="import-source">          <div class="source-icon si-instagram">            <img src="../assets/Logo Instagram.png" alt="Instagram" class="import-source-img">          </div>          <span class="source-label">Instagram</span>        </div>        <div class="import-arrow">          <div class="arrow-line">            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>          </div>          <span class="arrow-label">import</span>        </div>        <div class="import-source">          <div class="source-icon si-youtube">            <img src="../assets/Logo Youtube.png" alt="YouTube" class="import-source-img">          </div>          <span class="source-label">YouTube</span>        </div>        <div class="import-arrow">          <div class="arrow-line">            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>            <span class="arrow-dot"></span>          </div>          <span class="arrow-label">→ <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"              class="arrow-logo-img"></span>        </div>        <div class="import-result">          <div class="result-badge">Receita pronta</div>          <div class="result-title"><i class="fa-solid fa-bowl-food title-icon"></i> Pad Thai Vegetariano</div>          <div class="result-tags">            <span class="result-tag"><i class="fa-regular fa-clock"></i> 25 min</span>            <span class="result-tag"><i class="fa-solid fa-leaf vegan-leaf"></i> Vegano</span>            <span class="result-tag"><i class="fa-solid fa-users"></i> 4 porções</span>            <span class="result-tag"><i class="fa-solid fa-gauge-simple"></i> Fácil</span>          </div>        </div>      </div>    </div>  </section>  <section class="books-section">    <div class="books-header reveal">      <div class="section-tag">Livros de receitas</div>      <h2 class="section-title">Organize como<br>um <em>profissional</em></h2>      <p class="section-sub">Crie coleções temáticas, compartilhe com amigos e inspire-se com as coleções da comunidade.      </p>    </div>    <div class="books-scroll-container">      <div class="books-track">        <div class="book-card bc-1">          <span class="book-icon"><i class="fa-solid fa-bowl-food"></i></span>          <div class="book-name">Jantar da Família</div>          <div class="book-count">24 receitas</div>          <span class="book-card-tag">Pessoal</span>        </div>        <div class="book-card bc-2">          <span class="book-icon"><i class="fa-solid fa-cake-candles"></i></span>          <div class="book-name">Doces & Sobremesas</div>          <div class="book-count">18 receitas</div>          <span class="book-card-tag">Favorito</span>        </div>        <div class="book-card bc-3">          <span class="book-icon"><i class="fa-solid fa-mug-hot"></i></span>          <div class="book-name">Café da Manhã</div>          <div class="book-count">12 receitas</div>          <span class="book-card-tag">Pessoal</span>        </div>        <div class="book-card bc-4">          <span class="book-icon"><i class="fa-solid fa-leaf"></i></span>          <div class="book-name">Fit & Saudável</div>          <div class="book-count">31 receitas</div>          <span class="book-card-tag">PRO</span>        </div>        <div class="book-card bc-5">          <span class="book-icon"><i class="fa-solid fa-globe"></i></span>          <div class="book-name">Comida do Mundo</div>          <div class="book-count">45 receitas</div>          <span class="book-card-tag">Público</span>        </div>        <div class="book-card bc-6">          <span class="book-icon"><i class="fa-solid fa-pizza-slice"></i></span>          <div class="book-name">Fins de Semana</div>          <div class="book-count">22 receitas</div>          <span class="book-card-tag">Pessoal</span>        </div>        <div class="book-card bc-1">          <span class="book-icon"><i class="fa-solid fa-bowl-food"></i></span>          <div class="book-name">Jantar da Família</div>          <div class="book-count">24 receitas</div>          <span class="book-card-tag">Pessoal</span>        </div>        <div class="book-card bc-2">          <span class="book-icon"><i class="fa-solid fa-cake-candles"></i></span>          <div class="book-name">Doces & Sobremesas</div>          <div class="book-count">18 receitas</div>          <span class="book-card-tag">Favorito</span>        </div>        <div class="book-card bc-3">          <span class="book-icon"><i class="fa-solid fa-mug-hot"></i></span>          <div class="book-name">Café da Manhã</div>          <div class="book-count">12 receitas</div>          <span class="book-card-tag">Pessoal</span>        </div>        <div class="book-card bc-4">          <span class="book-icon"><i class="fa-solid fa-leaf"></i></span>          <div class="book-name">Fit & Saudável</div>          <div class="book-count">31 receitas</div>          <span class="book-card-tag">PRO</span>        </div>        <div class="book-card bc-5">          <span class="book-icon"><i class="fa-solid fa-globe"></i></span>          <div class="book-name">Comida do Mundo</div>          <div class="book-count">45 receitas</div>          <span class="book-card-tag">Público</span>        </div>        <div class="book-card bc-6">          <span class="book-icon"><i class="fa-solid fa-pizza-slice"></i></span>          <div class="book-name">Fins de Semana</div>          <div class="book-count">22 receitas</div>          <span class="book-card-tag">Pessoal</span>        </div>      </div>    </div>  </section>  <section class="plans-section" id="planos">    <div class="plans-header reveal">      <div class="section-tag">Planos</div>      <h2 class="section-title">Comece grátis.<br><em>Escale quando quiser.</em></h2>      <p class="section-sub">Sem cartão de crédito. Sem pegadinhas. Comece hoje mesmo.</p>    </div>    <div class="plans-grid">      <div class="plan-card reveal" style="transition-delay: 0.1s">        <div class="plan-name">Gratuito</div>        <div class="plan-price">R$0</div>        <div class="plan-period">para sempre</div>        <div class="plan-divider"></div>        <ul class="plan-features">          <li>Salvar até 50 receitas</li>          <li>3 livros de receitas</li>          <li>Importação por link (5/mês)</li>          <li>Favoritos ilimitados</li>          <li class="disabled">IA de Receitas</li>          <li class="disabled">IA por Foto</li>          <li class="disabled">Receitas ilimitadas</li>        </ul>        <a href="../cadastro/index.html" class="plan-btn plan-btn-outline">Começar grátis</a>      </div>      <div class="plan-card featured reveal" style="transition-delay: 0.2s">        <div class="plan-badge">Mais popular</div>        <div class="plan-name">PRO</div>        <div class="plan-price">R$19</div>        <div class="plan-period">por mês · cancele quando quiser</div>        <div class="plan-divider"></div>        <ul class="plan-features">          <li>Receitas ilimitadas</li>          <li>Livros ilimitados</li>          <li>Importação ilimitada</li>          <li>Favoritos & coleções</li>          <li>🤖 IA de Receitas</li>          <li>📷 IA por Foto</li>          <li>Suporte prioritário</li>        </ul>        <a href="../cadastro/index.html" class="plan-btn plan-btn-filled">Assinar o PRO</a>      </div>    </div>  </section>  <section class="faq-section">    <div class="faq-header reveal">      <div class="section-tag">Dúvidas</div>      <h2 class="section-title">Perguntas <em>frequentes</em></h2>    </div>    <div class="faq-list reveal">      <div class="faq-item">        <div class="faq-question">          O Saboré funciona no celular?          <span class="faq-icon">+</span>        </div>        <div class="faq-answer">Sim! O Saboré é totalmente responsivo e funciona perfeitamente em qualquer dispositivo —          celular, tablet ou computador. Também temos aplicativos nativos para iOS e Android.</div>      </div>      <div class="faq-item">        <div class="faq-question">          Posso importar receitas de qualquer site?          <span class="faq-icon">+</span>        </div>        <div class="faq-answer">Nosso importador suporta TikTok, Instagram, YouTube e mais de 200 sites de receitas. Se          o site tiver receita estruturada, importamos automaticamente.</div>      </div>      <div class="faq-item">        <div class="faq-question">          A IA cria receitas vegetarianas e com restrições?          <span class="faq-icon">+</span>        </div>        <div class="faq-answer">Com certeza! Você pode configurar suas preferências alimentares — vegetariano, vegano,          sem glúten, sem lactose, low carb — e a IA sempre respeitará esses filtros ao criar receitas.</div>      </div>      <div class="faq-item">        <div class="faq-question">          Posso compartilhar meus livros de receitas?          <span class="faq-icon">+</span>        </div>        <div class="faq-answer">Sim! Você pode tornar seus livros públicos e compartilhá-los com amigos, família ou a          comunidade. Também pode importar livros de outros usuários com um clique.</div>      </div>      <div class="faq-item">        <div class="faq-question">          Como funciona o cancelamento do plano PRO?          <span class="faq-icon">+</span>        </div>        <div class="faq-answer">Você pode cancelar a qualquer momento, sem burocracia. Após o cancelamento, suas          receitas permanecem salvas e você continua com os benefícios até o fim do período pago.</div>      </div>      <div class="faq-item">        <div class="faq-question">          Meus dados ficam seguros?          <span class="faq-icon">+</span>        </div>        <div class="faq-answer">Absolutamente. Usamos criptografia de ponta a ponta, backups automáticos diários e nunca          vendemos seus dados. Sua conta e suas receitas são 100% suas.</div>      </div>    </div>  </section>  <section    style="padding: 80px 60px; text-align: center; background: linear-gradient(135deg, rgba(224,133,122,0.08) 0%, transparent 60%);">    <div class="reveal">      <div class="section-tag" style="justify-content: center;">Comece agora</div>      <h2 class="section-title" style="margin: 0 auto;">Pronto para transformar<br>sua <em>cozinha?</em></h2>      <p class="section-sub" style="margin: 16px auto 40px; text-align: center;">Mais de 12.000 pessoas já organizaram        sua vida culinária com o Saboré. É a sua vez.</p>      <a href="../cadastro/index.html" class="btn-primary" style="font-size: 1.05rem; padding: 18px 48px;">        Criar conta grátis →      </a>      <p style="margin-top: 16px; font-size: 0.8rem; color: rgba(242,244,243,0.35);">Sem cartão de crédito ·        Configuração em 2 minutos</p>    </div>  </section>  <footer>    <div class="footer-inner">      <div>        <div class="footer-brand-name"><img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"            class="footer-logo-img"></div>        <p class="footer-tagline">A plataforma inteligente que transforma a forma como você cozinha, organiza e descobre          receitas.</p>        <div class="footer-socials">          <a class="social-btn" href="#">📸</a>          <a class="social-btn" href="#">🎵</a>          <a class="social-btn" href="#">▶</a>          <a class="social-btn" href="#">🐦</a>        </div>      </div>      <div>        <div class="footer-col-title">Produto</div>        <ul class="footer-links">          <li><a href="#">Funcionalidades</a></li>          <li><a href="#">Planos</a></li>          <li><a href="#">Novidades</a></li>          <li><a href="#">Roadmap</a></li>        </ul>      </div>      <div>        <div class="footer-col-title">Empresa</div>        <ul class="footer-links">          <li><a href="#">Sobre nós</a></li>          <li><a href="#">Blog</a></li>          <li><a href="#">Carreiras</a></li>          <li><a href="#">Contato</a></li>        </ul>      </div>      <div>        <div class="footer-col-title">Legal</div>        <ul class="footer-links">          <li><a href="#">Privacidade</a></li>          <li><a href="#">Termos de Uso</a></li>          <li><a href="#">Cookies</a></li>          <li><a href="#">LGPD</a></li>        </ul>      </div>    </div>    <div class="footer-bottom">      <span class="footer-copy">© 2025 <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"          class="copyright-logo-img">. Todos os direitos reservados.</span>      <span class="footer-love">Feito com <span>♥</span> para quem ama cozinhar</span>    </div>  </footer>  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>  <script src="../assets/js/api.js"></script>  <script src="script.js"></script></body></html>
