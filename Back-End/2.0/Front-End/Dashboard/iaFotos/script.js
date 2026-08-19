@@ -810,16 +810,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (saveRecipeBtn) {
     saveRecipeBtn.addEventListener('click', () => {
-      if (!pageState.recipe || !pageState.recipe.recipe) return;
+      if (!pageState.recipe) return;
+
+      const recipeDetails = pageState.recipe.recipe || {};
 
       userState.selectedRecipeToSave = {
-        title: pageState.recipe.title,
-        description: `Receita gerada automaticamente por IA a partir da imagem identificada de ${pageState.recipe.title}.`,
-        time: pageState.recipe.recipe.time || 30,
-        difficulty: pageState.recipe.recipe.difficulty || "Médio",
-        ingredients: pageState.recipe.recipe.ingredients || [],
-        steps: pageState.recipe.recipe.steps || [],
-        category: pageState.recipe.recipe.diet !== 'none' ? pageState.recipe.recipe.diet : 'IA Fotos'
+        title: pageState.recipe.title || "Receita de Foto",
+        description: `Receita gerada automaticamente por IA a partir da imagem identificada de ${pageState.recipe.title || "Foto"}.`,
+        time: recipeDetails.time || 30,
+        difficulty: recipeDetails.difficulty || "Médio",
+        ingredients: Array.isArray(recipeDetails.ingredients) ? recipeDetails.ingredients : [],
+        steps: Array.isArray(recipeDetails.steps) ? recipeDetails.steps : [],
+        category: (recipeDetails.diet && recipeDetails.diet !== 'none') ? recipeDetails.diet : 'IA Fotos'
       };
 
       renderBookSaveOptions();
@@ -850,14 +852,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!userState.selectedRecipeToSave) return;
         
         try {
+          const stepsArray = userState.selectedRecipeToSave.steps;
+          const modoPreparoText = Array.isArray(stepsArray) ? stepsArray.join("\n") : String(stepsArray || "");
+
           await api.post("/receitas/cadastrar", {
             titulo: userState.selectedRecipeToSave.title,
             descricao: userState.selectedRecipeToSave.description,
             tempoPreparo: parseInt(userState.selectedRecipeToSave.time) || 30,
-            modoPreparo: userState.selectedRecipeToSave.steps.join("\n"),
+            modoPreparo: modoPreparoText,
             dificuldade: userState.selectedRecipeToSave.difficulty,
             criadaPorIA: true,
-            ingredientes: userState.selectedRecipeToSave.ingredients,
+            ingredientes: Array.isArray(userState.selectedRecipeToSave.ingredients) ? userState.selectedRecipeToSave.ingredients : [],
             categorias: [userState.selectedRecipeToSave.category],
             livroId: book.id,
             publica: false
@@ -867,7 +872,8 @@ document.addEventListener('DOMContentLoaded', () => {
           closeModal('save-to-book-modal');
           alert(`Receita "${userState.selectedRecipeToSave.title}" salva com sucesso no livro "${book.title}"!`);
         } catch (err) {
-          alert("Erro ao salvar receita no livro: " + err.message);
+          const errorMsg = err.detalhe || err.erro || err.message || "Erro desconhecido.";
+          alert("Erro ao salvar receita no livro: " + errorMsg);
         }
       });
 
@@ -879,13 +885,15 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadInitialData() {
     try {
       const books = await api.get("/livros/listar");
-      userState.books = books.map(b => ({
-        id: b.id,
-        title: b.titulo,
-        count: b._count.receitas,
-        emoji: b.emoji || 'fa-solid fa-book',
-        tag: b.tag
-      }));
+      if (Array.isArray(books) && books.length > 0) {
+        userState.books = books.map(b => ({
+          id: b.id,
+          title: b.titulo || b.title,
+          count: (b._count && b._count.receitas !== undefined) ? b._count.receitas : (b.count || 0),
+          emoji: b.emoji || 'fa-solid fa-book',
+          tag: b.tag
+        }));
+      }
     } catch (err) {
       console.warn("Erro ao carregar livros do usuário:", err);
     }

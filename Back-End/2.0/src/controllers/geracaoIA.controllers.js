@@ -186,7 +186,7 @@ const analisarFoto = async (req, res) => {
     }
 
     try {
-        // ─── STEP 1: Extract base64 data ───
+        // ─── STEP 1: Extract base64 data and mimeType ───
         let mimeType = "image/jpeg";
         let base64Data = image;
 
@@ -198,17 +198,18 @@ const analisarFoto = async (req, res) => {
             }
         }
 
+        const imageUrl = image.startsWith("data:") ? image : `data:${mimeType};base64,${base64Data}`;
+
         // ─── STEP 2: HuggingFace — Image classification via router ───
         console.log("[IA Vision] Enviando imagem para HuggingFace classificação...");
 
         const imageBuffer = Buffer.from(base64Data, "base64");
         const hfToken = process.env.HF_TOKEN;
 
-        // Classification models supported by hf-inference provider
+        // NOTE: Kaludi/food-category-classification-v2.0 foi removido pelo HuggingFace (deprecated em agosto/2026)
         const hfClassificationModels = [
-            "nateraw/food",                         // food-specific classifier (best)
-            "Kaludi/food-category-classification-v2.0", // food categories
-            "google/vit-base-patch16-224",          // general image classifier (fallback)
+            "nateraw/food",               // food-specific classifier (melhor)
+            "google/vit-base-patch16-224", // classificador geral (fallback)
         ];
 
         let imageCaption = null;
@@ -246,34 +247,21 @@ const analisarFoto = async (req, res) => {
                         }
                     } else {
                         const errText = await hfResponse.text();
-                        console.warn(`[IA Vision] HuggingFace ${modelId} falhou (${hfResponse.status}):`, errText.substring(0, 100));
+                        console.warn(`[IA Vision] HuggingFace ${modelId} falhou (${hfResponse.status}):`, errText.substring(0, 200));
                     }
                 } catch (hfErr) {
                     console.warn(`[IA Vision] Erro HuggingFace ${modelId}:`, hfErr.message);
                 }
             }
         } else {
-            console.warn("[IA Vision] HF_TOKEN não configurado, pulando classificação de imagem.");
+            console.warn("[IA Vision] HF_TOKEN não configurado, pulando classificação HuggingFace.");
         }
 
-        if (!imageCaption) {
-            console.warn("[IA Vision] Classificação indisponível. Usando análise genérica pelo Gemma.");
-        }
-
-        // ─── STEP 3: Gemma via OpenRouter — Structured analysis ───
-        console.log("[IA Vision] Enviando para Gemma via OpenRouter...");
-
+        // ─── STEP 3: Build OpenRouter analysis ───
         const sdk = await import("@openrouter/sdk");
         const openrouter = new sdk.OpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
 
-        let gemmaPrompt;
-
-        if (imageCaption) {
-            // With classification labels — high accuracy
-            gemmaPrompt = `Você é um chef culinário especialista. Uma IA de visão computacional analisou uma foto de comida e identificou os seguintes rótulos em inglês: "${imageCaption}"
-
-Com base nesses rótulos, identifique com precisão o prato culinário e retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto extra, sem markdown, sem blocos de código. Apenas o JSON bruto:
-{
+        const jsonSchema = `{
   "title": "Nome completo e descritivo do prato em português (ex: Bolo de Cenoura com Cobertura de Chocolate)",
   "dishName": "Nome curto do prato identificado seguido de exclamação (ex: Bolo de Cenoura Identificado!)",
   "detections": [
@@ -283,40 +271,79 @@ Com base nesses rótulos, identifique com precisão o prato culinário e retorne
     { "name": "Quarto ingrediente (se houver)", "percent": 83 }
   ]
 }`;
-        } else {
-            // Without caption — suggest a common dish
-            gemmaPrompt = `Você é um chef culinário especialista. Um usuário enviou uma foto de comida para análise, mas o sistema de reconhecimento de imagem está temporariamente indisponível.
 
-Selecione um prato culinário popular e retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto extra, sem markdown, sem blocos de código. Apenas o JSON bruto com um prato aleatório e seus ingredientes principais:
-{
-  "title": "Nome completo do prato em português",
-  "dishName": "Nome identificado com exclamação",
-  "detections": [
-    { "name": "Ingrediente 1", "percent": 95 },
-    { "name": "Ingrediente 2", "percent": 91 },
-    { "name": "Ingrediente 3", "percent": 87 }
-  ]
-}`;
-        }
+        let content = null;
+        let lastError = null;
 
-        const gemmaResponse = await openrouter.chat.send({
-            chatRequest: {
-                model: "google/gemma-4-26b-a4b-it:free",
-                messages: [{ role: "user", content: gemmaPrompt }]
+        if (imageCaption) {
+            // ─── STEP 3a: HuggingFace teve sucesso — Gemma interpreta os labels (texto puro) ───
+            console.log("[IA Vision] Enviando labels para Gemma via OpenRouter...");
+            const gemmaPrompt = `Você é um chef culinário especialista. Uma IA de visão computacional analisou uma foto de comida e identificou os seguintes rótulos em inglês: "${imageCaption}"
+
+Com base nesses rótulos, identifique com precisão o prato culinário e retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto extra, sem markdown, sem blocos de código. Apenas o JSON bruto:
+${jsonSchema}`;
+
+            try {
+                const gemmaResponse = await openrouter.chat.send({
+                    chatRequest: {
+                        model: "google/gemma-4-26b-a4b-it:free",
+                        messages: [{ role: "user", content: gemmaPrompt }]
+                    }
+                });
+                content = gemmaResponse.choices[0]?.message?.content;
+                if (content) console.log("[IA Vision] Sucesso via HuggingFace + Gemma!");
+            } catch (err) {
+                console.warn("[IA Vision] Gemma falhou, tentando visão direta:", err.message);
+                lastError = err;
             }
-        });
-
-        const content = gemmaResponse.choices[0]?.message?.content;
-        if (!content) {
-            throw new Error("Resposta vazia do Gemma.");
         }
 
-        console.log("[IA Vision] Resposta do Gemma:", content);
+        if (!content) {
+            // ─── STEP 3b: Fallback — Envia a imagem diretamente para modelo de visão ───
+            console.log("[IA Vision] Fallback: enviando imagem diretamente para OpenRouter visão...");
+            const visionPrompt = `Você é um chef culinário especialista. Identifique o prato culinário na imagem e retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto extra, sem markdown, sem blocos de código. Apenas o JSON bruto:
+${jsonSchema}`;
+
+            const visionModels = ["openrouter/free", "google/gemini-2.5-flash"];
+            for (const model of visionModels) {
+                try {
+                    console.log(`[IA Vision] Tentando modelo de visão: ${model}...`);
+                    const response = await openrouter.chat.send({
+                        chatRequest: {
+                            model: model,
+                            messages: [
+                                {
+                                    role: "user",
+                                    content: [
+                                        { type: "text", text: visionPrompt },
+                                        { type: "image_url", imageUrl: { url: imageUrl } }
+                                    ]
+                                }
+                            ]
+                        }
+                    });
+                    content = response.choices[0]?.message?.content;
+                    if (content) {
+                        console.log(`[IA Vision] Sucesso via visão direta (${model})!`);
+                        break;
+                    }
+                } catch (err) {
+                    console.warn(`[IA Vision] Erro visão direta (${model}):`, err.message);
+                    lastError = err;
+                }
+            }
+        }
+
+        if (!content) {
+            throw new Error(lastError ? lastError.message : "Todos os modelos de análise de imagem falharam.");
+        }
+
+        console.log("[IA Vision] Resposta da IA:", content);
 
         // Robust JSON extraction
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-            throw new Error("Nenhum objeto JSON encontrado na resposta do Gemma.");
+            throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
         }
         const cleanJson = jsonMatch[0].replace(/,(\s*[\]}])/g, '$1');
         const parsedData = JSON.parse(cleanJson);

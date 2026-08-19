@@ -1,7 +1,16 @@
 const prisma = require("../data/prisma");
 
-const parseIngredient = (str) => {
+const parseIngredient = (input) => {
+    let str = "";
+    if (typeof input === "string") {
+        str = input;
+    } else if (input && typeof input === "object") {
+        str = input.nome || input.name || input.ingrediente || String(input);
+    } else {
+        str = String(input || "");
+    }
     const cleanStr = str.trim();
+    if (!cleanStr) return { quantidade: "", nome: "" };
     
     const match = cleanStr.match(/^(\d+(?:\/\d+)?(?:\.\d+)?\s*(?:g|ml|kg|xícara|xícaras|colher|colheres|dente|dentes|folha|folhas|unidade|unidades|fatia|fatias|copo|copos|lata|latas|colher de sopa|colheres de sopa|colher de chá|colheres de chá)?)\s+(.+)$/i);
     if (match) {
@@ -23,16 +32,16 @@ const formatRecipe = (recipe) => {
         rascunho: recipe.rascunho,
         linkImportacao: recipe.linkImportacao,
         livroId: recipe.livroId,
-        author: recipe.usuario.nome,
-        authorAvatar: recipe.usuario.foto || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-        category: recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
-        categories: recipe.categorias.map(rc => rc.categoria.nome),
-        ingredients: recipe.ingredientes.map(ri => {
+        author: recipe.usuario ? recipe.usuario.nome : "Chef",
+        authorAvatar: (recipe.usuario && recipe.usuario.foto) || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+        category: recipe.categorias && recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
+        categories: recipe.categorias ? recipe.categorias.map(rc => rc.categoria.nome) : [],
+        ingredients: recipe.ingredientes ? recipe.ingredientes.map(ri => {
             if (ri.quantidade) {
                 return `${ri.quantidade} ${ri.ingrediente.nome}`;
             }
             return ri.ingrediente.nome;
-        }),
+        }) : [],
         steps: recipe.modoPreparo ? recipe.modoPreparo.split("\n") : []
     };
 };
@@ -73,8 +82,21 @@ const cadastrar = async (req, res) => {
     const finalIngredients = ingredients || ingredientes || [];
     const finalCategories = categories || categorias || [];
 
+    // Verify if livroId exists in DB to prevent foreign key error
+    let validLivroId = null;
+    if (livroId) {
+        const parsedLivroId = Number(livroId);
+        if (!isNaN(parsedLivroId) && parsedLivroId > 0) {
+            const livroExiste = await prisma.livro.findFirst({
+                where: { id: parsedLivroId }
+            });
+            if (livroExiste) {
+                validLivroId = parsedLivroId;
+            }
+        }
+    }
+
     try {
-        
         const result = await prisma.$transaction(async (tx) => {
             const recipe = await tx.receita.create({
                 data: {
@@ -89,12 +111,14 @@ const cadastrar = async (req, res) => {
                     rascunho: Boolean(rascunho),
                     linkImportacao: linkImportacao || null,
                     usuarioId,
-                    livroId: livroId ? Number(livroId) : null
+                    livroId: validLivroId
                 }
             });
 
+            const createdIngredienteIds = new Set();
             for (const ingStr of finalIngredients) {
                 const parsed = parseIngredient(ingStr);
+                if (!parsed.nome) continue;
 
                 const ingrediente = await tx.ingrediente.upsert({
                     where: { nome: parsed.nome.toLowerCase() },
@@ -102,29 +126,39 @@ const cadastrar = async (req, res) => {
                     create: { nome: parsed.nome.toLowerCase() }
                 });
 
-                await tx.receitaIngrediente.create({
-                    data: {
-                        quantidade: parsed.quantidade,
-                        receitaId: recipe.id,
-                        ingredienteId: ingrediente.id
-                    }
-                });
+                if (!createdIngredienteIds.has(ingrediente.id)) {
+                    createdIngredienteIds.add(ingrediente.id);
+                    await tx.receitaIngrediente.create({
+                        data: {
+                            quantidade: parsed.quantidade || "",
+                            receitaId: recipe.id,
+                            ingredienteId: ingrediente.id
+                        }
+                    });
+                }
             }
 
+            const createdCategoriaIds = new Set();
             for (const catStr of finalCategories) {
-                const catNameClean = catStr.trim();
+                if (!catStr) continue;
+                const catNameClean = (typeof catStr === "string" ? catStr : String(catStr)).trim();
+                if (!catNameClean) continue;
+
                 const categoria = await tx.categoria.upsert({
                     where: { nome: catNameClean },
                     update: {},
                     create: { nome: catNameClean }
                 });
 
-                await tx.receitaCategoria.create({
-                    data: {
-                        receitaId: recipe.id,
-                        categoriaId: categoria.id
-                    }
-                });
+                if (!createdCategoriaIds.has(categoria.id)) {
+                    createdCategoriaIds.add(categoria.id);
+                    await tx.receitaCategoria.create({
+                        data: {
+                            receitaId: recipe.id,
+                            categoriaId: categoria.id
+                        }
+                    });
+                }
             }
 
             return recipe;
@@ -145,6 +179,7 @@ const cadastrar = async (req, res) => {
 
         res.status(201).json(formatRecipe(fullRecipe));
     } catch (error) {
+        console.error("[Receitas Controller] Erro ao cadastrar receita:", error);
         res.status(500).json({ erro: "Erro ao cadastrar receita.", detalhe: error.message });
     }
 };

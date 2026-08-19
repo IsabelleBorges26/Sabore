@@ -242,50 +242,71 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-auth.onAuthStateChanged((user) => {
-  const navCta = document.getElementById('navCta');
-  const mobileSignup = document.getElementById('mobileSignup');
-  const mobileLogin = document.getElementById('mobileLogin');
+const localUser = api.getUser();
+const navCta = document.getElementById('navCta');
+const mobileSignup = document.getElementById('mobileSignup');
+const mobileLogin = document.getElementById('mobileLogin');
 
-  if (user) {
-    
-    const displayName = user.displayName || 'Cozinheiro';
-    
-    if (navCta) {
-      navCta.innerHTML = `
-        <span class="user-greeting" style="font-size: 0.9rem; font-weight: 500; color: var(--light); margin-right: 15px;">Olá, ${displayName}!</span>
-        <button id="btnLogout" class="btn-nav-signup" style="background: transparent; border: 1px solid var(--accent); color: var(--accent) !important; padding: 8px 18px; cursor: none;">Sair</button>
-      `;
-      document.getElementById('btnLogout').addEventListener('click', () => {
-        auth.signOut().then(() => { window.location.reload(); });
-      });
-    }
-
-    if (mobileSignup && mobileLogin) {
-      mobileSignup.textContent = `Olá, ${displayName}!`;
-      mobileSignup.href = '#';
-      mobileLogin.textContent = 'Sair';
-      mobileLogin.href = '#';
-      mobileLogin.addEventListener('click', (e) => {
-        e.preventDefault();
-        auth.signOut().then(() => { window.location.reload(); });
-      });
-    }
-  } else {
-    
-    if (navCta) {
-      navCta.innerHTML = `
-        <a href="../login/index.html" class="btn-nav-login">Entrar</a>
-        <a href="../cadastro/index.html" class="btn-nav-signup">Criar Conta</a>
-      `;
-    }
-    if (mobileSignup && mobileLogin) {
-      mobileSignup.textContent = 'Criar Conta';
-      mobileSignup.href = '../cadastro/index.html';
-      mobileLogin.textContent = 'Entrar';
-      mobileLogin.href = '../login/index.html';
-    }
+if (localUser) {
+  const displayName = localUser.nome || 'Cozinheiro';
+  
+  if (navCta) {
+    navCta.innerHTML = `
+      <span class="user-greeting" style="font-size: 0.9rem; font-weight: 500; color: var(--light); margin-right: 15px;">Olá, ${displayName}!</span>
+      <a href="../Dashboard/home/index.html" class="btn-nav-login" style="margin-right: 10px; text-decoration: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 18px; border-radius: 40px; cursor: none;">Dashboard</a>
+      <button id="btnLogout" class="btn-nav-signup" style="background: transparent; border: 1px solid rgba(242,244,243,0.2); color: var(--light) !important; padding: 8px 18px; cursor: none;">Sair</button>
+    `;
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      api.clearToken();
+      api.clearUser();
+      localStorage.removeItem("sabore_user_avatar");
+      if (typeof auth !== 'undefined') {
+        auth.signOut().then(() => { window.location.reload(); }).catch(() => { window.location.reload(); });
+      } else {
+        window.location.reload();
+      }
+    });
   }
-});
+
+  if (mobileSignup && mobileLogin) {
+    mobileSignup.textContent = `Olá, ${displayName}!`;
+    mobileSignup.href = '../Dashboard/home/index.html';
+    mobileLogin.textContent = 'Sair';
+    mobileLogin.href = '#';
+    mobileLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      api.clearToken();
+      api.clearUser();
+      localStorage.removeItem("sabore_user_avatar");
+      if (typeof auth !== 'undefined') {
+        auth.signOut().then(() => { window.location.reload(); }).catch(() => { window.location.reload(); });
+      } else {
+        window.location.reload();
+      }
+    });
+  }
+} else {
+  if (navCta) {
+    navCta.innerHTML = `
+      <a href="../login/index.html" class="btn-nav-login">Entrar</a>
+      <a href="../cadastro/index.html" class="btn-nav-signup">Criar Conta</a>
+    `;
+  }
+  if (mobileSignup && mobileLogin) {
+    mobileSignup.textContent = 'Criar Conta';
+    mobileSignup.href = '../cadastro/index.html';
+    mobileLogin.textContent = 'Entrar';
+    mobileLogin.href = '../login/index.html';
+  }
+}
+
+// Sincroniza o estado do Firebase Auth (Google) com o estado local
+if (typeof auth !== 'undefined') {
+  auth.onAuthStateChanged((user) => {
+    if (user && !localUser) {
+      auth.signOut().then(() => { window.location.reload(); });
+    }
+  });
+}
 
 

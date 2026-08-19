@@ -51,7 +51,8 @@ const api = {
             
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.erro || `Erro na requisição: ${response.statusText}`);
+                const errMsg = errData.detalhe ? `${errData.erro} Detalhe: ${errData.detalhe}` : (errData.erro || `Erro na requisição: ${response.statusText}`);
+                throw new Error(errMsg);
             }
             
             return await response.json();
