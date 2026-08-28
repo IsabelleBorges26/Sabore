@@ -3,8 +3,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../theme/app_text_styles.dart';
 
-/// Campo de texto padrão do app, com fundo claro (bege/off-white)
-/// como observado no protótipo, independente do fundo da tela.
 class AppTextField extends StatelessWidget {
   final String? label;
   final String hint;

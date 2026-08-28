@@ -1,10 +1,6 @@
 import '../data/mock_data.dart';
 import '../models/recipe.dart';
 
-/// Camada de serviço para receitas. Hoje opera sobre dados fictícios
-/// em memória, mas centraliza as regras de negócio (favoritar,
-/// publicar, buscar) para que uma futura API real possa substituir
-/// apenas esta classe, sem tocar nas telas.
 class RecipeService {
   RecipeService._internal();
   static final RecipeService instance = RecipeService._internal();

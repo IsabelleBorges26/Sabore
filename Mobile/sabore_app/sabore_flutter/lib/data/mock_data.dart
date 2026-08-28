@@ -1,15 +1,13 @@
 import '../models/app_user.dart';
 import '../models/recipe.dart';
 
-/// Fonte de dados fictícia. Em uma futura integração com backend,
-/// basta substituir estas listas por chamadas a um RecipeService real,
-/// sem alterar as telas.
 class MockData {
   MockData._();
 
   static const AppUser currentUser = AppUser(
     name: 'Gabriela Leal',
-    avatarUrl: 'https://i.pravatar.cc/150?img=32',
+    avatarUrl:
+        'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=761&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     bio: 'Apaixonada por doces e receitas rápidas',
   );
 
@@ -42,7 +40,7 @@ class MockData {
       id: '2',
       name: 'Panqueca Brasileira Salgada',
       imageUrl:
-          'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600',
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeKWpHr4YIHk_W_TUGO4DiVMsiltZL3xfgI-hMH9Rj1A&s=10',
       authorName: 'Gabriela Leal',
       authorAvatarUrl: 'https://i.pravatar.cc/150?img=32',
       category: 'Almoço',
@@ -66,7 +64,7 @@ class MockData {
       id: '3',
       name: 'Pudim de Microondas',
       imageUrl:
-          'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=600',
+          'https://images.unsplash.com/photo-1709880194932-8f33d90bdae8?q=80&w=737&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       authorName: 'Gabriela Leal',
       authorAvatarUrl: 'https://i.pravatar.cc/150?img=32',
       category: 'Sobremesa',
@@ -87,9 +85,9 @@ class MockData {
     ),
     Recipe(
       id: '4',
-      name: 'Torradas com Ba...',
+      name: 'Torradas com Banana',
       imageUrl:
-          'https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=600',
+          'https://plus.unsplash.com/premium_photo-1695207505573-d5b4c55f4dc4?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       authorName: 'Gabriela Leal',
       authorAvatarUrl: 'https://i.pravatar.cc/150?img=32',
       category: 'Café da manhã',
@@ -97,31 +95,36 @@ class MockData {
       servings: 1,
       rating: 4.3,
       description: 'Torradas crocantes cobertas com fatias de banana e mel.',
-      ingredients: ['2 fatias de pão integral', '1 banana', 'Mel a gosto'],
+      ingredients: [
+        '2 fatias de pão integral',
+        '1 banana',
+        '1 colher de doce de leite',
+        'Mel a gosto'
+      ],
       utensils: ['Torradeira', 'Faca'],
       tags: ['Rápido', 'Café da manhã'],
     ),
     Recipe(
       id: '5',
-      name: 'Salada com Frut...',
+      name: 'Salada de frutas',
       imageUrl:
-          'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600',
+          'https://images.unsplash.com/photo-1613082487279-1e16f1e81505?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       authorName: 'Gabriela Leal',
       authorAvatarUrl: 'https://i.pravatar.cc/150?img=32',
       category: 'Saudável',
       timeInMinutes: 15,
       servings: 2,
       rating: 4.5,
-      description: 'Uma salada leve e refrescante com frutas da estação.',
-      ingredients: ['Alface', 'Morango', 'Manga', 'Nozes', 'Mel'],
+      description: 'Uma salada leve e refrescante com frutas deliciosas.',
+      ingredients: ['Banana', 'Morango', 'Manga', 'Nozes', 'Mel'],
       utensils: ['Tigela grande', 'Faca'],
       tags: ['Saudável', 'Leve'],
     ),
     Recipe(
       id: '6',
-      name: 'Espaguete',
+      name: 'Espaguete ao molho sugo',
       imageUrl:
-          'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=600',
+          'https://plus.unsplash.com/premium_photo-1664472682525-0c0b50534850?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       authorName: 'Gabriela Leal',
       authorAvatarUrl: 'https://i.pravatar.cc/150?img=32',
       category: 'Almoço',
@@ -135,9 +138,9 @@ class MockData {
     ),
     Recipe(
       id: '7',
-      name: 'Hambúrguer de...',
+      name: 'Hambúrguer de carne',
       imageUrl:
-          'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600',
+          'https://images.unsplash.com/photo-1607013251379-e6eecfffe234?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       authorName: 'Gabriela Leal',
       authorAvatarUrl: 'https://i.pravatar.cc/150?img=32',
       category: 'Almoço',
@@ -151,17 +154,17 @@ class MockData {
     ),
     Recipe(
       id: '8',
-      name: 'Macarrão Salgada',
+      name: 'Espagute ao molho branco',
       imageUrl:
-          'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600',
+          'https://images.unsplash.com/photo-1608219992759-8d74ed8d76eb?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       authorName: 'Gabriela Leal',
       authorAvatarUrl: 'https://i.pravatar.cc/150?img=32',
       category: 'Almoço',
       timeInMinutes: 30,
       servings: 4,
       rating: 4.5,
-      description: 'Macarrão salgado com molho encorpado e queijo ralado.',
-      ingredients: ['Macarrão', 'Molho de tomate', 'Queijo ralado'],
+      description: 'Espaguete com molho branco e queijo ralado.',
+      ingredients: ['Macarrão', 'Molho branco', 'Queijo ralado'],
       utensils: ['Panela', 'Ralador'],
       tags: ['Massa', 'Família'],
     ),

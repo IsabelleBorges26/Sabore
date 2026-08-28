@@ -1,4 +1,3 @@
-/// Representa o usuário logado no app.
 class AppUser {
   final String name;
   final String avatarUrl;

@@ -6,8 +6,6 @@ import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'publish_recipe_screen.dart';
 
-/// Controla a navegação entre as 5 áreas principais do app através
-/// da barra inferior fixa: Início, Livro, Publicar, Favoritos, Perfil.
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -20,7 +18,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    ProfileScreen(), // Livro de receitas reaproveita a tela de perfil (contém "Meu Livro de Receitas")
+    ProfileScreen(),
     PublishRecipeScreen(),
     FavoritesScreen(),
     ProfileScreen(),
@@ -28,7 +26,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _onTap(int index) {
     if (index == 2) {
-      // Botão central: abre o formulário de publicação em uma nova rota
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const PublishRecipeScreen()),
       );

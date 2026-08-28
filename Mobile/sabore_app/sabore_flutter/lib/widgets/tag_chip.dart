@@ -3,8 +3,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../theme/app_text_styles.dart';
 
-/// Chip usado para tags e ingredientes, com opção de remoção,
-/// como visto na tela de Publicar Nova Receita.
 class TagChip extends StatelessWidget {
   final String label;
   final VoidCallback? onDelete;
@@ -30,7 +28,8 @@ class TagChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: AppTextStyles.bodySmall.copyWith(color: textColor)),
+          Text(label,
+              style: AppTextStyles.bodySmall.copyWith(color: textColor)),
           if (onDelete != null) ...[
             const SizedBox(width: 6),
             GestureDetector(

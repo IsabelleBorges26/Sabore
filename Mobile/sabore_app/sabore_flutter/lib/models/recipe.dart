@@ -1,6 +1,3 @@
-/// Representa uma receita dentro do app.
-/// Estrutura preparada para futura integração com um backend real
-/// (ex: fromJson / toJson podem ser adicionados sem alterar as telas).
 class Recipe {
   final String id;
   final String name;
