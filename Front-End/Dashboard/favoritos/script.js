@@ -1,1 +1,278 @@
-document.addEventListener('DOMContentLoaded', () => {  const user = api.getUser();  if (!user) {    window.location.href = "../../login/index.html";    return;  }  let userState = {    isPro: false,    favoritesCount: 6  };  const recipesDatabase = {};  const customCursor = document.createElement('div');  customCursor.className = 'custom-cursor';  document.body.appendChild(customCursor);  document.addEventListener('mousemove', (e) => {    customCursor.style.left = e.clientX + 'px';    customCursor.style.top = e.clientY + 'px';  });  function updateCursorHoverListeners() {    const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], option, .recipe-card, .recipe-ingredient-item');    interactives.forEach(el => {      if (el.dataset.cursorBound) return;      el.dataset.cursorBound = 'true';      el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));      el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));    });  }  updateCursorHoverListeners();  setInterval(updateCursorHoverListeners, 1000);  document.addEventListener('mouseleave', () => {    customCursor.style.display = 'none';  });  document.addEventListener('mouseenter', () => {    customCursor.style.display = 'block';  });  function updatePlanUI() {    const navbarPlanTag = document.getElementById('navbar-plan-tag');    const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');    if (userState.isPro) {      if (navbarPlanTag) {        navbarPlanTag.textContent = 'PRO';        navbarPlanTag.className = 'user-plan-tag pro';      }      if (sidebarUpgradeBtn) {        sidebarUpgradeBtn.textContent = 'Menu PRO';        sidebarUpgradeBtn.style.background = 'var(--accent-light)';        sidebarUpgradeBtn.style.color = 'var(--accent)';      }    } else {      if (navbarPlanTag) {        navbarPlanTag.textContent = 'Gratuito';        navbarPlanTag.className = 'user-plan-tag free';      }      if (sidebarUpgradeBtn) {        sidebarUpgradeBtn.textContent = '🚀 Virar PRO';        sidebarUpgradeBtn.style.background = 'var(--secondary)';        sidebarUpgradeBtn.style.color = 'var(--dark-deep)';      }    }  }  userState.isPro = false;   updatePlanUI();  const mobileToggle = document.getElementById('mobile-toggle');  const sidebar = document.querySelector('.sidebar');  if (mobileToggle && sidebar) {    mobileToggle.addEventListener('click', (e) => {      e.stopPropagation();      sidebar.classList.toggle('active');    });    document.addEventListener('click', (e) => {      if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {        sidebar.classList.remove('active');      }    });  }  function openModal(modalId) {    const modal = document.getElementById(modalId);    if (modal) modal.classList.add('open');  }  function closeModal(modalId) {    const modal = document.getElementById(modalId);    if (modal) modal.classList.remove('open');  }  const modals = document.querySelectorAll('.modal-overlay');  modals.forEach(modal => {    modal.addEventListener('click', (e) => {      if (e.target === modal) {        modal.classList.remove('open');      }    });  });  const closeTriggers = [    { btn: 'close-details-modal', modal: 'recipe-details-modal' },    { btn: 'recipe-detail-close-btn', modal: 'recipe-details-modal' },    { btn: 'close-notif-modal', modal: 'notifications-modal' },    { btn: 'close-celebration-btn', modal: 'celebration-modal' }  ];  closeTriggers.forEach(trigger => {    const btn = document.getElementById(trigger.btn);    if (btn) {      btn.addEventListener('click', () => closeModal(trigger.modal));    }  });  const notifBtn = document.getElementById('notifications-btn');  if (notifBtn) {    notifBtn.addEventListener('click', () => {      openModal('notifications-modal');      const badge = notifBtn.querySelector('.badge-dot');      if (badge) badge.style.display = 'none';    });  }  const settingsBtn = document.getElementById('settings-btn');  if (settingsBtn) {    settingsBtn.addEventListener('click', () => {      window.location.href = '../configuracoes/index.html';    });  }  const profileTrigger = document.getElementById('profile-dropdown-trigger');  if (profileTrigger) {    profileTrigger.addEventListener('click', () => {      window.location.href = '../perfil/index.html';    });  }  const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');  const proMenuLink = document.querySelector('[data-target="pro"]');  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];  upgradeTriggers.forEach(trigger => {    if (trigger) {      trigger.addEventListener('click', (e) => {        e.preventDefault();        userState.isPro = true;        updatePlanUI();        openModal('celebration-modal');      });    }  });  async function loadFavorites() {    try {      const favorites = await api.get("/favoritos/listar");      const container = document.getElementById("favorites-container");      if (!container) return;      container.innerHTML = "";      for (const key in recipesDatabase) {        delete recipesDatabase[key];      }      if (favorites.length === 0) {        container.innerHTML = `          <div class="empty-favorites-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(242, 244, 243, 0.4);">            <i class="fa-regular fa-folder-open" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px; display: block;"></i>            <h3>Sua lista de favoritas está vazia</h3>            <p style="font-size: 0.85rem; margin-top: 5px;">Explore receitas e clique no ícone de coração para salvá-las aqui!</p>            <a href="../explorar/index.html" class="filter-tab-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Explorar Receitas</a>          </div>        `;        const countLabel = document.getElementById('favorites-count-label');        if (countLabel) countLabel.textContent = "0";        updateCursorHoverListeners();        return;      }      const countLabel = document.getElementById('favorites-count-label');      if (countLabel) countLabel.textContent = favorites.length;      favorites.forEach(rec => {        recipesDatabase[rec.id] = {          title: rec.title,          time: `${rec.time} min`,          difficulty: rec.difficulty,          category: rec.category,          vegetarian: rec.categories.includes("Vegano") || rec.categories.includes("Vegetariano"),          ingredients: rec.ingredients,          steps: rec.steps        };        const card = document.createElement("article");        card.className = "recipe-card";        card.dataset.title = rec.title;        card.dataset.category = rec.category;        card.dataset.id = rec.id;        card.innerHTML = `          <div class="recipe-image-wrap">            <img src="${rec.image}" alt="${rec.title}" class="recipe-img">            <button class="favorite-toggle-btn active" data-id="${rec.id}"><i class="fa-solid fa-heart"></i></button>          </div>          <div class="recipe-content-area">            <span class="recipe-category">${rec.category}</span>            <h4>${rec.title}</h4>            <div class="recipe-meta-bottom">              <span><i class="fa-regular fa-clock"></i> ${rec.time} min</span>              <span class="recipe-difficulty ${rec.difficulty.toLowerCase() === 'fácil' ? 'easy' : rec.difficulty.toLowerCase() === 'médio' ? 'medium' : 'hard'}">${rec.difficulty}</span>            </div>          </div>        `;        card.addEventListener('click', () => {          populateRecipeModal(recipesDatabase[rec.id]);          openModal('recipe-details-modal');        });        const favBtn = card.querySelector(".favorite-toggle-btn");        favBtn.addEventListener("click", async (e) => {          e.stopPropagation();          try {            await api.delete(`/favoritos/excluir/${rec.id}`);            card.classList.add("removing");            setTimeout(() => {              card.remove();              const remaining = container.querySelectorAll('.recipe-card:not(.removing)');              if (countLabel) countLabel.textContent = remaining.length;              if (remaining.length === 0) {                loadFavorites();              }            }, 300);          } catch (err) {            alert("Erro ao remover dos favoritos: " + err.message);          }        });        container.appendChild(card);      });      updateCursorHoverListeners();    } catch (err) {      console.error("Erro ao carregar favoritos:", err);    }  }  const filterButtons = document.querySelectorAll('.filter-tab-btn');  filterButtons.forEach(btn => {    btn.addEventListener('click', () => {      filterButtons.forEach(b => b.classList.remove('active'));      btn.classList.add('active');      const filterValue = btn.dataset.filter;      const cards = document.querySelectorAll('.recipe-card');      cards.forEach(card => {        const cardCategory = card.dataset.category;        if (filterValue === 'all' || cardCategory === filterValue) {          card.classList.remove('hidden');        } else {          card.classList.add('hidden');        }      });    });  });  function populateRecipeModal(data) {    document.getElementById('recipe-detail-title').textContent = data.title;    document.getElementById('recipe-detail-time').textContent = data.time;    document.getElementById('recipe-detail-difficulty').textContent = data.difficulty;    const dietTag = document.getElementById('recipe-detail-diet-tag');    if (dietTag) {      if (data.vegetarian) {        dietTag.classList.remove('hidden');        dietTag.innerHTML = `<i class="fa-solid fa-leaf"></i> Vegetariano`;      } else {        dietTag.classList.add('hidden');      }    }    const ingredientsList = document.getElementById('recipe-detail-ingredients-list');    if (ingredientsList) {      ingredientsList.innerHTML = '';      data.ingredients.forEach((ing, index) => {        const li = document.createElement('li');        li.innerHTML = `          <label class="recipe-ingredient-item">            <div class="ingredient-chk-wrap">              <input type="checkbox" id="fav-ing-chk-${index}">              <span class="chk-box-custom"></span>            </div>            <span class="ing-text-val">${ing}</span>          </label>        `;        ingredientsList.appendChild(li);      });    }    const stepsList = document.getElementById('recipe-detail-steps-list');    if (stepsList) {      stepsList.innerHTML = '';      data.steps.forEach(step => {        const li = document.createElement('li');        li.textContent = step;        stepsList.appendChild(li);      });    }    updateCursorHoverListeners();  }  loadFavorites();});
+document.addEventListener('DOMContentLoaded', () => {
+  const user = api.getUser();
+  if (!user) {
+    window.location.href = "../../login/index.html";
+    return;
+  }
+  let userState = {
+    isPro: false
+  };
+  const recipesDatabase = {};
+  const customCursor = document.createElement('div');
+  customCursor.className = 'custom-cursor';
+  document.body.appendChild(customCursor);
+  document.addEventListener('mousemove', (e) => {
+    customCursor.style.left = e.clientX + 'px';
+    customCursor.style.top = e.clientY + 'px';
+  });
+  function updateCursorHoverListeners() {
+    const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], option, .recipe-card, .recipe-ingredient-item');
+    interactives.forEach(el => {
+      if (el.dataset.cursorBound) return;
+      el.dataset.cursorBound = 'true';
+      el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));
+    });
+  }
+  updateCursorHoverListeners();
+  setInterval(updateCursorHoverListeners, 1000);
+  document.addEventListener('mouseleave', () => {
+    customCursor.style.display = 'none';
+  });
+  document.addEventListener('mouseenter', () => {
+    customCursor.style.display = 'block';
+  });
+  function updatePlanUI() {
+    const navbarPlanTag = document.getElementById('navbar-plan-tag');
+    const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
+    if (userState.isPro) {
+      if (navbarPlanTag) {
+        navbarPlanTag.textContent = 'PRO';
+        navbarPlanTag.className = 'user-plan-tag pro';
+      }
+      if (sidebarUpgradeBtn) {
+        sidebarUpgradeBtn.textContent = 'Menu PRO';
+        sidebarUpgradeBtn.style.background = 'var(--accent-light)';
+        sidebarUpgradeBtn.style.color = 'var(--accent)';
+      }
+    } else {
+      if (navbarPlanTag) {
+        navbarPlanTag.textContent = 'Gratuito';
+        navbarPlanTag.className = 'user-plan-tag free';
+      }
+      if (sidebarUpgradeBtn) {
+        sidebarUpgradeBtn.textContent = '🚀 Virar PRO';
+        sidebarUpgradeBtn.style.background = 'var(--secondary)';
+        sidebarUpgradeBtn.style.color = 'var(--dark-deep)';
+      }
+    }
+  }
+  userState.isPro = user.plano === 'PRO';
+  updatePlanUI();
+  const mobileToggle = document.getElementById('mobile-toggle');
+  const sidebar = document.querySelector('.sidebar');
+  if (mobileToggle && sidebar) {
+    mobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sidebar.classList.toggle('active');
+    });
+    document.addEventListener('click', (e) => {
+      if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+        sidebar.classList.remove('active');
+      }
+    });
+  }
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.add('open');
+  }
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('open');
+  }
+  const modals = document.querySelectorAll('.modal-overlay');
+  modals.forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('open');
+      }
+    });
+  });
+  const closeTriggers = [
+    { btn: 'close-details-modal', modal: 'recipe-details-modal' },
+    { btn: 'recipe-detail-close-btn', modal: 'recipe-details-modal' },
+    { btn: 'close-notif-modal', modal: 'notifications-modal' },
+    { btn: 'close-celebration-btn', modal: 'celebration-modal' }
+  ];
+  closeTriggers.forEach(trigger => {
+    const btn = document.getElementById(trigger.btn);
+    if (btn) {
+      btn.addEventListener('click', () => closeModal(trigger.modal));
+    }
+  });
+  const notifBtn = document.getElementById('notifications-btn');
+  if (notifBtn) {
+    notifBtn.addEventListener('click', () => {
+      openModal('notifications-modal');
+      const badge = notifBtn.querySelector('.badge-dot');
+      if (badge) badge.style.display = 'none';
+    });
+  }
+  const settingsBtn = document.getElementById('settings-btn');
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      window.location.href = '../configuracoes/index.html';
+    });
+  }
+  const profileTrigger = document.getElementById('profile-dropdown-trigger');
+  if (profileTrigger) {
+    profileTrigger.addEventListener('click', () => {
+      window.location.href = '../perfil/index.html';
+    });
+  }
+  const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
+  const proMenuLink = document.querySelector('[data-target="pro"]');
+  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];
+  upgradeTriggers.forEach(trigger => {
+    if (trigger) {
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        userState.isPro = true;
+        updatePlanUI();
+        openModal('celebration-modal');
+      });
+    }
+  });
+  async function loadFavorites() {
+    try {
+      const favorites = await api.get("/favoritos/listar");
+      const container = document.getElementById("favorites-container");
+      if (!container) return;
+      container.innerHTML = "";
+      for (const key in recipesDatabase) {
+        delete recipesDatabase[key];
+      }
+      if (favorites.length === 0) {
+        container.innerHTML = `
+          <div class="empty-favorites-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(242, 244, 243, 0.4);">
+            <i class="fa-regular fa-folder-open" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px; display: block;"></i>
+            <h3>Sua lista de favoritas está vazia</h3>
+            <p style="font-size: 0.85rem; margin-top: 5px;">Explore receitas e clique no ícone de coração para salvá-las aqui!</p>
+            <a href="../explorar/index.html" class="filter-tab-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Explorar Receitas</a>
+          </div>
+        `;
+        const countLabel = document.getElementById('favorites-count-label');
+        if (countLabel) countLabel.textContent = "0";
+        updateCursorHoverListeners();
+        return;
+      }
+      const countLabel = document.getElementById('favorites-count-label');
+      if (countLabel) countLabel.textContent = favorites.length;
+      favorites.forEach(rec => {
+        recipesDatabase[rec.id] = {
+          title: rec.title,
+          time: `${rec.time} min`,
+          difficulty: rec.difficulty,
+          category: rec.category,
+          vegetarian: rec.categories.includes("Vegano") || rec.categories.includes("Vegetariano"),
+          ingredients: rec.ingredients,
+          steps: rec.steps
+        };
+        const card = document.createElement("article");
+        card.className = "recipe-card";
+        card.dataset.title = rec.title;
+        card.dataset.category = rec.category;
+        card.dataset.id = rec.id;
+        card.innerHTML = `
+          <div class="recipe-image-wrap">
+            <img src="${rec.image}" alt="${rec.title}" class="recipe-img">
+            <button class="favorite-toggle-btn active" data-id="${rec.id}"><i class="fa-solid fa-heart"></i></button>
+          </div>
+          <div class="recipe-content-area">
+            <span class="recipe-category">${rec.category}</span>
+            <h4>${rec.title}</h4>
+            <div class="recipe-meta-bottom">
+              <span><i class="fa-regular fa-clock"></i> ${rec.time} min</span>
+              <span class="recipe-difficulty ${rec.difficulty.toLowerCase() === 'fácil' ? 'easy' : rec.difficulty.toLowerCase() === 'médio' ? 'medium' : 'hard'}">${rec.difficulty}</span>
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', () => {
+          populateRecipeModal(recipesDatabase[rec.id]);
+          openModal('recipe-details-modal');
+        });
+        const favBtn = card.querySelector(".favorite-toggle-btn");
+        favBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          try {
+            await api.delete(`/favoritos/excluir/${rec.id}`);
+            card.classList.add("removing");
+            setTimeout(() => {
+              card.remove();
+              const remaining = container.querySelectorAll('.recipe-card:not(.removing)');
+              if (countLabel) countLabel.textContent = remaining.length;
+              if (remaining.length === 0) {
+                loadFavorites();
+              }
+            }, 300);
+          } catch (err) {
+            alert("Erro ao remover dos favoritos: " + err.message);
+          }
+        });
+        container.appendChild(card);
+      });
+      updateCursorHoverListeners();
+    } catch (err) {
+      console.error("Erro ao carregar favoritos:", err);
+    }
+  }
+  const filterButtons = document.querySelectorAll('.filter-tab-btn');
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filterValue = btn.dataset.filter;
+      const cards = document.querySelectorAll('.recipe-card');
+      cards.forEach(card => {
+        const cardCategory = card.dataset.category;
+        if (filterValue === 'all' || cardCategory === filterValue) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
+  function populateRecipeModal(data) {
+    document.getElementById('recipe-detail-title').textContent = data.title;
+    document.getElementById('recipe-detail-time').textContent = data.time;
+    document.getElementById('recipe-detail-difficulty').textContent = data.difficulty;
+    const dietTag = document.getElementById('recipe-detail-diet-tag');
+    if (dietTag) {
+      if (data.vegetarian) {
+        dietTag.classList.remove('hidden');
+        dietTag.innerHTML = `<i class="fa-solid fa-leaf"></i> Vegetariano`;
+      } else {
+        dietTag.classList.add('hidden');
+      }
+    }
+    const ingredientsList = document.getElementById('recipe-detail-ingredients-list');
+    if (ingredientsList) {
+      ingredientsList.innerHTML = '';
+      data.ingredients.forEach((ing, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <label class="recipe-ingredient-item">
+            <div class="ingredient-chk-wrap">
+              <input type="checkbox" id="fav-ing-chk-${index}">
+              <span class="chk-box-custom"></span>
+            </div>
+            <span class="ing-text-val">${ing}</span>
+          </label>
+        `;
+        ingredientsList.appendChild(li);
+      });
+    }
+    const stepsList = document.getElementById('recipe-detail-steps-list');
+    if (stepsList) {
+      stepsList.innerHTML = '';
+      data.steps.forEach(step => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        stepsList.appendChild(li);
+      });
+    }
+    updateCursorHoverListeners();
+  }
+  loadFavorites();
+});

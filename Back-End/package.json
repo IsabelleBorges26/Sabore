@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "dev": "node --watch server.js"
   },
   "keywords": [],
@@ -23,6 +24,7 @@
     "prisma": "^6.19.3"
   },
   "devDependencies": {
+    "@types/node": "^24.13.4",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.2"
   }
