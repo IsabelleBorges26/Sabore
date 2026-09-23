@@ -11,9 +11,6 @@ function withSsl(url: string | undefined) {
         : `${url}${separator}sslmode=require`;
 }
 
-console.log("DATABASE:", process.env.DATABASE_URL?.replace(/:([^:@]+)@/, ":***@"));
-console.log("DIRECT:", process.env.DIRECT_URL?.replace(/:([^:@]+)@/, ":***@"));
-
 export default defineConfig({
     schema: "prisma/schema.prisma",
 

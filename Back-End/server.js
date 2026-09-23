@@ -9,7 +9,7 @@ const prisma = require("./src/data/prisma");
 
 const app = express();
 
-// a IA por foto envia a imagem em base64; o limite padrão do Express é pequeno.
+// a IA por foto envia a imagem em base64 - o limite padrão do Express é pequeno
 app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
