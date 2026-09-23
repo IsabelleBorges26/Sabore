@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contato — SABORÉ</title>
+  <meta name="description" content="Entre em contato com a equipe do Saboré. Estamos aqui para ajudar com dúvidas, sugestões e suporte.">
+  <link rel="icon" type="image/png" href="../assets/LOGO SABORÉ.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Custom Cursor -->
+  <div class="custom-cursor" id="cursor"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <a href="../inicial/" class="nav-logo">
+      <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ" class="brand-logo-img">
+    </a>
+    <ul class="nav-links">
+      <li><a href="../inicial/">Home</a></li>
+      <li><a href="../inicial/#funcionalidades">Funcionalidades</a></li>
+      <li><a href="../inicial/#planos">Planos</a></li>
+      <li><a href="../sobre/">Sobre nós</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="../login/" class="btn-nav-login">Entrar</a>
+      <a href="../cadastro/" class="btn-nav-signup">Criar Conta</a>
+    </div>
+    <div class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <span class="mobile-close" id="mobileClose">✕</span>
+    <a href="../inicial/">Início</a>
+    <a href="../inicial/#funcionalidades">Funcionalidades</a>
+    <a href="../inicial/#planos">Planos</a>
+    <a href="../sobre/">Sobre nós</a>
+    <a href="../cadastro/">Criar Conta</a>
+    <a href="../login/">Entrar</a>
+  </div>
+
+  <!-- Hero -->
+  <section class="contact-hero">
+    <div class="contact-hero-inner">
+      <div class="hero-badge-wrap reveal">
+        <div class="hero-badge">💬 Fale Conosco</div>
+      </div>
+      <h1 class="contact-hero-title reveal">Estamos aqui<br>para <em>te ajudar</em></h1>
+      <p class="contact-hero-sub reveal">Tem alguma dúvida, sugestão ou precisa de suporte? Nossa equipe responde em até 24 horas.</p>
+    </div>
+  </section>
+
+  <!-- Contact Grid -->
+  <section class="contact-section">
+    <div class="contact-grid">
+
+      <!-- Form -->
+      <div class="contact-form-wrap reveal">
+        <div class="form-header">
+          <h2>Envie uma mensagem</h2>
+          <p>Preencha o formulário e entraremos em contato em breve.</p>
+        </div>
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nome">Nome completo</label>
+              <input type="text" id="nome" name="nome" placeholder="Seu nome" required>
+            </div>
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="assunto">Assunto</label>
+            <select id="assunto" name="assunto" required>
+              <option value="" disabled selected>Selecione um assunto</option>
+              <option value="suporte">Suporte técnico</option>
+              <option value="conta">Minha conta</option>
+              <option value="planos">Planos e pagamentos</option>
+              <option value="parceria">Parceria</option>
+              <option value="sugestao">Sugestão</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="mensagem">Mensagem</label>
+            <textarea id="mensagem" name="mensagem" rows="6" placeholder="Descreva sua dúvida ou mensagem..." required></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span>Enviar mensagem</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+          <div class="form-success" id="formSuccess">
+            <i class="fa-solid fa-circle-check"></i>
+            <strong>Mensagem enviada!</strong> Responderemos em até 24 horas.
+          </div>
+        </form>
+      </div>
+
+      <!-- Info Cards -->
+      <div class="contact-info">
+        <div class="info-card reveal" style="transition-delay: 0.1s">
+          <div class="info-icon"><i class="fa-solid fa-envelope"></i></div>
+          <div class="info-content">
+            <h3>E-mail</h3>
+            <p>suporte@sabore.com.br</p>
+            <span class="info-note">Respondemos em até 24h</span>
+          </div>
+        </div>
+        <div class="info-card reveal" style="transition-delay: 0.2s">
+          <div class="info-icon"><i class="fa-brands fa-instagram"></i></div>
+          <div class="info-content">
+            <h3>Instagram</h3>
+            <p>@sabore.app</p>
+            <span class="info-note">Siga para dicas e novidades</span>
+          </div>
+        </div>
+        <div class="info-card reveal" style="transition-delay: 0.3s">
+          <div class="info-icon"><i class="fa-solid fa-clock"></i></div>
+          <div class="info-content">
+            <h3>Horário de Atendimento</h3>
+            <p>Segunda a Sexta</p>
+            <span class="info-note">09h às 18h (Horário de Brasília)</span>
+          </div>
+        </div>
+        <div class="info-card reveal" style="transition-delay: 0.4s">
+          <div class="info-icon"><i class="fa-solid fa-headset"></i></div>
+          <div class="info-content">
+            <h3>Suporte PRO</h3>
+            <p>Suporte prioritário 24/7</p>
+            <span class="info-note">Exclusivo para assinantes PRO</span>
+          </div>
+        </div>
+
+        <!-- FAQ shortcut -->
+        <div class="faq-shortcut reveal" style="transition-delay: 0.5s">
+          <i class="fa-solid fa-circle-question"></i>
+          <div>
+            <strong>Tem uma dúvida rápida?</strong>
+            <p>Confira nossas <a href="../inicial/#funcionalidades">perguntas frequentes</a> na landing page.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-name">
+          <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ" class="footer-logo-img">
+        </div>
+        <p class="footer-tagline">A plataforma inteligente que transforma a forma como você cozinha, organiza e descobre receitas.</p>
+        <div class="footer-socials">
+          <a class="social-btn" href="#">📸</a>
+          <a class="social-btn" href="#">🎵</a>
+          <a class="social-btn" href="#">▶</a>
+          <a class="social-btn" href="#">🐦</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Produto</div>
+        <ul class="footer-links">
+          <li><a href="../inicial/#funcionalidades">Funcionalidades</a></li>
+          <li><a href="../inicial/#planos">Planos</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Empresa</div>
+        <ul class="footer-links">
+          <li><a href="../sobre/">Sobre nós</a></li>
+          <li><a href="../contato/">Contato</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <ul class="footer-links">
+          <li><a href="../privacidade/">Privacidade</a></li>
+          <li><a href="../termos/">Termos de Uso</a></li>
+          <li><a href="../cookies/">Cookies</a></li>
+          <li><a href="../lgpd/">LGPD</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ" class="copyright-logo-img">. Todos os direitos reservados.</span>
+      <span class="footer-love">Feito com <span>♥</span> para quem ama cozinhar</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

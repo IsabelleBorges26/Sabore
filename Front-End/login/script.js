@@ -1,1 +1,102 @@
-const customCursor = document.createElement('div');customCursor.className = 'custom-cursor';document.body.appendChild(customCursor);document.addEventListener('mousemove', (e) => {  customCursor.style.left = e.clientX + 'px';  customCursor.style.top = e.clientY + 'px';});function updateCursorHoverListeners() {  const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], .social-btn, .plan-btn, .hamburger');  interactives.forEach(el => {    if (el.dataset.cursorBound) return;    el.dataset.cursorBound = 'true';    el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));    el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));  });}updateCursorHoverListeners();setInterval(updateCursorHoverListeners, 1000);document.addEventListener('mouseleave', () => {  customCursor.style.display = 'none';});document.addEventListener('mouseenter', () => {  customCursor.style.display = 'block';});const firebaseConfig = {  apiKey: "AIzaSyDoi7oFnxm_M3uRHtv8FW5utfNQIiwlXVM",  authDomain: "sabore-be19b.firebaseapp.com",  projectId: "sabore-be19b",  storageBucket: "sabore-be19b.firebasestorage.app",  messagingSenderId: "304349731243",  appId: "1:304349731243:web:8dc64e1a2550821dd75aee"};try {  firebase.initializeApp(firebaseConfig);  const auth = firebase.auth();  const toggleBtn = document.getElementById('togglePassword');  const passwordInput = document.getElementById('senha');  if (toggleBtn && passwordInput) {    toggleBtn.addEventListener('click', () => {      const isPassword = passwordInput.type === 'password';      passwordInput.type = isPassword ? 'text' : 'password';      toggleBtn.textContent = isPassword ? '🙈' : '👁';    });  }  const btnLogin = document.getElementById('btnLogin');  if (btnLogin) {    btnLogin.addEventListener('click', async () => {      const email = document.getElementById('email').value.trim();      const password = document.getElementById('senha').value;      if (!email || !password) {        alert('Por favor, preencha todos os campos.');        return;      }      btnLogin.textContent = 'Entrando...';      btnLogin.disabled = true;      try {        const response = await api.post("/usuarios/login", {          email,          senha: password        });        api.setToken(response.token);        api.setUser(response.usuario);        window.location.href = '../Dashboard/home/index.html';      } catch (error) {        alert(error.message || 'Erro ao entrar. Por favor, verifique suas credenciais.');        btnLogin.textContent = 'Entrar na conta';        btnLogin.disabled = false;      }    });  }  const btnGoogle = document.querySelector('.btn-social');  if (btnGoogle) {    btnGoogle.addEventListener('click', () => {      const provider = new firebase.auth.GoogleAuthProvider();      btnGoogle.innerHTML = '<span>⟳</span> Conectando...';      btnGoogle.disabled = true;      auth.signInWithPopup(provider)        .then(async (result) => {          const user = result.user;          try {            const response = await api.post("/usuarios/login-google", {              email: user.email,              nome: user.displayName,              foto: user.photoURL            });            api.setToken(response.token);            api.setUser(response.usuario);            window.location.href = '../Dashboard/home/index.html';          } catch (error) {            alert('Erro ao sincronizar login com Google no servidor: ' + error.message);            btnGoogle.innerHTML = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';            btnGoogle.disabled = false;          }        })        .catch((error) => {          alert('Erro ao entrar com o Google: ' + error.message);          btnGoogle.innerHTML = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';          btnGoogle.disabled = false;        });    });  }  document.addEventListener('keydown', (e) => {    if (e.key === 'Enter') {      const btn = document.getElementById('btnLogin');      if (btn && !btn.disabled) btn.click();    }  });} catch (fbError) {}document.querySelectorAll('.field input').forEach(input => {  const wrap = input.closest('.input-wrap');  input.addEventListener('focus', () => {    wrap.style.transform = 'scale(1.01)';  });  input.addEventListener('blur', () => {    wrap.style.transform = '';  });});
+const customCursor = document.createElement('div');
+customCursor.className = 'custom-cursor';
+document.body.appendChild(customCursor);
+document.addEventListener('mousemove', (e) => {
+  customCursor.style.left = e.clientX + 'px';
+  customCursor.style.top = e.clientY + 'px';
+});
+
+function updateCursorHoverListeners() {
+  document.querySelectorAll('a, button, input, select, textarea, [role="button"]').forEach((element) => {
+    if (element.dataset.cursorBound) return;
+    element.dataset.cursorBound = 'true';
+    element.addEventListener('mouseenter', () => customCursor.classList.add('hover'));
+    element.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));
+  });
+}
+updateCursorHoverListeners();
+
+const authClient = window.supabaseClient;
+const btnLogin = document.getElementById('btnLogin');
+const btnGoogle = document.querySelector('.btn-social');
+const defaultGoogleButton = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';
+
+const setLoginButton = (loading) => {
+  if (!btnLogin) return;
+  btnLogin.textContent = loading ? 'Entrando...' : 'Entrar na conta';
+  btnLogin.disabled = loading;
+};
+
+const finishAuthentication = async (session) => {
+  api.setToken(session.access_token);
+  const user = await api.get('/usuarios/perfil');
+  api.setUser(user);
+  window.location.replace('../Dashboard/home/index.html');
+};
+
+const getRedirectUrl = () => `${window.location.origin}/login/index.html`;
+
+const toggleBtn = document.getElementById('togglePassword');
+const passwordInput = document.getElementById('senha');
+if (toggleBtn && passwordInput) {
+  toggleBtn.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    toggleBtn.textContent = isPassword ? '🙈' : '👁';
+  });
+}
+
+if (btnLogin) {
+  btnLogin.addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = passwordInput.value;
+    if (!email || !password) return alert('Por favor, preencha todos os campos.');
+    if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+
+    setLoginButton(true);
+    try {
+      const { data, error } = await authClient.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      await finishAuthentication(data.session);
+    } catch (error) {
+      alert(error.message || 'Não foi possível entrar na conta.');
+      setLoginButton(false);
+    }
+  });
+}
+
+if (btnGoogle) {
+  btnGoogle.addEventListener('click', async () => {
+    if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+    btnGoogle.innerHTML = '<span>⟳</span> Conectando...';
+    btnGoogle.disabled = true;
+    const { error } = await authClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: getRedirectUrl() }
+    });
+    if (error) {
+      alert(error.message || 'Não foi possível iniciar o login com Google.');
+      btnGoogle.innerHTML = defaultGoogleButton;
+      btnGoogle.disabled = false;
+    }
+  });
+}
+
+if (authClient) {
+  authClient.auth.getSession().then(async ({ data, error }) => {
+    if (error || !data.session) return;
+    setLoginButton(true);
+    try {
+      await finishAuthentication(data.session);
+    } catch (syncError) {
+      await authClient.auth.signOut();
+      api.clearSession();
+      alert('Login concluído, mas não foi possível abrir sua conta: ' + syncError.message);
+      setLoginButton(false);
+    }
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && btnLogin && !btnLogin.disabled) btnLogin.click();
+});

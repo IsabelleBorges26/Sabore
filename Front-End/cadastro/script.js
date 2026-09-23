@@ -1,1 +1,98 @@
-const customCursor = document.createElement('div');customCursor.className = 'custom-cursor';document.body.appendChild(customCursor);document.addEventListener('mousemove', (e) => {  customCursor.style.left = e.clientX + 'px';  customCursor.style.top = e.clientY + 'px';});function updateCursorHoverListeners() {  const interactives = document.querySelectorAll('a, button, input, select, textarea, [role="button"], .social-btn, .plan-btn, .hamburger');  interactives.forEach(el => {    if (el.dataset.cursorBound) return;    el.dataset.cursorBound = 'true';    el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));    el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));  });}updateCursorHoverListeners();setInterval(updateCursorHoverListeners, 1000);document.addEventListener('mouseleave', () => {  customCursor.style.display = 'none';});document.addEventListener('mouseenter', () => {  customCursor.style.display = 'block';});const firebaseConfig = {  apiKey: "AIzaSyDoi7oFnxm_M3uRHtv8FW5utfNQIiwlXVM",  authDomain: "sabore-be19b.firebaseapp.com",  projectId: "sabore-be19b",  storageBucket: "sabore-be19b.firebasestorage.app",  messagingSenderId: "304349731243",  appId: "1:304349731243:web:8dc64e1a2550821dd75aee"};try {  firebase.initializeApp(firebaseConfig);  const auth = firebase.auth();  const toggleBtn = document.getElementById('togglePassword');  const passwordInput = document.getElementById('senha');  if (toggleBtn && passwordInput) {    toggleBtn.addEventListener('click', () => {      const isPassword = passwordInput.type === 'password';      passwordInput.type = isPassword ? 'text' : 'password';      toggleBtn.textContent = isPassword ? '🙈' : '👁';    });  }  const strengthIndicator = document.getElementById('strengthIndicator');  const bars = [    document.getElementById('bar1'),    document.getElementById('bar2'),    document.getElementById('bar3'),    document.getElementById('bar4'),  ];  const strengthLabel = document.getElementById('strengthLabel');  function getStrength(password) {    let score = 0;    if (password.length >= 8) score++;    if (password.length >= 12) score++;    if (/[A-Z]/.test(password)) score++;    if (/[0-9]/.test(password)) score++;    if (/[^A-Za-z0-9]/.test(password)) score++;    return Math.min(4, Math.ceil(score * 4 / 5));  }  if (passwordInput) {    passwordInput.addEventListener('input', () => {      const val = passwordInput.value;      if (val.length === 0) {        strengthIndicator.style.display = 'none';        return;      }      strengthIndicator.style.display = 'flex';      const strength = getStrength(val);      const classes = ['', 'weak', 'weak', 'medium', 'strong'];      const labels = ['', 'Fraca', 'Fraca', 'Média', 'Forte'];      bars.forEach((bar, i) => {        bar.className = 'strength-bar';        if (i < strength) {          bar.classList.add(classes[strength]);        }      });      strengthLabel.textContent = labels[strength];      strengthLabel.style.color =        strength <= 2 ? '#e85555' :        strength === 3 ? '#e8b355' : '#55c97a';    });  }  const btnCadastro = document.getElementById('btnCadastro');  if (btnCadastro) {    btnCadastro.addEventListener('click', async () => {      const nome = document.getElementById('nome').value.trim();      const email = document.getElementById('email').value.trim();      const password = document.getElementById('senha').value;      const acceptTerms = document.getElementById('terms').checked;      if (!nome || !email || !password) {        alert('Por favor, preencha todos os campos.');        return;      }      if (!acceptTerms) {        alert('Você precisa aceitar os Termos de Uso e Política de Privacidade.');        return;      }      btnCadastro.textContent = 'Criando conta...';      btnCadastro.disabled = true;      try {        const response = await api.post("/usuarios/cadastrar", {          nome,          email,          senha: password        });        api.setToken(response.token);        api.setUser(response.usuario);        window.location.href = '../Dashboard/home/index.html';      } catch (error) {        alert(error.message || 'Erro ao criar conta. Por favor, tente novamente.');        btnCadastro.textContent = 'Criar conta grátis';        btnCadastro.disabled = false;      }    });  }  const btnGoogle = document.querySelector('.btn-social');  if (btnGoogle) {    btnGoogle.addEventListener('click', () => {      const provider = new firebase.auth.GoogleAuthProvider();      btnGoogle.innerHTML = '<span>⟳</span> Conectando...';      btnGoogle.disabled = true;      auth.signInWithPopup(provider)        .then(async (result) => {          const user = result.user;          try {            const response = await api.post("/usuarios/login-google", {              email: user.email,              nome: user.displayName,              foto: user.photoURL            });            api.setToken(response.token);            api.setUser(response.usuario);            window.location.href = '../Dashboard/home/index.html';          } catch (error) {            alert('Erro ao sincronizar login com Google no servidor: ' + error.message);            btnGoogle.innerHTML = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';            btnGoogle.disabled = false;          }        })        .catch((error) => {          alert('Erro ao cadastrar com o Google: ' + error.message);          btnGoogle.innerHTML = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';          btnGoogle.disabled = false;        });    });  }  document.addEventListener('keydown', (e) => {    if (e.key === 'Enter') {      const btn = document.getElementById('btnCadastro');      if (btn && !btn.disabled) btn.click();    }  });} catch (fbError) {}document.querySelectorAll('.field input').forEach(input => {  const wrap = input.closest('.input-wrap');  input.addEventListener('focus', () => { wrap.style.transform = 'scale(1.01)'; });  input.addEventListener('blur', () => { wrap.style.transform = ''; });});
+const customCursor = document.createElement('div');
+customCursor.className = 'custom-cursor';
+document.body.appendChild(customCursor);
+document.addEventListener('mousemove', (e) => {
+  customCursor.style.left = e.clientX + 'px';
+  customCursor.style.top = e.clientY + 'px';
+});
+
+function updateCursorHoverListeners() {
+  document.querySelectorAll('a, button, input, select, textarea, [role="button"]').forEach((element) => {
+    if (element.dataset.cursorBound) return;
+    element.dataset.cursorBound = 'true';
+    element.addEventListener('mouseenter', () => customCursor.classList.add('hover'));
+    element.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));
+  });
+}
+updateCursorHoverListeners();
+
+const authClient = window.supabaseClient;
+const btnCadastro = document.getElementById('btnCadastro');
+const btnGoogle = document.querySelector('.btn-social');
+const passwordInput = document.getElementById('senha');
+const toggleBtn = document.getElementById('togglePassword');
+const defaultGoogleButton = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';
+
+const finishAuthentication = async (session) => {
+  api.setToken(session.access_token);
+  const user = await api.get('/usuarios/perfil');
+  api.setUser(user);
+  window.location.replace('../Dashboard/home/index.html');
+};
+
+const getRedirectUrl = () => `${window.location.origin}/login/index.html`;
+
+if (toggleBtn && passwordInput) {
+  toggleBtn.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    toggleBtn.textContent = isPassword ? '🙈' : '👁';
+  });
+}
+
+const strengthIndicator = document.getElementById('strengthIndicator');
+const bars = ['bar1', 'bar2', 'bar3', 'bar4'].map((id) => document.getElementById(id));
+const strengthLabel = document.getElementById('strengthLabel');
+if (passwordInput) {
+  passwordInput.addEventListener('input', () => {
+    const password = passwordInput.value;
+    strengthIndicator.style.display = password ? 'flex' : 'none';
+    const score = Math.min(4, [password.length >= 8, password.length >= 12, /[A-Z]/.test(password), /[0-9]/.test(password), /[^A-Za-z0-9]/.test(password)].filter(Boolean).length);
+    const label = score < 2 ? 'Fraca' : score < 4 ? 'Média' : 'Forte';
+    bars.forEach((bar, index) => bar.className = `strength-bar${index < score ? (score < 2 ? ' weak' : score < 4 ? ' medium' : ' strong') : ''}`);
+    strengthLabel.textContent = label;
+  });
+}
+
+if (btnCadastro) {
+  btnCadastro.addEventListener('click', async () => {
+    const nome = document.getElementById('nome').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = passwordInput.value;
+    if (!nome || !email || !password) return alert('Por favor, preencha todos os campos.');
+    if (!document.getElementById('terms').checked) return alert('Você precisa aceitar os Termos de Uso e Política de Privacidade.');
+    if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+
+    btnCadastro.textContent = 'Criando conta...';
+    btnCadastro.disabled = true;
+    try {
+      const { data, error } = await authClient.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: nome }, emailRedirectTo: getRedirectUrl() }
+      });
+      if (error) throw error;
+      if (data.session) return finishAuthentication(data.session);
+      alert('Conta criada. Verifique seu e-mail para confirmar o cadastro antes de entrar.');
+      window.location.href = '../login/index.html';
+    } catch (error) {
+      alert(error.message || 'Não foi possível criar a conta.');
+      btnCadastro.textContent = 'Criar conta grátis';
+      btnCadastro.disabled = false;
+    }
+  });
+}
+
+if (btnGoogle) {
+  btnGoogle.addEventListener('click', async () => {
+    if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+    btnGoogle.innerHTML = '<span>⟳</span> Conectando...';
+    btnGoogle.disabled = true;
+    const { error } = await authClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: getRedirectUrl() } });
+    if (error) {
+      alert(error.message || 'Não foi possível iniciar o cadastro com Google.');
+      btnGoogle.innerHTML = defaultGoogleButton;
+      btnGoogle.disabled = false;
+    }
+  });
+}

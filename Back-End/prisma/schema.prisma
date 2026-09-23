@@ -31,6 +31,8 @@ model Usuario {
   ingredientesDisponiveis   IngredienteDisponivel[]
   livros                    Livro[]
   compartilhamentos        Compartilhamento[]
+  seguindo                 Seguidor[]                 @relation("Seguidor")
+  seguidores               Seguidor[]                 @relation("Seguido")
 }
 
 model Receita {
@@ -40,6 +42,7 @@ model Receita {
   modoPreparo       String           @db.Text
   tempoPreparo      Int?
   publica           Boolean          @default(false)
+  publicadaEm       DateTime?
   imagem            String?          @db.Text
   dificuldade       String?
   criadaPorIA       Boolean                  @default(false)
@@ -146,4 +149,16 @@ model Compartilhamento {
   createdAt  DateTime @default(now())
   receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
   usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+model Seguidor {
+  id          Int      @id @default(autoincrement())
+  seguidorId  Int
+  seguidoId   Int
+  createdAt   DateTime @default(now())
+  seguidor    Usuario  @relation("Seguidor", fields: [seguidorId], references: [id], onDelete: Cascade)
+  seguido     Usuario  @relation("Seguido", fields: [seguidoId], references: [id], onDelete: Cascade)
+
+  @@unique([seguidorId, seguidoId])
+  @@index([seguidoId])
 }
