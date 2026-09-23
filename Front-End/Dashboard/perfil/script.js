@@ -67,7 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
       removeAvatarBtn.style.display = url ? 'inline-flex' : 'none';
     }
   }
+<<<<<<< HEAD
   const savedAvatar = localStorage.getItem('sabore_user_avatar') || (user && user.foto) || null;
+=======
+  const savedAvatar = (user && user.foto) || null;
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
   applyAvatarToPage(savedAvatar);
   if (avatarContainer && avatarInput) {
     avatarContainer.addEventListener('click', () => avatarInput.click());
@@ -75,10 +79,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
+<<<<<<< HEAD
       reader.onload = (event) => {
         const dataUrl = event.target.result;
         localStorage.setItem('sabore_user_avatar', dataUrl);
         applyAvatarToPage(dataUrl);
+=======
+      reader.onload = async (event) => {
+        const dataUrl = event.target.result;
+        try {
+          const updatedUser = await api.put(`/usuarios/atualizar/${user.id}`, { foto: dataUrl });
+          api.setUser(updatedUser);
+          applyAvatarToPage(updatedUser.foto);
+        } catch (err) {
+          alert(`Não foi possível salvar a foto: ${err.message}`);
+        }
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
       };
       reader.readAsDataURL(file);
     });
@@ -87,9 +103,19 @@ document.addEventListener('DOMContentLoaded', () => {
     removeAvatarBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!confirm('Deseja remover sua foto de perfil?')) return;
+<<<<<<< HEAD
       localStorage.removeItem('sabore_user_avatar');
       if (avatarInput) avatarInput.value = '';
       applyAvatarToPage(null);
+=======
+      api.put(`/usuarios/atualizar/${user.id}`, { foto: null })
+        .then(updatedUser => {
+          api.setUser(updatedUser);
+          if (avatarInput) avatarInput.value = '';
+          applyAvatarToPage(null);
+        })
+        .catch(err => alert(`Não foi possível remover a foto: ${err.message}`));
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
     });
   }
   function updatePlanUI() {
@@ -126,7 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+<<<<<<< HEAD
   userState.isPro = false; 
+=======
+  userState.isPro = user.plano === 'PRO';
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
   updatePlanUI();
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
@@ -293,8 +323,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement("article");
         card.className = "creation-card";
         card.innerHTML = `
+<<<<<<< HEAD
           <div class="creation-img-wrap ${rec.image ? '' : 'without-recipe-image'}">
             ${rec.image ? `<img src="${rec.image}" alt="${rec.title}">` : '<i class="fa-solid fa-utensils" aria-hidden="true"></i>'}
+=======
+          <div class="creation-img-wrap">
+            <img src="${rec.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=400&q=80'}" alt="${rec.title}">
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
             <span class="creation-category">${rec.category}</span>
           </div>
           <div class="creation-info">
@@ -303,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <span><i class="fa-regular fa-clock"></i> ${rec.time} min</span>
               <span><i class="fa-solid fa-gauge-simple"></i> ${rec.difficulty}</span>
             </div>
+<<<<<<< HEAD
             <button class="btn-publish-recipe ${rec.public ? 'published' : ''}">
               <i class="fa-solid ${rec.public ? 'fa-circle-check' : 'fa-globe'}"></i>
               ${rec.public ? 'Publicada na comunidade' : 'Publicar na comunidade'}
@@ -320,6 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`Não foi possível atualizar a publicação: ${error.message}`);
           }
         });
+=======
+          </div>
+        `;
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         container.appendChild(card);
       });
       updateCursorHoverListeners();
@@ -340,17 +380,27 @@ document.addEventListener('DOMContentLoaded', () => {
       if (navUserName && user.nome) {
         navUserName.textContent = user.nome.split(' ')[0];
       }
+<<<<<<< HEAD
       const savedBio = localStorage.getItem('sabore_user_bio') || profileData.bio || 'Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.';
+=======
+      const savedBio = profileData.bio || localStorage.getItem('sabore_user_bio') || '';
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
       userState.bio = savedBio;
       const bioDisplay = document.getElementById('user-bio-display');
       if (bioDisplay) bioDisplay.textContent = savedBio;
       const followersVal = document.getElementById('profile-followers-count');
       const followingVal = document.getElementById('profile-following-count');
       const recipesVal = document.getElementById('profile-recipes-count');
+<<<<<<< HEAD
       const social = await api.get('/social/meu-resumo');
       if (followersVal) followersVal.textContent = social.seguidores;
       if (followingVal) followingVal.textContent = social.seguindo;
       if (recipesVal) recipesVal.textContent = social.receitasPublicas;
+=======
+      if (followersVal) followersVal.textContent = "0"; // New users start with 0
+      if (followingVal) followingVal.textContent = "0"; // New users start with 0
+      if (recipesVal) recipesVal.textContent = profileData.stats.created;
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
     } catch (err) {
       console.error("Erro ao carregar dados do perfil:", err);
     }

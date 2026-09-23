@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL") // direcionar prisma para database no supabase
 }
 
 enum Plano {
@@ -23,7 +23,7 @@ model Usuario {
   senha                     String
   foto                      String?
   plano                     Plano                     @default(FREE)
-  createdAt                 DateTime                  @default(now()) // createdAt armazena data e hora 
+  createdAt                 DateTime                  @default(now())  
   updatedAt                 DateTime                  @updatedAt
   receitas                  Receita[]
   favoritos                 Favorito[]
@@ -150,6 +150,7 @@ model Compartilhamento {
   receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
   usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
+<<<<<<< HEAD
 
 model Seguidor {
   id          Int      @id @default(autoincrement())
@@ -162,3 +163,5 @@ model Seguidor {
   @@unique([seguidorId, seguidoId])
   @@index([seguidoId])
 }
+=======
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5

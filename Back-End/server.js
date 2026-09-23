@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -9,6 +10,22 @@ app.use(cors());
 
 // Servir arquivos estáticos do Front-End
 app.use(express.static(path.join(__dirname, "..", "Front-End")));
+=======
+const path = require("path");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: path.resolve(__dirname, ".env") });
+
+const express = require("express");
+const cors = require("cors");
+const prisma = require("./src/data/prisma");
+
+const app = express();
+
+// a IA por foto envia a imagem em base64 - o limite padrão do Express é pequeno
+app.use(express.json({ limit: "10mb" }));
+app.use(cors());
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
 
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const receitasRoutes = require("./src/routes/receitas.routes");
@@ -24,7 +41,28 @@ const compartilhamentoRoutes = require("./src/routes/compartilhamento.routes");
 const livrosRoutes = require("./src/routes/livros.routes");
 const planosRoutes = require("./src/routes/planos.routes");
 const bibliotecasRoutes = require("./src/routes/bibliotecas.routes");
+<<<<<<< HEAD
 const socialRoutes = require("./src/routes/social.routes");
+=======
+
+app.get("/health", (_req, res) => {
+    res.status(200).json({ status: "ok" });
+});
+
+app.get("/health/db", async (_req, res) => {
+    try {
+        const usuarios = await prisma.usuario.count();
+        res.status(200).json({ status: "ok", usuarios });
+    } catch (error) {
+        console.error("Erro na conexão com o banco:", error.message);
+        res.status(503).json({
+            status: "error",
+            erro: "Não foi possível conectar ao banco de dados.",
+            ...(process.env.NODE_ENV !== "production" ? { detalhe: error.message } : {})
+        });
+    }
+});
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
 
 app.use("/usuarios", usuariosRoutes);
 app.use("/receitas", receitasRoutes);
@@ -40,6 +78,7 @@ app.use("/compartilhamento", compartilhamentoRoutes);
 app.use("/livros", livrosRoutes);
 app.use("/planos", planosRoutes);
 app.use("/bibliotecas", bibliotecasRoutes);
+<<<<<<< HEAD
 app.use("/social", socialRoutes);
 
 app.get("/", (req, res) => {
@@ -49,4 +88,10 @@ app.get("/", (req, res) => {
 const porta = process.env.PORT_APP || 3000;
 app.listen(porta, () => {
     console.log(`Online na porta ${porta}`);
+=======
+
+const porta = process.env.PORT_APP || 3000;
+app.listen(porta, () => {
+    console.log(`Backend online na porta ${porta}`);
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
 });

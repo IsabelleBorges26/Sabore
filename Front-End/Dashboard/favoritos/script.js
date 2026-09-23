@@ -5,8 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   let userState = {
+<<<<<<< HEAD
     isPro: false,
     favoritesCount: 6
+=======
+    isPro: false
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
   };
   const recipesDatabase = {};
   const customCursor = document.createElement('div');
@@ -58,7 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+<<<<<<< HEAD
   userState.isPro = false; 
+=======
+  userState.isPro = user.plano === 'PRO';
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
   updatePlanUI();
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
@@ -175,8 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.category = rec.category;
         card.dataset.id = rec.id;
         card.innerHTML = `
+<<<<<<< HEAD
           <div class="recipe-image-wrap ${rec.image ? '' : 'without-recipe-image'}">
             ${rec.image ? `<img src="${rec.image}" alt="${rec.title}" class="recipe-img">` : '<i class="fa-solid fa-utensils" aria-hidden="true"></i>'}
+=======
+          <div class="recipe-image-wrap">
+            <img src="${rec.image}" alt="${rec.title}" class="recipe-img">
+>>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
             <button class="favorite-toggle-btn active" data-id="${rec.id}"><i class="fa-solid fa-heart"></i></button>
           </div>
           <div class="recipe-content-area">
