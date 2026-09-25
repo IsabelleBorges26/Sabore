@@ -15,8 +15,6 @@ cd backend
 2. Instale dependências:
 npm install
 
-
-
 3. Execute o projeto:
 npm start
 
