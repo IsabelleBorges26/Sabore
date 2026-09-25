@@ -150,7 +150,6 @@ model Compartilhamento {
   receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
   usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
-<<<<<<< HEAD
 
 model Seguidor {
   id          Int      @id @default(autoincrement())
@@ -163,5 +162,3 @@ model Seguidor {
   @@unique([seguidorId, seguidoId])
   @@index([seguidoId])
 }
-=======
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5

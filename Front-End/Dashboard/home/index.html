@@ -116,7 +116,6 @@
                 id="global-search"
                 placeholder="Pesquisar receitas, ingredientes ou categorias..."
               />
-              <span class="search-shortcut">Ctrl K</span>
             </div>
           </div>
           <div class="navbar-right">
@@ -170,7 +169,7 @@
               <span class="qa-icon"><i class="fa-solid fa-video"></i></span>
               <div class="qa-details">
                 <h3>Importar Receita</h3>
-                <p>Extraia de links do TikTok ou Insta</p>
+                <p>Extraia receitas de vídeos do YouTube</p>
               </div>
             </button>
           </section>
@@ -227,7 +226,7 @@
                     Gerenciar Todos
                   </button>
                   <button class="btn-widget-filled" id="generate-dispensa-btn">
-                    ⚡ Gerar com estes
+                    <i class="fa-solid fa-bolt" aria-hidden="true"></i> Gerar com estes
                   </button>
                 </div>
               </section>
@@ -360,7 +359,7 @@
               </div>
             </div>
             <button type="submit" class="btn-generate-ai">
-              <span>✨ Gerar Receita com IA</span>
+              <span><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Gerar Receita com IA</span>
             </button>
           </form>
         </div>
@@ -519,7 +518,7 @@
         </button>
         <div class="modal-header-simple">
           <h3><i class="fa-solid fa-video"></i> Importar Receita por Vídeo</h3>
-          <p>Cole o link do vídeo do TikTok, Instagram ou YouTube</p>
+          <p>Cole o link de um vídeo do YouTube</p>
         </div>
         <form id="video-import-form" class="modal-simple-form">
           <div class="form-group-simple">
@@ -527,7 +526,7 @@
             <input
               type="url"
               id="video-url"
-              placeholder="https://www.tiktok.com/@chef/video/..."
+              placeholder="https://www.youtube.com/watch?v=..."
               required
             />
           </div>

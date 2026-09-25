@@ -65,7 +65,7 @@ a, button, [role="button"] { cursor: none !important; }
 .mobile-menu.open { opacity: 1; pointer-events: all; }
 .mobile-menu a { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--light); text-decoration: none; transition: color 0.3s; }
 .mobile-menu a:hover { color: var(--accent); }
-.mobile-close { position: absolute; top: 24px; right: 24px; font-size: 1.5rem; color: rgba(242,244,243,0.6); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(242,244,243,0.1); transition: all 0.3s; }
+.mobile-close { position: absolute; top: 24px; right: 24px; font: inherit; background: transparent; font-size: 1.5rem; color: rgba(242,244,243,0.6); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(242,244,243,0.1); transition: all 0.3s; }
 .mobile-close:hover { background: rgba(242,244,243,0.05); color: var(--light); }
 
 /* Reveal */

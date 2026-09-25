@@ -1,4 +1,5 @@
 const prisma = require("../data/prisma");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const systemPrompt = `Você é o Chef Saboré IA. Responda exclusivamente com JSON válido, sem Markdown ou texto fora do objeto.
 Para conversa, use isRecipe:false e preencha apenas message. Para uma receita solicitada explicitamente, use isRecipe:true e siga este formato:
 {"isRecipe":true,"message":"","title":"","description":"","ingredients":[""],"steps":[""],"time":0,"difficulty":"Fácil","category":""}
@@ -33,6 +34,83 @@ function parseJSONRecipe(text) {
         }
         throw e;
     }
+}
+
+const pause = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+const extractModelContent = (response) => response?.choices?.[0]?.message?.content?.trim() || "";
+
+async function generatePhotoRecipeContent(systemInstruction, userInstruction) {
+    const failures = [];
+
+    if (process.env.OPENROUTER_API_KEY) {
+        try {
+            const sdk = await import("@openrouter/sdk");
+            const openrouter = new sdk.OpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+            const models = ["google/gemma-4-26b-a4b-it:free", "openrouter/free"];
+
+            for (const model of models) {
+                for (let attempt = 1; attempt <= 2; attempt += 1) {
+                    try {
+                        console.log(`[IA Vision Recipe] Tentando OpenRouter: ${model} (tentativa ${attempt})`);
+                        const response = await openrouter.chat.send({
+                            chatRequest: {
+                                model,
+                                temperature: 0.25,
+                                maxCompletionTokens: 2200,
+                                responseFormat: { type: "json_object" },
+                                messages: [
+                                    { role: "system", content: systemInstruction },
+                                    { role: "user", content: userInstruction }
+                                ]
+                            }
+                        });
+                        const content = extractModelContent(response);
+                        if (content) return JSON.stringify(parseJSONRecipe(content));
+                        throw new Error("O modelo retornou uma resposta vazia.");
+                    } catch (error) {
+                        const detail = error?.message || String(error);
+                        failures.push(`OpenRouter/${model}: ${detail}`);
+                        console.warn(`[IA Vision Recipe] Falha no ${model}:`, detail);
+                        if (attempt < 2) await pause(800);
+                    }
+                }
+            }
+        } catch (error) {
+            const detail = error?.message || String(error);
+            failures.push(`OpenRouter SDK: ${detail}`);
+            console.warn("[IA Vision Recipe] OpenRouter indisponível:", detail);
+        }
+    }
+
+    if (process.env.GEMINI_API_KEY) {
+        const googleAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+        for (const modelName of models) {
+            try {
+                console.log(`[IA Vision Recipe] Tentando Gemini direto: ${modelName}`);
+                const model = googleAI.getGenerativeModel({
+                    model: modelName,
+                    systemInstruction,
+                    generationConfig: {
+                        temperature: 0.25,
+                        responseMimeType: "application/json"
+                    }
+                });
+                const result = await model.generateContent(userInstruction);
+                const content = result?.response?.text?.().trim();
+                if (content) return JSON.stringify(parseJSONRecipe(content));
+                throw new Error("O Gemini retornou uma resposta vazia.");
+            } catch (error) {
+                const detail = error?.message || String(error);
+                failures.push(`Gemini/${modelName}: ${detail}`);
+                console.warn(`[IA Vision Recipe] Falha no ${modelName}:`, detail);
+            }
+        }
+    }
+
+    console.error("[IA Vision Recipe] Nenhum provedor respondeu:", failures);
+    throw new Error("Nenhum provedor de IA respondeu no momento. Aguarde alguns segundos e tente novamente.");
 }
 const gerar = async (req, res) => {
     const usuarioId = req.usuario.id;
@@ -297,6 +375,30 @@ const gerarReceitaFoto = async (req, res) => {
         return res.status(400).json({ erro: "Nome do prato ou ingredientes ausentes." });
     }
     try {
+        const restrictions = diet || "Nenhuma restrição";
+        const portions = Number(servings) || 2;
+        const detectedIngredients = Array.isArray(ingredientsList)
+            ? ingredientsList.map((item) => String(item).trim()).filter(Boolean).slice(0, 12)
+            : [];
+        if (!detectedIngredients.length) {
+            return res.status(400).json({ erro: "Nenhum ingrediente identificado para gerar a receita." });
+        }
+
+        const systemInstruction = `Você é o Chef Saboré IA. Crie uma receita tecnicamente coerente com o prato identificado na foto.
+Respeite a restrição alimentar: ${restrictions}. Ajuste o rendimento para ${portions} porções.
+Os itens recebidos são apenas pistas visuais: complete somente com ingredientes clássicos, seguros e plausíveis para o prato.
+Use técnica adequada: bolo, massa, cobertura, chocolate e granulado devem ser batidos, misturados, assados ou derretidos; nunca grelhados. Para assados, inclua forno, temperatura e teste de ponto. Para outros pratos, não invente forno.
+Escreva etapas curtas, cronológicas e executáveis. Não use markdown, asteriscos ou blocos de código.
+Responda somente com JSON válido e com exatamente estas chaves: time, servings, difficulty, diet, ingredients, steps.
+Exemplo: {"time":40,"servings":2,"difficulty":"Médio","diet":"none","ingredients":["ingrediente"],"steps":["etapa"]}`;
+        const userInstruction = `Crie a receita em português para o prato "${String(dishName).trim()}". Pistas visuais identificadas: ${detectedIngredients.join(", ")}.`;
+        const generatedContent = await generatePhotoRecipeContent(systemInstruction, userInstruction);
+        const generatedJson = generatedContent.match(/\{[\s\S]*\}/);
+        if (!generatedJson) {
+            throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
+        }
+        return res.status(200).json(JSON.parse(generatedJson[0].replace(/,(\s*[\]}])/g, '$1')));
+
         const sdk = await import("@openrouter/sdk");
         const openrouter = new sdk.OpenRouter({
             apiKey: process.env.OPENROUTER_API_KEY

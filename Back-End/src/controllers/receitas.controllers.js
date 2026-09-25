@@ -1,9 +1,4 @@
 const prisma = require("../data/prisma");
-<<<<<<< HEAD
-=======
-const { withDatabaseFallback } = require("../data/databaseFallback");
-const { listRecipes } = require("../data/restQueries");
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
 const parseIngredient = (input) => {
     let str = "";
     if (typeof input === "string") {
@@ -29,26 +24,17 @@ const formatRecipe = (recipe) => {
         difficulty: recipe.dificuldade || "Fácil",
         time: recipe.tempoPreparo || 0,
         public: recipe.publica,
-<<<<<<< HEAD
         communityPublished: Boolean(recipe.publicadaEm),
         // Nunca apresentamos uma foto de banco de imagens como se fosse a receita do usuário.
         image: recipe.imagem || null,
-=======
-        image: recipe.imagem || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=400&q=80",
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         criadaPorIA: recipe.criadaPorIA,
         rascunho: recipe.rascunho,
         linkImportacao: recipe.linkImportacao,
         livroId: recipe.livroId,
-<<<<<<< HEAD
         authorId: recipe.usuarioId,
         author: recipe.usuario ? recipe.usuario.nome : "Chef",
         authorAvatar: recipe.usuario?.foto || null,
         likes: recipe._count?.favoritos || 0,
-=======
-        author: recipe.usuario ? recipe.usuario.nome : "Chef",
-        authorAvatar: (recipe.usuario && recipe.usuario.foto) || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         category: recipe.categorias && recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
         categories: recipe.categorias ? recipe.categorias.map(rc => rc.categoria.nome) : [],
         ingredients: recipe.ingredientes ? recipe.ingredientes.map(ri => {
@@ -62,7 +48,6 @@ const formatRecipe = (recipe) => {
 };
 const cadastrar = async (req, res) => {
     const usuarioId = req.usuario.id;
-<<<<<<< HEAD
     const { 
         titulo, 
         descricao, 
@@ -83,28 +68,6 @@ const cadastrar = async (req, res) => {
         ingredientes, 
         categories, 
         categorias 
-=======
-    const {
-        titulo,
-        descricao,
-        modoPreparo,
-        steps,
-        tempoPreparo,
-        time,
-        publica,
-        public: frontendPublic,
-        imagem,
-        image,
-        dificuldade,
-        criadaPorIA,
-        rascunho,
-        linkImportacao,
-        livroId,
-        ingredients,
-        ingredientes,
-        categories,
-        categorias
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
     } = req.body;
     if (!titulo) {
         return res.status(400).json({ erro: "O título da receita é obrigatório." });
@@ -121,19 +84,12 @@ const cadastrar = async (req, res) => {
         const parsedLivroId = Number(livroId);
         if (!isNaN(parsedLivroId) && parsedLivroId > 0) {
             const livroExiste = await prisma.livro.findFirst({
-<<<<<<< HEAD
                 where: { id: parsedLivroId, usuarioId }
             });
             if (livroExiste) {
                 validLivroId = parsedLivroId;
             } else {
                 return res.status(403).json({ erro: "O livro selecionado não pertence à sua conta ou não existe." });
-=======
-                where: { id: parsedLivroId }
-            });
-            if (livroExiste) {
-                validLivroId = parsedLivroId;
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
             }
         }
     }
@@ -146,10 +102,7 @@ const cadastrar = async (req, res) => {
                     modoPreparo: prepStepsString,
                     tempoPreparo: finalTime,
                     publica: finalPublic,
-<<<<<<< HEAD
                     publicadaEm: finalPublic ? new Date() : null,
-=======
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
                     imagem: finalImage,
                     dificuldade: dificuldade || "Fácil",
                     criadaPorIA: Boolean(criadaPorIA),
@@ -210,12 +163,8 @@ const cadastrar = async (req, res) => {
                 },
                 categorias: {
                     include: { categoria: true }
-<<<<<<< HEAD
                 },
                 _count: { select: { favoritos: true } }
-=======
-                }
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
             }
         });
         res.status(201).json(formatRecipe(fullRecipe));
@@ -232,7 +181,6 @@ const listar = async (req, res) => {
         if (livroId) {
             filters.livroId = Number(livroId);
         }
-<<<<<<< HEAD
         const receitas = await prisma.receita.findMany({
             where: filters,
             include: {
@@ -247,25 +195,6 @@ const listar = async (req, res) => {
             },
             orderBy: { createdAt: "desc" }
         });
-=======
-        const receitas = await withDatabaseFallback(
-            () => prisma.receita.findMany({
-                where: filters,
-                include: {
-                    usuario: true,
-                    ingredientes: {
-                        include: { ingrediente: true }
-                    },
-                    categorias: {
-                        include: { categoria: true }
-                    }
-                },
-                orderBy: { createdAt: "desc" }
-            }),
-            () => listRecipes(filters),
-            "listar receitas"
-        );
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         res.status(200).json(receitas.map(formatRecipe));
     } catch (error) {
         res.status(500).json({ erro: "Erro ao listar receitas.", detalhe: error.message });
@@ -273,7 +202,6 @@ const listar = async (req, res) => {
 };
 const listarPublicas = async (req, res) => {
     try {
-<<<<<<< HEAD
         const receitas = await prisma.receita.findMany({
             where: { publica: true, publicadaEm: { not: null } },
             include: {
@@ -288,25 +216,6 @@ const listarPublicas = async (req, res) => {
             },
             orderBy: { createdAt: "desc" }
         });
-=======
-        const receitas = await withDatabaseFallback(
-            () => prisma.receita.findMany({
-                where: { publica: true },
-                include: {
-                    usuario: true,
-                    ingredientes: {
-                        include: { ingrediente: true }
-                    },
-                    categorias: {
-                        include: { categoria: true }
-                    }
-                },
-                orderBy: { createdAt: "desc" }
-            }),
-            () => listRecipes({ publica: true }),
-            "listar receitas públicas"
-        );
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         res.status(200).json(receitas.map(formatRecipe));
     } catch (error) {
         res.status(500).json({ erro: "Erro ao listar receitas públicas.", detalhe: error.message });
@@ -338,7 +247,6 @@ const buscar = async (req, res) => {
 const atualizar = async (req, res) => {
     const { id } = req.params;
     const usuarioId = req.usuario.id;
-<<<<<<< HEAD
     const { 
         titulo, 
         descricao, 
@@ -351,20 +259,6 @@ const atualizar = async (req, res) => {
         imagem, 
         image,
         dificuldade, 
-=======
-    const {
-        titulo,
-        descricao,
-        modoPreparo,
-        steps,
-        tempoPreparo,
-        time,
-        publica,
-        public: frontendPublic,
-        imagem,
-        image,
-        dificuldade,
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         livroId,
         ingredients,
         ingredientes,
@@ -394,14 +288,10 @@ const atualizar = async (req, res) => {
             if (descricao !== undefined) dataToUpdate.descricao = descricao;
             if (prepStepsString !== undefined) dataToUpdate.modoPreparo = prepStepsString;
             if (finalTime !== undefined) dataToUpdate.tempoPreparo = finalTime;
-<<<<<<< HEAD
             if (finalPublic !== undefined) {
                 dataToUpdate.publica = finalPublic;
                 dataToUpdate.publicadaEm = finalPublic ? new Date() : null;
             }
-=======
-            if (finalPublic !== undefined) dataToUpdate.publica = finalPublic;
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
             if (finalImage !== undefined) dataToUpdate.imagem = finalImage;
             if (dificuldade) dataToUpdate.dificuldade = dificuldade;
             if (livroId !== undefined) dataToUpdate.livroId = livroId ? Number(livroId) : null;

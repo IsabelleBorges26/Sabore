@@ -11,7 +11,7 @@
 </head>
 <body>
   <div class="mobile-menu" id="mobileMenu">
-    <span class="mobile-close" id="mobileClose">✕</span>
+    <button class="mobile-close" id="mobileClose" type="button" aria-label="Fechar menu"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     <a href="#inicio">Início</a>
     <a href="#funcionalidades">Funcionalidades</a>
     <a href="#recursos">Recursos</a>
@@ -37,7 +37,7 @@
   </nav>
   <section class="hero" id="inicio">
     <div class="hero-content">
-      <div class="hero-badge">✨ Plataforma Inteligente de Receitas</div>
+      <div class="hero-badge"><i class="fa-solid fa-sparkles" aria-hidden="true"></i> Plataforma Inteligente de Receitas</div>
       <h1 class="hero-title">
         Descubra, Crie e<br>Saboreie Novas Receitas<br><em>Todos os Dias</em>
       </h1>
@@ -55,22 +55,22 @@
       </div>
       <div class="hero-stats">
         <div class="stat-item">
-          <span class="stat-num">12k+</span>
+          <span class="stat-num" id="stat-users">—</span>
           <span class="stat-label">Usuários ativos</span>
         </div>
         <div class="stat-item">
-          <span class="stat-num">98k</span>
+          <span class="stat-num" id="stat-recipes">—</span>
           <span class="stat-label">Receitas salvas</span>
         </div>
         <div class="stat-item">
-          <span class="stat-num">4.9★</span>
+          <span class="stat-num" id="stat-rating">—</span>
           <span class="stat-label">Avaliação média</span>
         </div>
       </div>
     </div>
     <div class="hero-visual">
       <div class="floating-card fc-top">
-        <div class="fc-ai-label">🤖 IA Culinária</div>
+        <div class="fc-ai-label"><i class="fa-solid fa-robot" aria-hidden="true"></i> IA Culinária</div>
         <div class="fc-ai-text">Receita gerada!</div>
         <div class="fc-ai-sub">Risoto de cogumelos • 35min</div>
       </div>
@@ -81,7 +81,7 @@
       </div>
       <div class="mockup-tablet">
         <div class="tablet-content">
-          <div class="tablet-title">Meus Livros 📚</div>
+          <div class="tablet-title">Meus Livros <i class="fa-solid fa-book" aria-hidden="true"></i></div>
           <div class="tablet-grid">
             <div class="tablet-book tb-1">
               <div class="tablet-book-name">Jantar de Semana</div>
@@ -103,7 +103,7 @@
         </div>
       </div>
       <div class="floating-card fc-bottom">
-        <div class="fc-stars">★★★★★</div>
+        <div class="fc-stars" aria-label="5 estrelas"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
         <div class="fc-review">"Revolucionou minha cozinha!"</div>
         <div class="fc-user">— Maria S., usuária PRO</div>
       </div>
@@ -185,7 +185,7 @@
       <div class="feature-card reveal" style="transition-delay: 0.3s">
         <img src="../assets/img_06.png" alt="Importar por Link" class="feature-icon-img">
         <div class="feature-title">Importar por Link</div>
-        <p class="feature-text">Cole um link do TikTok, Instagram ou YouTube. O Saboré extrai e organiza a receita
+        <p class="feature-text">Cole um link do YouTube. O Saboré extrai e organiza a receita
           automaticamente.</p>
       </div>
     </div>
@@ -205,16 +205,16 @@
             <div class="chat-bubble">
               <div class="bubble-avatar ai-avatar">S</div>
               <div class="bubble-text ai-bubble">Olá! O que você tem na geladeira hoje? Posso criar uma receita
-                personalizada pra você! 🍳</div>
+                personalizada pra você!</div>
             </div>
             <div class="chat-bubble user">
-              <div class="bubble-avatar user-avatar">👤</div>
+              <div class="bubble-avatar user-avatar"><i class="fa-solid fa-user" aria-hidden="true"></i></div>
               <div class="bubble-text user-bubble">Tenho frango, brócolis, alho, limão e queijo parmesão.</div>
             </div>
             <div class="chat-bubble">
               <div class="bubble-avatar ai-avatar">S</div>
               <div class="bubble-text ai-bubble">Perfeito! Vou criar um <strong>Frango ao Limão com Brócolis
-                  Gratinado</strong>. Tempo: 35 min, nível: fácil. Quer ver a receita completa? ✨</div>
+                  Gratinado</strong>. Tempo: 35 min, nível: fácil. Quer ver a receita completa?</div>
             </div>
             <div class="chat-bubble">
               <div class="bubble-avatar ai-avatar">S</div>
@@ -263,42 +263,10 @@
       <div class="import-header reveal">
         <div class="section-tag">Importação inteligente</div>
         <h2 class="section-title">Qualquer vídeo vira<br>uma receita <em>organizada</em></h2>
-        <p class="section-sub">Cole o link de qualquer vídeo do TikTok, Instagram ou YouTube. O Saboré transforma
+        <p class="section-sub">Cole o link de um vídeo do YouTube. O Saboré transforma
           automaticamente em receita estruturada.</p>
       </div>
       <div class="import-flow reveal">
-        <div class="import-source">
-          <div class="source-icon si-tiktok">
-            <img src="../assets/Logo TikTok.png" alt="TikTok" class="import-source-img">
-          </div>
-          <span class="source-label">TikTok</span>
-        </div>
-        <div class="import-arrow">
-          <div class="arrow-line">
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-          </div>
-          <span class="arrow-label">import</span>
-        </div>
-        <div class="import-source">
-          <div class="source-icon si-instagram">
-            <img src="../assets/Logo Instagram.png" alt="Instagram" class="import-source-img">
-          </div>
-          <span class="source-label">Instagram</span>
-        </div>
-        <div class="import-arrow">
-          <div class="arrow-line">
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-            <span class="arrow-dot"></span>
-          </div>
-          <span class="arrow-label">import</span>
-        </div>
         <div class="import-source">
           <div class="source-icon si-youtube">
             <img src="../assets/Logo Youtube.png" alt="YouTube" class="import-source-img">
@@ -448,8 +416,8 @@
           <li>Livros ilimitados</li>
           <li>Importação ilimitada</li>
           <li>Favoritos &amp; coleções</li>
-          <li>🤖 IA de Receitas</li>
-          <li>📷 IA por Foto</li>
+          <li><i class="fa-solid fa-robot" aria-hidden="true"></i> IA de Receitas</li>
+          <li><i class="fa-solid fa-camera" aria-hidden="true"></i> IA por Foto</li>
           <li>Suporte prioritário</li>
         </ul>
         <a href="../cadastro/index.html" class="plan-btn plan-btn-filled">Assinar o PRO</a>
@@ -475,8 +443,7 @@
           Posso importar receitas de qualquer site?
           <span class="faq-icon">+</span>
         </div>
-        <div class="faq-answer">Nosso importador suporta TikTok, Instagram, YouTube e mais de 200 sites de receitas. Se
-          o site tiver receita estruturada, importamos automaticamente.</div>
+        <div class="faq-answer">No momento, o importador aceita links do YouTube que tenham conteúdo público suficiente para estruturar uma receita.</div>
       </div>
       <div class="faq-item">
         <div class="faq-question">
@@ -517,7 +484,7 @@
     <div class="reveal">
       <div class="section-tag" style="justify-content: center;">Comece agora</div>
       <h2 class="section-title" style="margin: 0 auto;">Pronto para transformar<br>sua <em>cozinha?</em></h2>
-      <p class="section-sub" style="margin: 16px auto 40px; text-align: center;">Mais de 12.000 pessoas já organizaram
+      <p class="section-sub" style="margin: 16px auto 40px; text-align: center;">Junte-se à comunidade que organiza
         sua vida culinária com o Saboré. É a sua vez.</p>
       <a href="../cadastro/index.html" class="btn-primary" style="font-size: 1.05rem; padding: 18px 48px;">
         Criar conta grátis →
@@ -534,10 +501,10 @@
         <p class="footer-tagline">A plataforma inteligente que transforma a forma como você cozinha, organiza e descobre
           receitas.</p>
         <div class="footer-socials">
-          <a class="social-btn" href="#">📸</a>
-          <a class="social-btn" href="#">🎵</a>
-          <a class="social-btn" href="#">▶</a>
-          <a class="social-btn" href="#">🐦</a>
+          <a class="social-btn" href="#" aria-label="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+          <a class="social-btn" href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></a>
+          <a class="social-btn" href="#" aria-label="YouTube"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+          <a class="social-btn" href="#" aria-label="X"><i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a>
         </div>
       </div>
       <div>
@@ -567,9 +534,9 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="footer-copy">© 2025 <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"
+      <span class="footer-copy">© 2026 <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ"
           class="copyright-logo-img">. Todos os direitos reservados.</span>
-      <span class="footer-love">Feito com <span>♥</span> para quem ama cozinhar</span>
+      <span class="footer-love">Feito com <span><i class="fa-solid fa-heart" aria-label="amor"></i></span> para quem ama cozinhar</span>
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

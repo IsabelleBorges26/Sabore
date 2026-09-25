@@ -65,7 +65,7 @@ a, button, [role="button"] { cursor: none !important; }
 .mobile-menu.open { opacity: 1; pointer-events: all; }
 .mobile-menu a { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--light); text-decoration: none; transition: color 0.3s; }
 .mobile-menu a:hover { color: var(--accent); }
-.mobile-close { position: absolute; top: 24px; right: 24px; font-size: 1.5rem; color: rgba(242,244,243,0.6); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(242,244,243,0.1); transition: all 0.3s; }
+.mobile-close { position: absolute; top: 24px; right: 24px; font: inherit; background: transparent; font-size: 1.5rem; color: rgba(242,244,243,0.6); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(242,244,243,0.1); transition: all 0.3s; }
 .mobile-close:hover { background: rgba(242,244,243,0.05); color: var(--light); }
 
 /* ============ LEGAL LAYOUT ============ */
@@ -145,6 +145,9 @@ a, button, [role="button"] { cursor: none !important; }
   font-size: 0.9rem; color: rgba(242,244,243,0.6); line-height: 1.8; margin-bottom: 8px;
 }
 .legal-content strong { color: var(--light); font-weight: 600; }
+.legal-content h3 { color: var(--secondary); font-size: 1rem; margin: 26px 0 10px; font-weight: 700; }
+.legal-content a { color: var(--accent); text-underline-offset: 3px; }
+.legal-content a:hover { color: var(--secondary); }
 .legal-highlight {
   background: rgba(224,133,122,0.08);
   border: 1px solid rgba(224,133,122,0.2);

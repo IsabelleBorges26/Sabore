@@ -128,6 +128,8 @@ a, button, input, select, textarea, .social-btn, .plan-btn, .hamburger, [role="b
 .mobile-menu a { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--light); text-decoration: none; transition: color 0.3s ease; }
 .mobile-menu a:hover { color: var(--accent); }
 .mobile-close {
+  font: inherit;
+  background: transparent;
   position: absolute; top: 24px; right: 24px;
   font-size: 1.5rem; color: rgba(242,244,243,0.6); cursor: pointer;
   width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;

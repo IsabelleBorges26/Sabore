@@ -1,9 +1,4 @@
 const prisma = require("../data/prisma");
-<<<<<<< HEAD
-=======
-const { withDatabaseFallback } = require("../data/databaseFallback");
-const { listFavorites } = require("../data/restQueries");
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
 const formatRecipe = (recipe) => {
     return {
         id: recipe.id,
@@ -12,21 +7,13 @@ const formatRecipe = (recipe) => {
         difficulty: recipe.dificuldade || "Fácil",
         time: recipe.tempoPreparo || 0,
         public: recipe.publica,
-<<<<<<< HEAD
         image: recipe.imagem || null,
-=======
-        image: recipe.imagem || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=400&q=80",
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         criadaPorIA: recipe.criadaPorIA,
         rascunho: recipe.rascunho,
         linkImportacao: recipe.linkImportacao,
         livroId: recipe.livroId,
         author: recipe.usuario.nome,
-<<<<<<< HEAD
         authorAvatar: recipe.usuario.foto || null,
-=======
-        authorAvatar: recipe.usuario.foto || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         category: recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
         categories: recipe.categorias.map(rc => rc.categoria.nome),
         ingredients: recipe.ingredientes.map(ri => {
@@ -66,7 +53,6 @@ const cadastrar = async (req, res) => {
 const listar = async (req, res) => {
     const usuarioId = req.usuario.id;
     try {
-<<<<<<< HEAD
         const favoritos = await prisma.favorito.findMany({
             where: { usuarioId },
             include: {
@@ -85,32 +71,6 @@ const listar = async (req, res) => {
         });
         const receitas = favoritos.map(f => formatRecipe(f.receita));
         res.status(200).json(receitas);
-=======
-        const receitas = await withDatabaseFallback(
-            async () => {
-                const favoritos = await prisma.favorito.findMany({
-                    where: { usuarioId },
-                    include: {
-                        receita: {
-                            include: {
-                                usuario: true,
-                                ingredientes: {
-                                    include: { ingrediente: true }
-                                },
-                                categorias: {
-                                    include: { categoria: true }
-                                }
-                            }
-                        }
-                    }
-                });
-                return favoritos.map(f => f.receita);
-            },
-            () => listFavorites(usuarioId),
-            "listar favoritos"
-        );
-        res.status(200).json(receitas.map(formatRecipe));
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
     } catch (error) {
         res.status(500).json({ erro: "Erro ao listar favoritos.", detalhe: error.message });
     }

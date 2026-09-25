@@ -35,7 +35,7 @@
 
   <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobileMenu">
-    <span class="mobile-close" id="mobileClose">✕</span>
+    <button class="mobile-close" id="mobileClose" type="button" aria-label="Fechar menu"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     <a href="../inicial/">Início</a>
     <a href="../inicial/#funcionalidades">Funcionalidades</a>
     <a href="../inicial/#planos">Planos</a>
@@ -48,28 +48,28 @@
   <section class="about-hero">
     <div class="about-hero-inner">
       <div class="reveal">
-        <div class="hero-badge">🍽️ Nossa História</div>
+        <div class="hero-badge"><i class="fa-solid fa-utensils" aria-hidden="true"></i> Nossa História</div>
         <h1 class="about-hero-title">Nascemos da<br><em>paixão por cozinhar</em></h1>
-        <p class="about-hero-sub">O Saboré surgiu de uma necessidade real: tornar a culinária acessível, organizada e inspiradora para todos — do iniciante ao chef experiente.</p>
+        <p class="about-hero-sub">O Saboré nasceu em 2026 a partir de uma ideia simples: cozinhar deveria ser mais fácil, organizado e inspirador.</p>
       </div>
       <div class="about-stats reveal">
         <div class="about-stat">
-          <span class="about-stat-num">12k+</span>
+          <span class="about-stat-num" id="about-stat-users">—</span>
           <span class="about-stat-label">Usuários ativos</span>
         </div>
         <div class="about-stat-divider"></div>
         <div class="about-stat">
-          <span class="about-stat-num">98k</span>
+          <span class="about-stat-num" id="about-stat-recipes">—</span>
           <span class="about-stat-label">Receitas salvas</span>
         </div>
         <div class="about-stat-divider"></div>
         <div class="about-stat">
-          <span class="about-stat-num">2025</span>
+          <span class="about-stat-num">2026</span>
           <span class="about-stat-label">Ano de fundação</span>
         </div>
         <div class="about-stat-divider"></div>
         <div class="about-stat">
-          <span class="about-stat-num">4.9★</span>
+          <span class="about-stat-num" id="about-stat-rating">—</span>
           <span class="about-stat-label">Avaliação média</span>
         </div>
       </div>
@@ -82,17 +82,17 @@
       <div class="mission-card reveal">
         <div class="mission-icon"><i class="fa-solid fa-bullseye"></i></div>
         <h2>Nossa Missão</h2>
-        <p>Democratizar o acesso à culinária de qualidade, usando tecnologia e inteligência artificial para ajudar cada pessoa a cozinhar melhor, descobrir novos sabores e criar memórias à mesa.</p>
+        <p>Tornar a culinária mais simples, acessível e organizada, usando tecnologia e inteligência artificial para aproveitar ingredientes, descobrir receitas e transformar o momento de cozinhar.</p>
       </div>
       <div class="mission-card reveal" style="transition-delay: 0.15s">
         <div class="mission-icon"><i class="fa-solid fa-eye"></i></div>
         <h2>Nossa Visão</h2>
-        <p>Ser a plataforma culinária mais amada do Brasil, onde qualquer pessoa — independente do nível de habilidade — encontra inspiração, praticidade e alegria em cada refeição preparada.</p>
+        <p>Construir uma plataforma culinária inteligente que reúna receitas, ingredientes, organização e inteligência artificial em uma única experiência.</p>
       </div>
       <div class="mission-card reveal" style="transition-delay: 0.3s">
         <div class="mission-icon"><i class="fa-solid fa-heart"></i></div>
         <h2>Nossos Valores</h2>
-        <p>Inovação com propósito, inclusão na mesa, respeito aos dados dos usuários, transparência em tudo que fazemos e uma pitada generosa de paixão pela comida boa.</p>
+        <p>Tecnologia com propósito, simplicidade, privacidade, inclusão, criatividade e paixão pela culinária guiam cada decisão.</p>
       </div>
     </div>
   </section>
@@ -103,42 +103,42 @@
       <div class="story-text reveal-left">
         <div class="section-tag">Como tudo começou</div>
         <h2 class="section-title">Uma ideia simples<br>que virou <em>revolução</em></h2>
-        <p>Tudo começou com um problema familiar: receitas espalhadas em fotos no celular, links salvos no Instagram, cadernos e sites favoritos — e nenhum lugar centralizado para encontrá-las quando precisava.</p>
-        <p style="margin-top: 16px;">Em 2025, a equipe do Saboré decidiu mudar isso. Juntamos tecnologia de ponta com um profundo amor pela culinária e criamos uma plataforma que não só organiza receitas, mas as entende, aprende seus gostos e cria novas possibilidades na sua cozinha.</p>
-        <p style="margin-top: 16px;">Hoje, mais de 12.000 pessoas usam o Saboré diariamente para transformar a hora de cozinhar em um momento de prazer e criatividade.</p>
+        <p>Tudo começou em 2026 observando um hábito comum: receitas espalhadas entre vídeos, prints, anotações, redes sociais, cadernos e sites. Quando chega a hora de cozinhar, a pergunta é sempre a mesma: onde estava aquela receita?</p>
+        <p style="margin-top: 16px;">O Saboré nasceu para centralizar e organizar receitas, e evoluiu para ser um assistente culinário inteligente: uma plataforma que ajuda a entender ingredientes, considerar preferências e transformar inspiração em receita organizada.</p>
+        <p style="margin-top: 16px;">O projeto continua em desenvolvimento, com o objetivo de transformar a tecnologia em uma verdadeira aliada na cozinha.</p>
       </div>
       <div class="story-visual reveal-right">
         <div class="story-timeline">
           <div class="timeline-item">
             <div class="timeline-dot"></div>
             <div class="timeline-content">
-              <span class="timeline-year">Jan 2025</span>
-              <h4>O projeto nasce</h4>
-              <p>Ideia concebida durante uma conversa sobre receitas perdidas</p>
+              <span class="timeline-year">2026</span>
+              <h4>A ideia nasce</h4>
+              <p>Receitas espalhadas e a dúvida sobre o que cozinhar inspiram o Saboré</p>
             </div>
           </div>
           <div class="timeline-item">
             <div class="timeline-dot"></div>
             <div class="timeline-content">
-              <span class="timeline-year">Mar 2025</span>
-              <h4>Primeiro protótipo</h4>
-              <p>MVP com salvamento de receitas e organização por livros</p>
+              <span class="timeline-year">2026</span>
+              <h4>O Saboré ganha identidade</h4>
+              <p>Proposta, identidade visual e experiência da plataforma são definidas</p>
             </div>
           </div>
           <div class="timeline-item">
             <div class="timeline-dot"></div>
             <div class="timeline-content">
-              <span class="timeline-year">Jun 2025</span>
-              <h4>IA integrada</h4>
-              <p>Chef IA lançado — receitas criadas a partir de ingredientes disponíveis</p>
+              <span class="timeline-year">2026</span>
+              <h4>O primeiro protótipo</h4>
+              <p>Biblioteca de receitas, favoritos, livros e ingredientes disponíveis ganham forma</p>
             </div>
           </div>
           <div class="timeline-item">
             <div class="timeline-dot active"></div>
             <div class="timeline-content">
-              <span class="timeline-year">Set 2025</span>
-              <h4>12.000 usuários</h4>
-              <p>Comunidade crescente de amantes da culinária no Brasil</p>
+              <span class="timeline-year">Agora</span>
+              <h4>Estamos apenas começando</h4>
+              <p>A IA entra na cozinha para criar, adaptar e organizar conteúdos culinários</p>
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@
     <div class="about-cta-inner reveal">
       <div class="section-tag" style="justify-content: center;">Junte-se a nós</div>
       <h2 class="section-title">Faça parte dessa<br><em>história</em></h2>
-      <p class="section-sub" style="text-align: center; margin: 16px auto 40px;">Mais de 12.000 pessoas já transformaram a forma como cozinham com o Saboré. Chegou a sua vez.</p>
+      <p class="section-sub" style="text-align: center; margin: 16px auto 40px;">Abra, descubra, crie e cozinhe. Faça parte das novas possibilidades do Saboré.</p>
       <div class="about-cta-btns">
         <a href="../cadastro/" class="btn-primary">Criar conta grátis →</a>
         <a href="../contato/" class="btn-secondary">Falar com a equipe</a>
@@ -208,10 +208,10 @@
         </div>
         <p class="footer-tagline">A plataforma inteligente que transforma a forma como você cozinha, organiza e descobre receitas.</p>
         <div class="footer-socials">
-          <a class="social-btn" href="#">📸</a>
-          <a class="social-btn" href="#">🎵</a>
-          <a class="social-btn" href="#">▶</a>
-          <a class="social-btn" href="#">🐦</a>
+          <a class="social-btn" href="#" aria-label="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+          <a class="social-btn" href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></a>
+          <a class="social-btn" href="#" aria-label="YouTube"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+          <a class="social-btn" href="#" aria-label="X"><i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a>
         </div>
       </div>
       <div>
@@ -239,11 +239,12 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="footer-copy">© 2025 <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ" class="copyright-logo-img">. Todos os direitos reservados.</span>
-      <span class="footer-love">Feito com <span>♥</span> para quem ama cozinhar</span>
+      <span class="footer-copy">© 2026 <img src="../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="SABORÉ" class="copyright-logo-img">. Todos os direitos reservados.</span>
+      <span class="footer-love">Feito com <span><i class="fa-solid fa-heart" aria-label="amor"></i></span> para quem ama cozinhar</span>
     </div>
   </footer>
 
+  <script src="../assets/js/api.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

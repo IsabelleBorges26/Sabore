@@ -42,3 +42,21 @@ const revealObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.1 });
 revealEls.forEach(el => revealObserver.observe(el));
+const loadAboutStats = async () => {
+  const users = document.getElementById('about-stat-users');
+  const recipes = document.getElementById('about-stat-recipes');
+  const rating = document.getElementById('about-stat-rating');
+  if (!users || !recipes || !rating || typeof api === 'undefined') return;
+  try {
+    const data = await api.get('/estatisticas/publicas');
+    users.textContent = Number(data.usuarios || 0).toLocaleString('pt-BR');
+    recipes.textContent = Number(data.receitas || 0).toLocaleString('pt-BR');
+    rating.innerHTML = data.avaliacaoMedia === null
+      ? 'Sem avaliações'
+      : `${data.avaliacaoMedia.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <i class="fa-solid fa-star" aria-label="estrelas"></i>`;
+  } catch {
+    users.textContent = recipes.textContent = rating.textContent = '—';
+  }
+};
+loadAboutStats();
+window.setInterval(loadAboutStats, 60000);

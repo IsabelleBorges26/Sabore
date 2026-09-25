@@ -69,6 +69,34 @@ const revealObserver = new IntersectionObserver((entries) => {
   rootMargin: '0px 0px -40px 0px'
 });
 revealElements.forEach(el => revealObserver.observe(el));
+const faqList = document.querySelector('.faq-list');
+if (faqList) {
+  const faqs = [
+    ['O que posso fazer com o Saboré?', 'No Saboré, você pode descobrir, criar, salvar e organizar receitas de forma simples. A plataforma permite explorar diferentes opções, personalizar receitas e encontrar inspirações para suas refeições.'],
+    ['Como encontro receitas usando os ingredientes que já tenho?', 'Informe os ingredientes disponíveis e encontre receitas que utilizem esses itens, facilitando o aproveitamento dos alimentos que você já possui em casa.'],
+    ['A IA consegue criar receitas para mim?', 'Sim. A IA pode criar sugestões de receitas de acordo com os ingredientes, preferências e necessidades informadas por você, oferecendo novas ideias para suas refeições.'],
+    ['Posso adaptar uma receita para minhas preferências?', 'Sim. As receitas podem ser adaptadas de acordo com suas preferências, permitindo modificar ingredientes e características da receita.'],
+    ['Como salvo e organizo minhas receitas favoritas?', 'Você pode salvar suas receitas favoritas para acessá-las posteriormente, mantendo suas opções preferidas organizadas e de fácil acesso.'],
+    ['Posso compartilhar minhas receitas com outras pessoas?', 'Sim. O sistema permite compartilhar receitas com outras pessoas, facilitando a troca de ideias e experiências culinárias.']
+  ];
+  faqList.replaceChildren(...faqs.map(([question, answer]) => {
+    const item = document.createElement('div');
+    item.className = 'faq-item';
+    const questionElement = document.createElement('div');
+    questionElement.className = 'faq-question';
+    questionElement.append(document.createTextNode(question));
+    const icon = document.createElement('span');
+    icon.className = 'faq-icon';
+    icon.textContent = '+';
+    questionElement.append(icon);
+    const answerElement = document.createElement('div');
+    answerElement.className = 'faq-answer';
+    answerElement.textContent = answer;
+    item.append(questionElement, answerElement);
+    return item;
+  }));
+}
+
 const faqItems = document.querySelectorAll('.faq-item');
 faqItems.forEach(item => {
   const question = item.querySelector('.faq-question');
@@ -91,30 +119,44 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     }
   });
 });
-function animateCounter(el, target, suffix = '') {
-  let current = 0;
-  const increment = target / 60;
-  const interval = setInterval(() => {
-    current += increment;
-    if (current >= target) {
-      current = target;
-      clearInterval(interval);
-    }
-    el.textContent = Math.floor(current).toLocaleString('pt-BR') + suffix;
-  }, 25);
-}
-const statsObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const statNums = document.querySelectorAll('.stat-num');
-      statNums[0] && animateCounter(statNums[0], 12, 'k+');
-      statNums[1] && animateCounter(statNums[1], 98, 'k');
-      statsObserver.disconnect();
-    }
+const formatPlatformCount = (value) => Number(value || 0).toLocaleString('pt-BR');
+const loadPlatformStats = async () => {
+  const users = document.getElementById('stat-users');
+  const recipes = document.getElementById('stat-recipes');
+  const rating = document.getElementById('stat-rating');
+  if (!users || !recipes || !rating || typeof api === 'undefined') return;
+
+  try {
+    const data = await api.get('/estatisticas/publicas');
+    users.textContent = formatPlatformCount(data.usuarios);
+    recipes.textContent = formatPlatformCount(data.receitas);
+    rating.innerHTML = data.avaliacaoMedia === null
+      ? 'Sem avaliações'
+      : `${data.avaliacaoMedia.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <i class="fa-solid fa-star" aria-label="estrelas"></i>`;
+  } catch {
+    users.textContent = '—';
+    recipes.textContent = '—';
+    rating.textContent = '—';
+  }
+};
+loadPlatformStats();
+window.setInterval(loadPlatformStats, 60000);
+
+// A importação pública acompanha o suporte atual do produto: somente YouTube.
+const importFlow = document.querySelector('.import-flow');
+if (importFlow) {
+  importFlow.querySelectorAll('.import-source, .import-arrow').forEach((element) => {
+    if (element.classList.contains('import-source') && /youtube/i.test(element.textContent)) return;
+    element.remove();
   });
-}, { threshold: 0.5 });
-const heroStats = document.querySelector('.hero-stats');
-if (heroStats) statsObserver.observe(heroStats);
+  const result = importFlow.querySelector('.import-result');
+  if (result) {
+    const arrow = document.createElement('div');
+    arrow.className = 'import-arrow';
+    arrow.innerHTML = '<div class="arrow-line"><span class="arrow-dot"></span><span class="arrow-dot"></span><span class="arrow-dot"></span><span class="arrow-dot"></span><span class="arrow-dot"></span></div><span class="arrow-label">importar</span>';
+    importFlow.insertBefore(arrow, result);
+  }
+}
 document.querySelectorAll('.feature-card').forEach(card => {
   card.addEventListener('mousemove', (e) => {
     const rect = card.getBoundingClientRect();

@@ -276,15 +276,6 @@ a {
 .search-bar input::placeholder {
   color: rgba(242, 244, 243, 0.4);
 }
-.search-shortcut {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  background: rgba(242, 244, 243, 0.08);
-  border: 1px solid rgba(242, 244, 243, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: rgba(242, 244, 243, 0.5);
-}
 .search-bar:focus-within {
   background: rgba(27, 43, 39, 0.95);
   border-color: var(--accent);

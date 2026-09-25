@@ -42,7 +42,9 @@ if (toggleBtn && passwordInput) {
   toggleBtn.addEventListener('click', () => {
     const isPassword = passwordInput.type === 'password';
     passwordInput.type = isPassword ? 'text' : 'password';
-    toggleBtn.textContent = isPassword ? '🙈' : '👁';
+    toggleBtn.innerHTML = isPassword
+      ? '<i class="fa-solid fa-eye-slash" aria-hidden="true"></i>'
+      : '<i class="fa-solid fa-eye" aria-hidden="true"></i>';
   });
 }
 
@@ -68,7 +70,7 @@ if (btnLogin) {
 if (btnGoogle) {
   btnGoogle.addEventListener('click', async () => {
     if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
-    btnGoogle.innerHTML = '<span>⟳</span> Conectando...';
+    btnGoogle.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Conectando...';
     btnGoogle.disabled = true;
     const { error } = await authClient.auth.signInWithOAuth({
       provider: 'google',

@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         navbarPlanTag.className = 'user-plan-tag free';
       }
       if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.textContent = '🚀 Virar PRO';
+        sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-rocket" aria-hidden="true"></i> Virar PRO';
         sidebarUpgradeBtn.style.background = 'var(--secondary)';
         sidebarUpgradeBtn.style.color = 'var(--dark-deep)';
       }

@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (upgradeWidget) upgradeWidget.style.display = 'block';
       if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.textContent = '🚀 Virar PRO';
+        sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-rocket" aria-hidden="true"></i> Virar PRO';
         sidebarUpgradeBtn.style.background = 'var(--secondary)';
         sidebarUpgradeBtn.style.color = 'var(--dark-deep)';
       }
@@ -143,12 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      if (searchInput) searchInput.focus();
-    }
-  });
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -248,11 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   function triggerCelebrationEffects() {
-<<<<<<< HEAD
-    addActivity('Seu plano foi atualizado para o <strong>Saboré PRO</strong>! 💎', 'agora');
+    addActivity('Seu plano foi atualizado para o <strong>Saboré PRO</strong>.', 'agora');
     userState.stats.saved += 10; 
-=======
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
     updateStatsUI();
   }
   const ingContainer = document.getElementById('widget-ingredients-container');
@@ -432,11 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function addActivity(text, time = 'agora') {
     userState.activities.unshift({ text, time });
-<<<<<<< HEAD
     if (userState.activities.length > 5) userState.activities.pop(); 
-=======
-    if (userState.activities.length > 5) userState.activities.pop();
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
     renderActivities();
   }
   const photoUploadZone = document.getElementById('photo-upload-zone');
@@ -528,11 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultContainer = document.getElementById('ai-result-container');
   const saveRecipeBtn = document.getElementById('save-recipe-btn');
   const regenerateRecipeBtn = document.getElementById('regenerate-recipe-btn');
-<<<<<<< HEAD
   let currentGeneratedRecipe = null; 
-=======
-  let currentGeneratedRecipe = null;
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
   if (aiForm) {
     aiForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -668,13 +651,8 @@ document.addEventListener('DOMContentLoaded', () => {
       article.dataset.title = rec.title;
       article.dataset.category = rec.category;
       article.innerHTML = `
-<<<<<<< HEAD
         <div class="recipe-image-wrap ${rec.image ? '' : 'without-recipe-image'}">
           ${rec.image ? `<img src="${rec.image}" alt="${rec.title}" class="recipe-img">` : '<i class="fa-solid fa-utensils" aria-hidden="true"></i>'}
-=======
-        <div class="recipe-image-wrap">
-          <img src="${rec.image}" alt="${rec.title}" class="recipe-img">
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
           <button class="favorite-toggle-btn active"><i class="fa-solid fa-heart"></i></button>
         </div>
         <div class="recipe-content-area">
@@ -720,15 +698,9 @@ document.addEventListener('DOMContentLoaded', () => {
       article.dataset.title = rec.title;
       article.dataset.category = rec.category;
       article.innerHTML = `
-<<<<<<< HEAD
         <div class="trend-image-wrap ${rec.image ? '' : 'without-recipe-image'}">
           ${rec.image ? `<img src="${rec.image}" alt="${rec.title}" class="trend-img">` : '<i class="fa-solid fa-utensils" aria-hidden="true"></i>'}
           <div class="trend-likes-badge"><i class="fa-solid fa-thumbs-up"></i> ${rec.likes || 0}</div>
-=======
-        <div class="trend-image-wrap">
-          <img src="${rec.image}" alt="${rec.title}" class="trend-img">
-          <div class="trend-likes-badge"><i class="fa-solid fa-thumbs-up"></i> ${rec.likes || 120}</div>
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         </div>
         <div class="trend-content-area">
           <h4>${rec.title}</h4>
@@ -758,11 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
       article.className = 'recommend-card';
       article.dataset.title = rec.title;
       article.innerHTML = `
-<<<<<<< HEAD
         ${rec.image ? `<img src="${rec.image}" alt="${rec.title}" class="rec-img">` : '<i class="fa-solid fa-utensils recommendation-placeholder" aria-hidden="true"></i>'}
-=======
-        <img src="${rec.image}" alt="${rec.title}" class="rec-img">
->>>>>>> e4cf63f41d9c2b65a92b2648a0c1c6a41bd3a5f5
         <div class="rec-overlay">
           <span class="rec-badge">Sugerido por IA</span>
           <h4>${rec.title}</h4>
