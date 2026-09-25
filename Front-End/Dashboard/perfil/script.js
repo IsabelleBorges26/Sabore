@@ -40,8 +40,27 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyAvatarToPage(url) {
     const navAvatar = document.querySelector('.user-avatar');
     if (navAvatar) {
-      if (url) { navAvatar.src = url; navAvatar.style.display = 'block'; }
-      else { navAvatar.style.display = 'none'; }
+      const wrap = navAvatar.parentElement;
+      if (url) { 
+        navAvatar.src = url; 
+        navAvatar.style.display = 'block'; 
+        if (wrap) {
+          const ph = wrap.querySelector('.user-avatar-placeholder');
+          if (ph) ph.remove();
+        }
+      } else { 
+        navAvatar.style.display = 'none'; 
+        if (wrap) {
+          let ph = wrap.querySelector('.user-avatar-placeholder');
+          if (!ph) {
+            ph = document.createElement('div');
+            ph.className = 'user-avatar-placeholder';
+            ph.style.cssText = 'width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--dark-deep);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;user-select:none;';
+            wrap.insertBefore(ph, wrap.firstChild);
+          }
+          ph.textContent = user.nome ? user.nome.charAt(0).toUpperCase() : 'U';
+        }
+      }
     }
     if (largeAvatarEl) {
       if (url) {
@@ -67,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
       removeAvatarBtn.style.display = url ? 'inline-flex' : 'none';
     }
   }
-  const savedAvatar = localStorage.getItem('sabore_user_avatar') || (user && user.foto) || null;
+  const savedAvatar = (user && user.foto) || null;
   applyAvatarToPage(savedAvatar);
   if (avatarContainer && avatarInput) {
     avatarContainer.addEventListener('click', () => avatarInput.click());
@@ -76,20 +95,42 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (event) => {
-        const dataUrl = event.target.result;
-        localStorage.setItem('sabore_user_avatar', dataUrl);
-        applyAvatarToPage(dataUrl);
+        const img = new Image();
+        img.onload = async () => {
+          const MAX = 400;
+          const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          applyAvatarToPage(dataUrl);
+          try {
+            const updated = await api.put(`/usuarios/atualizar/${user.id}`, { foto: dataUrl });
+            const newUser = { ...api.getUser(), foto: updated.foto };
+            api.setUser(newUser);
+          } catch (err) {
+            alert('Não foi possível salvar a foto: ' + err.message);
+          }
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     });
   }
   if (removeAvatarBtn) {
-    removeAvatarBtn.addEventListener('click', (e) => {
+    removeAvatarBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       if (!confirm('Deseja remover sua foto de perfil?')) return;
-      localStorage.removeItem('sabore_user_avatar');
       if (avatarInput) avatarInput.value = '';
       applyAvatarToPage(null);
+      try {
+        const updated = await api.put(`/usuarios/atualizar/${user.id}`, { foto: null });
+        const newUser = { ...api.getUser(), foto: null };
+        api.setUser(newUser);
+      } catch (err) {
+        alert('Não foi possível remover a foto: ' + err.message);
+      }
     });
   }
   function updatePlanUI() {

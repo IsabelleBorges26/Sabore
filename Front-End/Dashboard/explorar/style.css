@@ -637,12 +637,17 @@ a {
   object-fit: cover;
 }
 .author-avatar-placeholder {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
   background: var(--accent-light);
   color: var(--accent);
   font-size: 0.65rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
 .author-name {
   font-size: 0.7rem;
@@ -716,6 +721,16 @@ a {
   margin-bottom: 12px;
   border: 2px solid var(--glass-border);
   transition: transform 0.3s ease;
+}
+.chef-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 1.5rem;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 .chef-card-item h4 {
   font-size: 0.85rem;

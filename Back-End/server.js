@@ -4,11 +4,9 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
-// Imagens enviadas pela IA por foto podem ultrapassar o limite padrão do Express.
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "20mb" }));
 app.use(cors());
 
-// Servir arquivos estáticos do Front-End
 app.use(express.static(path.join(__dirname, "..", "Front-End")));
 
 const usuariosRoutes = require("./src/routes/usuarios.routes");

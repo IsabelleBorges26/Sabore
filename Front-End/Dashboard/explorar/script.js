@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="explore-content-area">
           <div class="recipe-author-line">
-            ${rec.authorAvatar ? `<img src="${rec.authorAvatar}" alt="${rec.author}" class="author-avatar">` : `<span class="author-avatar author-avatar-placeholder">${rec.author.charAt(0).toUpperCase()}</span>`}
+            ${rec.authorAvatar ? `<img src="${rec.authorAvatar}" alt="${rec.author}" class="author-avatar" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\\'author-avatar author-avatar-placeholder\\'>${rec.author.charAt(0).toUpperCase()}</span>')">` : `<span class="author-avatar author-avatar-placeholder">${rec.author.charAt(0).toUpperCase()}</span>`}
             <span class="author-name">${rec.author}</span>
           </div>
           <h4>${rec.title}</h4>
@@ -443,14 +443,34 @@ document.addEventListener('DOMContentLoaded', () => {
     userState.chefs.forEach(chef => {
       const card = document.createElement('div');
       card.className = 'chef-card-item';
-      const avatarHtml = chef.avatar
-        ? `<img src="${chef.avatar}" alt="${chef.name}" class="chef-avatar-large">`
-        : `<div class="chef-avatar-large chef-avatar-placeholder" style="display:flex;align-items:center;justify-content:center;background:var(--accent-light);color:var(--accent);font-size:2rem;font-weight:700;border-radius:50%;">${chef.name.charAt(0).toUpperCase()}</div>`;
-      card.innerHTML = `
-        ${avatarHtml}
-        <h4>${chef.name}</h4>
-        <p>Membro da comunidade Saboré</p>
-      `;
+      const avatarInitial = chef.name.charAt(0).toUpperCase();
+      const placeholderStyle = 'display:flex;align-items:center;justify-content:center;background:var(--accent-light);color:var(--accent);font-size:2rem;font-weight:700;border-radius:50%;';
+      let avatarEl;
+      if (chef.avatar) {
+        avatarEl = document.createElement('img');
+        avatarEl.src = chef.avatar;
+        avatarEl.alt = chef.name;
+        avatarEl.className = 'chef-avatar-large';
+        avatarEl.onerror = () => {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'chef-avatar-large chef-avatar-placeholder';
+          placeholder.setAttribute('style', placeholderStyle);
+          placeholder.textContent = avatarInitial;
+          avatarEl.replaceWith(placeholder);
+        };
+      } else {
+        avatarEl = document.createElement('div');
+        avatarEl.className = 'chef-avatar-large chef-avatar-placeholder';
+        avatarEl.setAttribute('style', placeholderStyle);
+        avatarEl.textContent = avatarInitial;
+      }
+      card.appendChild(avatarEl);
+      const nameEl = document.createElement('h4');
+      nameEl.textContent = chef.name;
+      card.appendChild(nameEl);
+      const memberEl = document.createElement('p');
+      memberEl.textContent = 'Membro da comunidade Saboré';
+      card.appendChild(memberEl);
       const followButton = document.createElement('button');
       followButton.className = `btn-follow-chef ${chef.followed ? 'following' : ''}`;
       followButton.textContent = chef.followed ? 'Seguindo' : 'Seguir';

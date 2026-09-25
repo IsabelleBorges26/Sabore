@@ -1,3 +1,108 @@
+const SABORE_THEMES = {
+    obsidian: {
+        '--dark': '#1B2B27',
+        '--dark-deep': '#121F1C',
+        '--accent': '#E0857A',
+        '--accent-light': 'rgba(224, 133, 122, 0.15)',
+        '--secondary': '#F0D5B6',
+        '--secondary-light': 'rgba(240, 213, 182, 0.15)'
+    },
+    emerald: {
+        '--dark': '#15362C',
+        '--dark-deep': '#0A1C16',
+        '--accent': '#6AE0A6',
+        '--accent-light': 'rgba(106, 224, 166, 0.15)',
+        '--secondary': '#C4F0D7',
+        '--secondary-light': 'rgba(196, 240, 215, 0.15)'
+    },
+    rosegold: {
+        '--dark': '#3D2229',
+        '--dark-deep': '#241015',
+        '--accent': '#E07AA4',
+        '--accent-light': 'rgba(224, 122, 164, 0.15)',
+        '--secondary': '#F0B6CD',
+        '--secondary-light': 'rgba(240, 182, 205, 0.15)'
+    }
+};
+
+function applySaboreTheme(themeName) {
+    const theme = SABORE_THEMES[themeName] || SABORE_THEMES.obsidian;
+    Object.keys(theme).forEach((prop) => {
+        document.documentElement.style.setProperty(prop, theme[prop]);
+    });
+    document.documentElement.setAttribute('data-theme', themeName || 'obsidian');
+}
+
+function applySaboreNeonGlow(enabled) {
+    const isEnabled = enabled !== false && enabled !== 'false';
+    let styleEl = document.getElementById('sabore-neon-glow-style');
+    if (!isEnabled) {
+        document.documentElement.classList.add('no-neon-glow');
+        if (document.body) document.body.classList.add('no-neon-glow');
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'sabore-neon-glow-style';
+            styleEl.textContent = `
+                .no-neon-glow [class*="-glow"],
+                .no-neon-glow [class*="glow-"],
+                .no-neon-glow .glow,
+                .no-neon-glow .fireworks-canvas,
+                .no-neon-glow .food-bowl-container::before {
+                    display: none !important;
+                    opacity: 0 !important;
+                    filter: none !important;
+                    box-shadow: none !important;
+                    animation: none !important;
+                }
+                .no-neon-glow * {
+                    text-shadow: none !important;
+                }
+                .no-neon-glow .custom-cursor.hover {
+                    filter: none !important;
+                }
+                .no-neon-glow .feature-card:hover,
+                .no-neon-glow .btn-primary:hover,
+                .no-neon-glow .btn-submit:hover,
+                .no-neon-glow .plan-btn-filled:hover {
+                    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+                }
+            `;
+            (document.head || document.documentElement).appendChild(styleEl);
+        }
+    } else {
+        document.documentElement.classList.remove('no-neon-glow');
+        if (document.body) document.body.classList.remove('no-neon-glow');
+        if (styleEl) {
+            styleEl.remove();
+        }
+    }
+}
+
+function initSaboreTheme() {
+    const savedTheme = localStorage.getItem('sabore_theme') || 'obsidian';
+    const savedGlow = localStorage.getItem('sabore_neon_glow');
+    applySaboreTheme(savedTheme);
+    applySaboreNeonGlow(savedGlow !== 'false');
+}
+
+initSaboreTheme();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSaboreTheme);
+}
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'sabore_theme') {
+        applySaboreTheme(e.newValue);
+    } else if (e.key === 'sabore_neon_glow') {
+        applySaboreNeonGlow(e.newValue !== 'false');
+    }
+});
+
+window.SABORE_THEMES = SABORE_THEMES;
+window.applySaboreTheme = applySaboreTheme;
+window.applySaboreNeonGlow = applySaboreNeonGlow;
+window.initSaboreTheme = initSaboreTheme;
+
 const API_BASE_URL = "http://localhost:3000";
 const api = {
     getToken: () => localStorage.getItem("sabore_token"),
@@ -16,7 +121,6 @@ const api = {
     clearSession: () => {
         localStorage.removeItem("sabore_token");
         localStorage.removeItem("sabore_user");
-        localStorage.removeItem("sabore_user_avatar");
         Object.keys(localStorage)
             .filter((key) => key.startsWith("sb-") && key.endsWith("-auth-token"))
             .forEach((key) => localStorage.removeItem(key));
@@ -86,7 +190,6 @@ const api = {
     delete: (endpoint) => api.request(endpoint, { method: "DELETE" })
 };
 
-// Central de avisos do Sabore: substitui os alertas nativos em todas as telas.
 (() => {
     const styleId = "sabore-notifications-style";
     const messageType = (message) => /erro|falha|n[aã]o foi poss[ií]vel|inv[aá]lid|negad|indispon[ií]vel/i.test(message)
@@ -160,13 +263,9 @@ const api = {
 
     const styledAlert = (message) => window.SaboreNotify(message);
     window.alert = styledAlert;
-    // Telas antigas substituíam alert durante DOMContentLoaded; restabelece o visual unificado ao final.
     window.addEventListener("load", () => { window.alert = styledAlert; });
 })();
 
-// A IA e receitas antigas podem trazer "1.", "Passo 1:" etc. no próprio
-// texto. A lista ordenada já cria essa numeração, então limpamos os prefixos
-// e reiniciamos o contador em todas as visualizações de receitas.
 api.normalizeRecipeSteps = (steps) => (Array.isArray(steps) ? steps : String(steps || "").split(/\r?\n/))
     .map((step) => String(step).trim()
         .replace(/^\s*(?:passo\s*)?(?:\d+\s*[.\):\-–]\s*)+/i, "")
@@ -197,7 +296,6 @@ document.addEventListener("DOMContentLoaded", () => {
     api.normalizeRenderedRecipeSteps();
     const recipesObserver = new MutationObserver(() => api.normalizeRenderedRecipeSteps());
     recipesObserver.observe(document.body, { childList: true, subtree: true });
-    // Voltar para a landing pelo logo encerra a sessão do dashboard.
     if (window.location.pathname.includes("/Dashboard/")) {
         document.querySelectorAll('a[href*="inicial/"]').forEach((link) => {
             link.addEventListener("click", () => api.clearSession());
@@ -219,12 +317,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!user) return;
     const avatarWrapGlobal = document.querySelector(".user-avatar-wrap");
     const navAvatarGlobal = document.querySelector(".user-avatar");
-    const savedAvatarGlobal = localStorage.getItem("sabore_user_avatar");
-    const avatarUrlGlobal = savedAvatarGlobal || user.foto;
+    const avatarUrlGlobal = user.foto || null;
     if (navAvatarGlobal) {
         if (avatarUrlGlobal) {
             navAvatarGlobal.src = avatarUrlGlobal;
             navAvatarGlobal.style.display = "block";
+            navAvatarGlobal.onerror = () => {
+                navAvatarGlobal.style.display = "none";
+                if (avatarWrapGlobal) {
+                    let ph = avatarWrapGlobal.querySelector(".user-avatar-placeholder");
+                    if (!ph) {
+                        ph = document.createElement("div");
+                        ph.className = "user-avatar-placeholder";
+                        ph.style.cssText = "width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--dark-deep);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;user-select:none;";
+                        avatarWrapGlobal.insertBefore(ph, avatarWrapGlobal.firstChild);
+                    }
+                    ph.textContent = user.nome ? user.nome.charAt(0).toUpperCase() : "U";
+                }
+            };
             const oldPh = avatarWrapGlobal ? avatarWrapGlobal.querySelector(".user-avatar-placeholder") : null;
             if (oldPh) oldPh.remove();
         } else {
@@ -246,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
         navNameGlobal.textContent = user.nome.split(" ")[0];
     }
     const trigger = document.getElementById("profile-dropdown-trigger");
-    if (!trigger) return; // Dropdown only on pages that have the profile badge
+    if (!trigger) return;
     const styleId = "sabore-header-injected-styles";
     if (!document.getElementById(styleId)) {
         const style = document.createElement("style");
@@ -370,8 +480,8 @@ document.addEventListener("DOMContentLoaded", () => {
         dropdownMenu.classList.toggle("open");
         const rect = trigger.getBoundingClientRect();
         dropdownMenu.style.top = `${rect.bottom + window.scrollY + 8}px`;
-        dropdownMenu.style.left = `${rect.right - 180 + window.scrollX}px`; // 180px width
-    }, true); // Capture phase listener
+        dropdownMenu.style.left = `${rect.right - 180 + window.scrollX}px`;
+    }, true);
     document.addEventListener("click", (e) => {
         if (!trigger.contains(e.target) && !dropdownMenu.contains(e.target)) {
             dropdownMenu.classList.remove("open");

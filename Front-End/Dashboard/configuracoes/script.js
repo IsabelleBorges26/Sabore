@@ -9,42 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
     userAvatars.forEach(img => img.src = savedAvatar);
   }
-  const themes = {
-    obsidian: {
-      '--dark': '#1B2B27',
-      '--dark-deep': '#121F1C',
-      '--accent': '#E0857A',
-      '--accent-light': 'rgba(224, 133, 122, 0.15)',
-      '--secondary': '#F0D5B6'
-    },
-    emerald: {
-      '--dark': '#15362C',
-      '--dark-deep': '#0A1C16',
-      '--accent': '#6AE0A6',
-      '--accent-light': 'rgba(106, 224, 166, 0.15)',
-      '--secondary': '#C4F0D7'
-    },
-    rosegold: {
-      '--dark': '#3D2229',
-      '--dark-deep': '#241015',
-      '--accent': '#E07AA4',
-      '--accent-light': 'rgba(224, 122, 164, 0.15)',
-      '--secondary': '#F0B6CD'
-    }
-  };
-  function applyTheme(themeName) {
-    const themeProps = themes[themeName] || themes.obsidian;
-    Object.keys(themeProps).forEach(key => {
-      document.documentElement.style.setProperty(key, themeProps[key]);
-    });
-  }
   const savedTheme = localStorage.getItem('sabore_theme') || 'obsidian';
-  applyTheme(savedTheme);
+  if (window.applySaboreTheme) {
+    window.applySaboreTheme(savedTheme);
+  }
   const themeSelector = document.getElementById('theme-selector');
   if (themeSelector) {
     themeSelector.value = savedTheme;
     themeSelector.addEventListener('change', (e) => {
-      applyTheme(e.target.value);
+      const selected = e.target.value;
+      if (window.applySaboreTheme) {
+        window.applySaboreTheme(selected);
+      }
+      localStorage.setItem('sabore_theme', selected);
+      window.dispatchEvent(new StorageEvent('storage', { key: 'sabore_theme', newValue: selected }));
     });
   }
   let userState = {
@@ -80,6 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const neonGlowToggle = document.getElementById('neon-glow-toggle');
   if (neonGlowToggle) {
     neonGlowToggle.checked = savedNeonGlow;
+    if (window.applySaboreNeonGlow) {
+      window.applySaboreNeonGlow(savedNeonGlow);
+    }
+    neonGlowToggle.addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+      if (window.applySaboreNeonGlow) {
+        window.applySaboreNeonGlow(isChecked);
+      }
+      localStorage.setItem('sabore_neon_glow', isChecked ? 'true' : 'false');
+      window.dispatchEvent(new StorageEvent('storage', { key: 'sabore_neon_glow', newValue: isChecked ? 'true' : 'false' }));
+    });
   }
   const savedNotifDaily = localStorage.getItem('sabore_notif_daily') !== 'false';
   const notifDailyToggle = document.getElementById('notif-daily');
@@ -239,8 +228,15 @@ document.addEventListener('DOMContentLoaded', () => {
           const cb = document.getElementById(`diet-${diet}`);
           if (cb) localStorage.setItem(`sabore_diet_${diet}`, cb.checked ? 'true' : 'false');
         });
-        if (themeSelector) localStorage.setItem('sabore_theme', themeSelector.value);
-        if (neonGlowToggle) localStorage.setItem('sabore_neon_glow', neonGlowToggle.checked ? 'true' : 'false');
+        if (themeSelector) {
+          localStorage.setItem('sabore_theme', themeSelector.value);
+          if (window.applySaboreTheme) window.applySaboreTheme(themeSelector.value);
+        }
+        if (neonGlowToggle) {
+          const isGlow = neonGlowToggle.checked;
+          localStorage.setItem('sabore_neon_glow', isGlow ? 'true' : 'false');
+          if (window.applySaboreNeonGlow) window.applySaboreNeonGlow(isGlow);
+        }
         if (notifDailyToggle) localStorage.setItem('sabore_notif_daily', notifDailyToggle.checked ? 'true' : 'false');
         if (notifWeeklyToggle) localStorage.setItem('sabore_notif_weekly', notifWeeklyToggle.checked ? 'true' : 'false');
         showToast('Perfil atualizado no banco de dados.');
@@ -254,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
     resetCacheBtn.addEventListener('click', () => {
       const confirmReset = confirm('Deseja realmente limpar todos os seus dados locais?\n\nIsso irá apagar sua foto de perfil customizada, seu nome editado e as preferências culinárias salvas neste navegador.');
       if (confirmReset) {
-        localStorage.removeItem('sabore_user_avatar');
         localStorage.removeItem('sabore_user_name');
         localStorage.removeItem('sabore_user_email');
         localStorage.removeItem('sabore_theme');
@@ -273,7 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (confirm("Deseja realmente sair da sua conta?")) {
         api.clearToken();
         api.clearUser();
-        localStorage.removeItem('sabore_user_avatar');
         window.location.href = '../../login/index.html';
       }
     });

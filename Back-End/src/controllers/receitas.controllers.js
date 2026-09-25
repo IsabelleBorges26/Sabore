@@ -25,7 +25,6 @@ const formatRecipe = (recipe) => {
         time: recipe.tempoPreparo || 0,
         public: recipe.publica,
         communityPublished: Boolean(recipe.publicadaEm),
-        // Nunca apresentamos uma foto de banco de imagens como se fosse a receita do usuário.
         image: recipe.imagem || null,
         criadaPorIA: recipe.criadaPorIA,
         rascunho: recipe.rascunho,
