@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       if (navbarPlanTag) {
-        navbarPlanTag.textContent = 'Conta';
+        navbarPlanTag.textContent = 'Gratuito';
         navbarPlanTag.className = 'user-plan-tag free';
       }
       if (sidebarUpgradeBtn) {
