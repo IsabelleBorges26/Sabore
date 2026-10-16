@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/usuarios/:path*", "destination": "/api/index.js" },
+    { "source": "/receitas/:path*", "destination": "/api/index.js" },
+    { "source": "/ingredientes/:path*", "destination": "/api/index.js" },
+    { "source": "/receita-ingredientes/:path*", "destination": "/api/index.js" },
+    { "source": "/receita-categorias/:path*", "destination": "/api/index.js" },
+    { "source": "/favoritos/:path*", "destination": "/api/index.js" },
+    { "source": "/avaliacoes/:path*", "destination": "/api/index.js" },
+    { "source": "/ingredientes-disponiveis/:path*", "destination": "/api/index.js" },
+    { "source": "/ia/:path*", "destination": "/api/index.js" },
+    { "source": "/importacao/:path*", "destination": "/api/index.js" },
+    { "source": "/compartilhamento/:path*", "destination": "/api/index.js" },
+    { "source": "/livros/:path*", "destination": "/api/index.js" },
+    { "source": "/planos/:path*", "destination": "/api/index.js" },
+    { "source": "/bibliotecas/:path*", "destination": "/api/index.js" },
+    { "source": "/social/:path*", "destination": "/api/index.js" },
+    { "source": "/estatisticas/:path*", "destination": "/api/index.js" },
+    { "source": "/api/:path*", "destination": "/api/index.js" },
+    { "source": "/(.*)", "destination": "/Front-End/$1" }
+  ]
+}

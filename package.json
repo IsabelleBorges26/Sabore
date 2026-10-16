@@ -1,0 +1,24 @@
+{
+  "name": "sabore",
+  "version": "1.0.0",
+  "description": "Plataforma de receitas Saboré",
+  "scripts": {
+    "build": "prisma generate --schema=./Back-End/prisma/schema.prisma",
+    "start": "node Back-End/server.js",
+    "dev": "node --watch Back-End/server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@openrouter/sdk": "^0.12.79",
+    "@prisma/adapter-mariadb": "^7.4.0",
+    "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0",
+    "prisma": "^6.19.3",
+    "youtube-dl-exec": "^3.1.15"
+  }
+}

@@ -103,7 +103,13 @@ window.applySaboreTheme = applySaboreTheme;
 window.applySaboreNeonGlow = applySaboreNeonGlow;
 window.initSaboreTheme = initSaboreTheme;
 
-const API_BASE_URL = "http://localhost:3000";
+// URL base da API do Back-End. Localmente aponta para localhost:3000.
+// Na Vercel (mesmo domínio), usa automaticamente window.location.origin.
+const API_BASE_URL = window.API_BASE_URL || (
+    window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+        ? (window.location.port === "3000" ? window.location.origin : "http://localhost:3000")
+        : window.location.origin
+);
 const api = {
     getToken: () => localStorage.getItem("sabore_token"),
     setToken: (token) => localStorage.setItem("sabore_token", token),

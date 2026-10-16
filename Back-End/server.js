@@ -48,6 +48,10 @@ app.get("/", (req, res) => {
 });
 
 const porta = process.env.PORT_APP || 3000;
-app.listen(porta, () => {
-    console.log(`Online na porta ${porta}`);
-});
+if (!process.env.VERCEL) {
+    app.listen(porta, () => {
+        console.log(`Online na porta ${porta}`);
+    });
+}
+
+module.exports = app;
