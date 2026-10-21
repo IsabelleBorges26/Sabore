@@ -2,6 +2,7 @@
   "name": "sabore",
   "version": "1.0.0",
   "description": "Plataforma de receitas Saboré",
+  "main": "index.js",
   "scripts": {
     "build": "prisma generate --schema=./Back-End/prisma/schema.prisma",
     "start": "node Back-End/server.js",
