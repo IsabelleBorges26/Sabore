@@ -1,23 +1,14 @@
 {
   "version": 2,
+  "functions": {
+    "index.js": {
+      "includeFiles": "Front-End/**"
+    },
+    "server.js": {
+      "includeFiles": "Front-End/**"
+    }
+  },
   "rewrites": [
-    { "source": "/usuarios/:path*", "destination": "/index.js" },
-    { "source": "/receitas/:path*", "destination": "/index.js" },
-    { "source": "/ingredientes/:path*", "destination": "/index.js" },
-    { "source": "/receita-ingredientes/:path*", "destination": "/index.js" },
-    { "source": "/receita-categorias/:path*", "destination": "/index.js" },
-    { "source": "/favoritos/:path*", "destination": "/index.js" },
-    { "source": "/avaliacoes/:path*", "destination": "/index.js" },
-    { "source": "/ingredientes-disponiveis/:path*", "destination": "/index.js" },
-    { "source": "/ia/:path*", "destination": "/index.js" },
-    { "source": "/importacao/:path*", "destination": "/index.js" },
-    { "source": "/compartilhamento/:path*", "destination": "/index.js" },
-    { "source": "/livros/:path*", "destination": "/index.js" },
-    { "source": "/planos/:path*", "destination": "/index.js" },
-    { "source": "/bibliotecas/:path*", "destination": "/index.js" },
-    { "source": "/social/:path*", "destination": "/index.js" },
-    { "source": "/estatisticas/:path*", "destination": "/index.js" },
-    { "source": "/api/:path*", "destination": "/index.js" },
-    { "source": "/(.*)", "destination": "/Front-End/$1" }
+    { "source": "/(.*)", "destination": "/index.js" }
   ]
 }

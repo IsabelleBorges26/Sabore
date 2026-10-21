@@ -7,7 +7,9 @@ const app = express();
 app.use(express.json({ limit: "20mb" }));
 app.use(cors());
 
-app.use(express.static(path.join(__dirname, "..", "Front-End")));
+const frontEndPath = path.resolve(__dirname, "..", "Front-End");
+app.use(express.static(frontEndPath));
+app.use("/Front-End", express.static(frontEndPath));
 
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const receitasRoutes = require("./src/routes/receitas.routes");
@@ -44,7 +46,7 @@ app.use("/social", socialRoutes);
 app.use("/estatisticas", estatisticasRoutes);
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "Front-End", "index.html"));
+    res.sendFile(path.join(frontEndPath, "index.html"));
 });
 
 const porta = process.env.PORT_APP || 3000;
