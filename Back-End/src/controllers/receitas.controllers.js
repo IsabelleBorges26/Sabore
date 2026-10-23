@@ -546,7 +546,7 @@ const obterDesafioSemanal = async (req, res) => {
         const desafio = DESAFIOS_SEMANAIS[index];
 
         const cleanTag = desafio.hashtag.replace(/^#/, "").toLowerCase();
-        const receitasCount = await prisma.receita.count({
+        const receitasDoDesafio = await prisma.receita.findMany({
             where: {
                 publica: true,
                 publicadaEm: { not: null },
@@ -555,8 +555,13 @@ const obterDesafioSemanal = async (req, res) => {
                     { titulo: { contains: desafio.hashtag, mode: "insensitive" } },
                     { descricao: { contains: desafio.hashtag, mode: "insensitive" } }
                 ]
-            }
-        }).catch(() => 0);
+            },
+            select: { id: true, usuarioId: true }
+        }).catch(() => []);
+
+        const recipesCount = receitasDoDesafio.length;
+        const distinctUsers = new Set(receitasDoDesafio.map(r => r.usuarioId));
+        const participantsCount = distinctUsers.size;
 
         res.status(200).json({
             ...desafio,
@@ -564,8 +569,8 @@ const obterDesafioSemanal = async (req, res) => {
             year,
             daysRemaining,
             timeRemainingText: daysRemaining === 0 ? "Termina hoje às 23:59!" : `Termina em ${daysRemaining} dia${daysRemaining > 1 ? "s" : ""}`,
-            recipesCount: receitasCount,
-            participantsCount: Math.max(receitasCount * 3 + 14, 25)
+            recipesCount,
+            participantsCount
         });
     } catch (error) {
         res.status(500).json({ erro: "Erro ao obter desafio semanal.", detalhe: error.message });

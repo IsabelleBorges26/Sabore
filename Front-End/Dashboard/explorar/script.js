@@ -682,14 +682,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const tags = rec.tags || [];
       return tags.some(t => t.toLowerCase() === challenge.hashtag.toLowerCase());
     });
-    const recipesCount = Math.max(matchingRecipes.length, challenge.recipesCount || 0);
-    const participants = challenge.participantsCount || Math.max(recipesCount * 3 + 18, 25);
+    const distinctLocalAuthors = new Set(matchingRecipes.map(r => r.authorId || r.author).filter(Boolean));
+    const recipesCount = typeof challenge.recipesCount === 'number' ? challenge.recipesCount : matchingRecipes.length;
+    const participants = typeof challenge.participantsCount === 'number' ? challenge.participantsCount : distinctLocalAuthors.size;
 
     if (countEl) {
-      countEl.innerHTML = `<i class="fa-solid fa-utensils"></i> ${recipesCount} receita${recipesCount === 1 ? '' : 's'} criada${recipesCount === 1 ? '' : 's'}`;
+      countEl.innerHTML = `<i class="fa-solid fa-utensils"></i> ${recipesCount} ${recipesCount === 1 ? 'receita criada' : 'receitas criadas'}`;
     }
     if (participantsEl) {
-      participantsEl.innerHTML = `<i class="fa-solid fa-user-group"></i> ${participants} participantes`;
+      participantsEl.innerHTML = `<i class="fa-solid fa-user-group"></i> ${participants} ${participants === 1 ? 'participante' : 'participantes'}`;
     }
 
     if (joinBtn) {
@@ -700,10 +701,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const updateJoinBtnUI = () => {
         if (isJoined) {
           joinBtn.classList.add('joined');
-          joinBtn.textContent = 'Inscrito no Desafio! ✓';
+          joinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Inscrito no Desafio! ✓';
         } else {
           joinBtn.classList.remove('joined');
-          joinBtn.textContent = 'Participar do Desafio';
+          joinBtn.innerHTML = '<i class="fa-solid fa-trophy"></i> Participar do Desafio';
         }
       };
       updateJoinBtnUI();
@@ -713,17 +714,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isJoined) {
           localStorage.setItem(storageKey, 'true');
           updateJoinBtnUI();
-          alert(`Parabéns! Você se inscreveu no ${challenge.title}. Compartilhe sua receita com a hashtag ${challenge.hashtag} para concorrer à insígnia de ${challenge.badge}!`);
           const hashtagsInput = document.getElementById('post-hashtags');
           if (hashtagsInput) {
             if (!hashtagsInput.value.includes(challenge.hashtag)) {
               hashtagsInput.value = hashtagsInput.value ? `${hashtagsInput.value.trim()} ${challenge.hashtag}` : challenge.hashtag;
             }
           }
-          openModal('create-post-modal');
+          if (window.SaboreNotify) {
+            window.SaboreNotify(`Inscrição confirmada no ${challenge.title}! Crie suas receitas com a hashtag ${challenge.hashtag}.`, 'success');
+          } else {
+            alert(`Inscrição confirmada no ${challenge.title}! Compartilhe sua receita com a hashtag ${challenge.hashtag}.`);
+          }
         } else {
           localStorage.removeItem(storageKey);
           updateJoinBtnUI();
+          if (window.SaboreNotify) {
+            window.SaboreNotify(`Inscrição no desafio ${challenge.title} cancelada.`, 'info');
+          }
         }
       };
     }
