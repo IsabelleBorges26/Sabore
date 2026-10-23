@@ -34,6 +34,8 @@ const formatRecipe = (recipe) => {
         author: recipe.usuario ? recipe.usuario.nome : "Chef",
         authorAvatar: recipe.usuario?.foto || null,
         likes: recipe._count?.favoritos || 0,
+        avaliacoes: recipe._count?.avaliacoes || 0,
+        interacoes: (recipe._count?.favoritos || 0) + (recipe._count?.avaliacoes || 0),
         category: recipe.categorias && recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
         categories: recipe.categorias ? recipe.categorias.map(rc => rc.categoria.nome) : [],
         ingredients: recipe.ingredientes ? recipe.ingredientes.map(ri => {
@@ -211,7 +213,7 @@ const listarPublicas = async (req, res) => {
                 categorias: {
                     include: { categoria: true }
                 },
-                _count: { select: { favoritos: true } }
+                _count: { select: { favoritos: true, avaliacoes: true } }
             },
             orderBy: { createdAt: "desc" }
         });
@@ -377,11 +379,206 @@ const excluir = async (req, res) => {
         res.status(500).json({ erro: "Erro ao excluir receita.", detalhe: error.message });
     }
 };
+const DESAFIOS_SEMANAIS = [
+    {
+        id: "inverno",
+        title: "Receitas de Inverno & Conforto ❄️",
+        hashtag: "#DesafioInverno",
+        badge: "Chef Invernal",
+        description: "Crie um prato quente, sopa encorpada ou bebida cremosa para aquecer a comunidade Saboré!"
+    },
+    {
+        id: "massas",
+        title: "Festival de Massas Artesanais 🍝",
+        hashtag: "#DesafioMassas",
+        badge: "Mestre das Massas",
+        description: "Prepare uma massa fresca caseira ou um molho artesanal autêntico da nonna."
+    },
+    {
+        id: "fit",
+        title: "Marmita Fit & Alta Performance 🥗",
+        hashtag: "#DesafioFit",
+        badge: "Chef Saudável",
+        description: "Compartilhe uma refeição equilibrada, nutritiva e prática para o dia a dia fitness."
+    },
+    {
+        id: "doces",
+        title: "Doces & Sobremesas de Sonho 🍓",
+        hashtag: "#DesafioDoces",
+        badge: "Confeiteiro Saboré",
+        description: "Surpreenda a comunidade com tortas, bolos, mousses ou doces artesanais irresistíveis."
+    },
+    {
+        id: "oriental",
+        title: "Uma Viagem à Cozinha Oriental 🥢",
+        hashtag: "#DesafioOriental",
+        badge: "Chef Oriental",
+        description: "Traga o melhor da culinária asiática: sushis, woks, ramens ou yakisobas aromáticos."
+    },
+    {
+        id: "brunch",
+        title: "Café da Manhã de Cinema ☕",
+        hashtag: "#DesafioBrunch",
+        badge: "Mestre do Brunch",
+        description: "Pães quentinhos, ovos especiais, panquecas ou tigelas de açaí para começar o dia no topo."
+    },
+    {
+        id: "burger",
+        title: "Hambúrguer Gourmet Caseiro 🍔",
+        hashtag: "#DesafioBurger",
+        badge: "Burger Master",
+        description: "Monte um burger autoral: combine seu blend especial, molhos caseiros e queijos derretidos."
+    },
+    {
+        id: "sustentavel",
+        title: "Cozinha Sustentável & Zero Desperdício 🌿",
+        hashtag: "#DesafioSustentavel",
+        badge: "Chef Consciente",
+        description: "Use talos, cascas e sobras nobres para criar pratos deliciosos e sustentáveis."
+    },
+    {
+        id: "risotos",
+        title: "Mestres do Risoto Cremoso 🍚",
+        hashtag: "#DesafioRisoto",
+        badge: "Rei do Risoto",
+        description: "Acerte no ponto perfeito da textura e emulsão de um risoto sofisticado."
+    },
+    {
+        id: "petiscos",
+        title: "Comida de Boteco & Petiscos 🥟",
+        hashtag: "#DesafioPetiscos",
+        badge: "Chef Boêmio",
+        description: "Pastéis, croquetes, bolinhos de arroz e petiscos crocantes para celebrar com amigos."
+    },
+    {
+        id: "brasil",
+        title: "Sabores Regionais do Brasil 🥘",
+        hashtag: "#DesafioBrasil",
+        badge: "Chef Raiz",
+        description: "Celebre nossa culinária: moquecas, baião de dois, feijão tropeiro e temperos típicos."
+    },
+    {
+        id: "rapido",
+        title: "Prato Incrível em 15 Minutos ⏱️",
+        hashtag: "#Desafio15Min",
+        badge: "Chef Relâmpago",
+        description: "Mostre que agilidade e alto sabor andam juntos em receitas rápidas do dia a dia."
+    }
+];
+
+const listarHashtagsEmAlta = async (req, res) => {
+    try {
+        const receitas = await prisma.receita.findMany({
+            where: { publica: true, publicadaEm: { not: null } },
+            include: {
+                categorias: {
+                    include: { categoria: true }
+                },
+                _count: { select: { favoritos: true, avaliacoes: true } }
+            }
+        });
+
+        const hashtagMap = new Map();
+
+        for (const rec of receitas) {
+            const likes = rec._count?.favoritos || 0;
+            const avaliacoes = rec._count?.avaliacoes || 0;
+            const interacoes = likes + avaliacoes;
+
+            const tags = new Set();
+            if (rec.categorias) {
+                for (const rc of rec.categorias) {
+                    if (rc.categoria && rc.categoria.nome) {
+                        const clean = rc.categoria.nome.trim().toLowerCase().replace(/\s+/g, '');
+                        if (clean) tags.add(clean.startsWith('#') ? clean : `#${clean}`);
+                    }
+                }
+            }
+
+            const text = `${rec.titulo || ''} ${rec.descricao || ''}`;
+            const matches = text.match(/#([a-zA-Z0-9_\u00C0-\u017F]+)/g);
+            if (matches) {
+                for (const m of matches) {
+                    tags.add(m.toLowerCase());
+                }
+            }
+
+            for (const tag of tags) {
+                if (!hashtagMap.has(tag)) {
+                    hashtagMap.set(tag, { tag, interacoes: 0, receitas: 0 });
+                }
+                const entry = hashtagMap.get(tag);
+                entry.interacoes += interacoes;
+                entry.receitas += 1;
+            }
+        }
+
+        // Exibir apenas as hashtags que realmente estão em alta (com interações > 0)
+        const emAlta = Array.from(hashtagMap.values())
+            .filter(item => item.interacoes > 0)
+            .sort((a, b) => b.interacoes - a.interacoes || b.receitas - a.receitas);
+
+        res.status(200).json(emAlta);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao buscar hashtags em alta.", detalhe: error.message });
+    }
+};
+
+const obterDesafioSemanal = async (req, res) => {
+    try {
+        const now = new Date();
+        const target = new Date(now.valueOf());
+        const dayNr = (now.getDay() + 6) % 7;
+        target.setDate(target.getDate() - dayNr + 3);
+        const firstThursday = target.valueOf();
+        target.setMonth(0, 1);
+        if (target.getDay() !== 4) {
+            target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+        }
+        const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
+        const year = now.getFullYear();
+
+        const dayOfWeek = now.getDay();
+        const daysRemaining = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+
+        const weekSeed = year * 53 + weekNumber;
+        const index = Math.abs(weekSeed) % DESAFIOS_SEMANAIS.length;
+        const desafio = DESAFIOS_SEMANAIS[index];
+
+        const cleanTag = desafio.hashtag.replace(/^#/, "").toLowerCase();
+        const receitasCount = await prisma.receita.count({
+            where: {
+                publica: true,
+                publicadaEm: { not: null },
+                OR: [
+                    { categorias: { some: { categoria: { nome: { contains: cleanTag, mode: "insensitive" } } } } },
+                    { titulo: { contains: desafio.hashtag, mode: "insensitive" } },
+                    { descricao: { contains: desafio.hashtag, mode: "insensitive" } }
+                ]
+            }
+        }).catch(() => 0);
+
+        res.status(200).json({
+            ...desafio,
+            weekNumber,
+            year,
+            daysRemaining,
+            timeRemainingText: daysRemaining === 0 ? "Termina hoje às 23:59!" : `Termina em ${daysRemaining} dia${daysRemaining > 1 ? "s" : ""}`,
+            recipesCount: receitasCount,
+            participantsCount: Math.max(receitasCount * 3 + 14, 25)
+        });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao obter desafio semanal.", detalhe: error.message });
+    }
+};
+
 module.exports = {
     cadastrar,
     listar,
     listarPublicas,
     buscar,
     atualizar,
-    excluir
+    excluir,
+    listarHashtagsEmAlta,
+    obterDesafioSemanal
 };
