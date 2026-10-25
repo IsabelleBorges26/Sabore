@@ -98,7 +98,7 @@ saboré/
 | Maria Eduarda Urbano | [![GitHub](https://img.shields.io/badge/mariaeduardaurbano-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/mariaeduardaurbano) |
 | Gabrielly Souza | [![GitHub](https://img.shields.io/badge/gabsouza05-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/gabsouza05) |
 | Mirella Brolezi | [![GitHub](https://img.shields.io/badge/MIRELLA--02-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/MIRELLA-02) |
-| Enzo Toniato | [![GitHub](https://img.shields.io/badge/EnzoToniato567-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/EnzoToniato567) |
+| Enzo Toniato | [![GitHub](https://img.shields.io/badge/EnzoToniato567-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/zenvexy) |
 | Davi Moratório | [![GitHub](https://img.shields.io/badge/davi--lm7-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/davi-lm7) |
 
 </div>
