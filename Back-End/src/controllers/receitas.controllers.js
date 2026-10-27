@@ -24,7 +24,8 @@ const formatRecipe = (recipe) => {
         difficulty: recipe.dificuldade || "Fácil",
         time: recipe.tempoPreparo || 0,
         public: recipe.publica,
-        communityPublished: Boolean(recipe.publicadaEm),
+        communityPublished: Boolean(recipe.publica && !recipe.rascunho),
+        publishedAt: recipe.publica ? (recipe.publicadaEm || recipe.createdAt) : null,
         image: recipe.imagem || null,
         criadaPorIA: recipe.criadaPorIA,
         rascunho: recipe.rascunho,
@@ -204,7 +205,7 @@ const listar = async (req, res) => {
 const listarPublicas = async (req, res) => {
     try {
         const receitas = await prisma.receita.findMany({
-            where: { publica: true, publicadaEm: { not: null } },
+            where: { publica: true, rascunho: false },
             include: {
                 usuario: true,
                 ingredientes: {
@@ -222,8 +223,33 @@ const listarPublicas = async (req, res) => {
         res.status(500).json({ erro: "Erro ao listar receitas públicas.", detalhe: error.message });
     }
 };
+const buscarPublica = async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id <= 0) {
+        return res.status(404).json({ erro: "Publicação não encontrada." });
+    }
+    try {
+        const recipe = await prisma.receita.findFirst({
+            where: { id, publica: true, rascunho: false },
+            include: {
+                usuario: { select: { nome: true, foto: true } },
+                ingredientes: { include: { ingrediente: true } },
+                categorias: { include: { categoria: true } },
+                _count: { select: { favoritos: true, avaliacoes: true } }
+            }
+        });
+        if (!recipe) return res.status(404).json({ erro: "Esta publicação não está disponível. Ela pode ter sido removida ou tornada privada." });
+        res.set("Cache-Control", "no-store");
+        res.status(200).json(formatRecipe(recipe));
+    } catch (error) {
+        res.status(500).json({ erro: "Não foi possível carregar esta publicação." });
+    }
+};
 const buscar = async (req, res) => {
     const { id } = req.params;
+    if (!Number.isSafeInteger(Number(id)) || Number(id) <= 0) {
+        return res.status(404).json({ erro: "Receita não encontrada." });
+    }
     try {
         const recipe = await prisma.receita.findUnique({
             where: { id: Number(id) },
@@ -237,7 +263,7 @@ const buscar = async (req, res) => {
                 }
             }
         });
-        if (!recipe) {
+        if (!recipe || (recipe.usuarioId !== req.usuario?.id && (!recipe.publica || recipe.rascunho))) {
             return res.status(404).json({ erro: "Receita não encontrada." });
         }
         res.status(200).json(formatRecipe(recipe));
@@ -291,7 +317,8 @@ const atualizar = async (req, res) => {
             if (finalTime !== undefined) dataToUpdate.tempoPreparo = finalTime;
             if (finalPublic !== undefined) {
                 dataToUpdate.publica = finalPublic;
-                dataToUpdate.publicadaEm = finalPublic ? new Date() : null;
+                dataToUpdate.publicadaEm = finalPublic ? (existing.publicadaEm || new Date()) : null;
+                if (finalPublic) dataToUpdate.rascunho = false;
             }
             if (finalImage !== undefined) dataToUpdate.imagem = finalImage;
             if (dificuldade) dataToUpdate.dificuldade = dificuldade;
@@ -581,6 +608,7 @@ module.exports = {
     cadastrar,
     listar,
     listarPublicas,
+    buscarPublica,
     buscar,
     atualizar,
     excluir,

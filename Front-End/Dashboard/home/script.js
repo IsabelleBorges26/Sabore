@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   let userState = {
-    isPro: user.plano === 'PRO',
-    plan: user.plano || 'Gratuito',
+    isPro: false,
+    plan: 'Gratuito',
     ingredients: [],
     books: [],
     activities: [],
@@ -227,25 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const upgradeTriggers = [upgradeBtnCompact, upgradeBtnWidget, proMenuLink];
   upgradeTriggers.forEach(trigger => {
     if (trigger) {
-      trigger.addEventListener('click', async (e) => {
+      trigger.addEventListener('click', (e) => {
         e.preventDefault();
-        try {
-          await api.put("/planos/atualizar", { plano: "PRO" });
-          userState.isPro = true;
-          updatePlanUI();
-          openModal('celebration-modal');
-          triggerCelebrationEffects();
-        } catch (err) {
-          alert("Erro ao assinar plano PRO: " + err.message);
-        }
+        alert('O plano Saboré PRO ainda está em fase de testes. Em breve você poderá assinar.');
       });
     }
   });
-  function triggerCelebrationEffects() {
-    addActivity('Seu plano foi atualizado para o <strong>Saboré PRO</strong>.', 'agora');
-    userState.stats.saved += 10; 
-    updateStatsUI();
-  }
   const ingContainer = document.getElementById('widget-ingredients-container');
   const addIngInput = document.getElementById('add-ing-input');
   const addIngBtn = document.getElementById('add-ing-btn');
@@ -755,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navName) navName.textContent = user.nome;
     try {
       const profileData = await api.get("/usuarios/perfil");
-      userState.isPro = profileData.plano === "PRO";
+      userState.isPro = false;
       userState.stats = {
         saved: profileData.stats.saved,
         created: profileData.stats.created,

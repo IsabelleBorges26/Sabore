@@ -474,6 +474,18 @@ a {
   flex-direction: column;
   gap: 4px;
 }
+.p-stat-button {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  transition: background 0.2s, transform 0.2s;
+}
+.p-stat-button:hover, .p-stat-button:focus-visible {
+  background: var(--glass-hover);
+  transform: translateY(-2px);
+}
 .p-stat-item:not(:last-child) {
   border-right: 1px solid var(--glass-border);
 }
@@ -489,6 +501,18 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
+.social-list-modal { max-width: 520px; }
+.social-people-list { display: grid; gap: 10px; max-height: 430px; overflow-y: auto; }
+.social-person-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; padding: 11px; border: 1px solid var(--glass-border); border-radius: 13px; background: var(--glass); color: var(--light); text-align: left; font: inherit; }
+.social-person-row:hover { border-color: var(--accent); background: var(--glass-hover); }
+.social-person-avatar { width: 46px; height: 46px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-weight: 800; }
+.social-person-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.social-person-info { min-width: 0; }
+.social-person-info strong, .social-person-info span { display: block; }
+.social-person-info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .86rem; }
+.social-person-info span { margin-top: 3px; color: rgba(242, 244, 243, .48); font-size: .7rem; }
+.social-person-action { color: var(--accent); font-size: .75rem; font-weight: 700; }
+.social-list-empty { padding: 38px 16px; text-align: center; color: rgba(242, 244, 243, .5); }
 .user-bio-area {
   display: flex;
   flex-direction: column;

@@ -5,6 +5,7 @@ const {
     cadastrar,
     listar,
     listarPublicas,
+    buscarPublica,
     listarHashtagsEmAlta,
     obterDesafioSemanal,
     buscar,
@@ -15,9 +16,13 @@ const {
 router.post("/cadastrar", authMiddleware, cadastrar);
 router.get("/listar", authMiddleware, listar);
 router.get("/publicas", listarPublicas);
+router.get("/publicas/:id", buscarPublica);
 router.get("/hashtags-em-alta", listarHashtagsEmAlta);
 router.get("/desafio-semanal", obterDesafioSemanal);
-router.get("/buscar/:id", buscar);
+router.get("/buscar/:id", (req, res, next) => {
+    if (req.headers.authorization) return authMiddleware(req, res, next);
+    next();
+}, buscar);
 router.put("/atualizar/:id", authMiddleware, atualizar);
 router.delete("/excluir/:id", authMiddleware, excluir);
 

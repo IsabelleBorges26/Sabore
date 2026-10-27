@@ -6,24 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     recipes: {}
   };
   let currentFilter = 'all';
-  function renderPersonalNotifications() {
-    const list = document.querySelector('.notifications-list');
-    const dot = document.querySelector('#notifications-btn .badge-dot');
-    if (dot) dot.style.display = 'none';
-    if (!list) return;
-    const firstName = api.getUser()?.nome?.split(' ')[0] || 'Você';
-    list.innerHTML = `
-      <div class="notif-item">
-        <span class="notif-icon"><i class="fa-solid fa-book-open"></i></span>
-        <div class="notif-info">
-          <p><strong></strong>, quando houver novidades nos seus livros elas aparecerão aqui.</p>
-          <span class="notif-time">Sem novidades por enquanto</span>
-        </div>
-      </div>
-    `;
-    list.querySelector('strong').textContent = firstName;
-  }
-  renderPersonalNotifications();
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);

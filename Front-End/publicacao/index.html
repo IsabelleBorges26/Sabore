@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Uma receita da comunidade Saboré. Confira os ingredientes e o modo de preparo e compartilhe com quem você gosta.">
+  <meta name="theme-color" content="#121F1C">
+  <title>Publicação — Saboré</title>
+  <link rel="icon" type="image/png" href="/assets/LOGO%20SABOR%C3%89.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/publicacao/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="/inicial/index.html" aria-label="Saboré, página inicial">
+      <img src="/assets/LOGO_SABOR%C3%89-SEM%20FUNDO.png" alt="Saboré">
+    </a>
+    <a class="button button-outline" id="community-link" href="/login/index.html">Entrar no Saboré <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+  </header>
+  <main>
+    <section class="page-message" id="publication-status" aria-live="polite">
+      <i class="fa-solid fa-utensils" aria-hidden="true"></i>
+      <h1 id="status-title">Preparando sua receita…</h1>
+      <p id="status-description">Carregando esta publicação da comunidade.</p>
+      <button class="button button-outline" id="retry-button" hidden>Tentar novamente</button>
+    </section>
+    <article id="publication" hidden>
+      <div class="publication-heading">
+        <p class="eyebrow"><i class="fa-solid fa-utensils" aria-hidden="true"></i> Da comunidade Saboré</p>
+        <h1 id="recipe-title"></h1>
+        <p class="recipe-description" id="recipe-description"></p>
+        <div class="author-row">
+          <div class="author-avatar" id="author-avatar" aria-hidden="true"></div>
+          <div><p class="author-name" id="author-name"></p><time id="publication-date"></time></div>
+        </div>
+        <div class="recipe-tags" id="recipe-tags"></div>
+        <div class="share-actions">
+          <button class="button" id="share-button" type="button"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Compartilhar receita</button>
+          <button class="button button-whatsapp" id="whatsapp-button" type="button"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> WhatsApp</button>
+          <button class="button button-outline" id="copy-button" type="button"><i class="fa-regular fa-copy" aria-hidden="true"></i> Copiar link</button>
+        </div>
+      </div>
+      <img class="recipe-cover" id="recipe-image" alt="" hidden>
+      <div class="recipe-content">
+        <section class="recipe-section ingredients-section">
+          <h2><i class="fa-solid fa-basket-shopping" aria-hidden="true"></i> Ingredientes</h2>
+          <ul id="ingredients-list"></ul>
+          <p class="empty-detail" id="ingredients-empty" hidden>O autor não informou os ingredientes.</p>
+        </section>
+        <section class="recipe-section">
+          <h2><i class="fa-solid fa-kitchen-set" aria-hidden="true"></i> Modo de preparo</h2>
+          <ol class="recipe-steps-list" id="steps-list"></ol>
+          <p class="empty-detail" id="steps-empty" hidden>O autor não informou o modo de preparo.</p>
+        </section>
+      </div>
+      <footer class="publication-footer">
+        <p>Gostou da receita? Descubra novos sabores e compartilhe os seus.</p>
+        <a class="button button-outline" id="explore-link" href="/login/index.html">Conhecer a comunidade <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+      </footer>
+    </article>
+  </main>
+  <footer class="site-footer">Saboré · Saboreie novas possibilidades</footer>
+  <script src="/assets/js/api.js"></script>
+  <script src="/publicacao/script.js"></script>
+</body>
+</html>
