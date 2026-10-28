@@ -56,6 +56,7 @@ model Receita {
   livro             Livro?                   @relation(fields: [livroId], references: [id], onDelete: Cascade)
   ingredientes      ReceitaIngrediente[]
   categorias        ReceitaCategoria[]
+  hashtags          ReceitaHashtag[]
   favoritos         Favorito[]
   avaliacoes        Avaliacao[]
   compartilhamentos Compartilhamento[]
@@ -117,6 +118,24 @@ model ReceitaCategoria {
   categoria     Categoria   @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
   
   @@unique([receitaId, categoriaId])
+}
+
+model Hashtag {
+  id        Int              @id @default(autoincrement())
+  nome      String           @unique
+  receitas  ReceitaHashtag[]
+  createdAt DateTime         @default(now())
+}
+
+model ReceitaHashtag {
+  id         Int      @id @default(autoincrement())
+  receitaId  Int
+  hashtagId  Int
+  receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  hashtag    Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+
+  @@unique([receitaId, hashtagId])
+  @@index([hashtagId])
 }
 
 model IngredienteDisponivel {

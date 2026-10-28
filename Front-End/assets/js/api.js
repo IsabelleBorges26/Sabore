@@ -77,6 +77,11 @@ const api = {
             }
             return await response.json();
         } catch (error) {
+            // Erros de rede não chegam ao back-end e o navegador os descreve apenas
+            // como “Failed to fetch”, o que não explica ao usuário o que fazer.
+            if (error instanceof TypeError && /failed to fetch|networkerror|load failed/i.test(error.message || "")) {
+                throw new Error("Não foi possível conectar ao servidor do Saboré. Abra o arquivo Back-End/iniciar_sabore.bat e mantenha a janela dele aberta enquanto usa o aplicativo.");
+            }
             throw error;
         }
     },

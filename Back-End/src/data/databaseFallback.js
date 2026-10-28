@@ -30,10 +30,10 @@ function getProjectRef() {
 }
 
 function getSupabaseConfig() {
-    const apiKey = process.env["SUPABASE_SECRET-KEY"] || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const apiKey = process.env["SUPABASE_SECRET-KEY"] || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
 
     if (!apiKey) {
-        throw new Error("SUPABASE_SECRET-KEY não foi configurada em Back-End/.env");
+        throw new Error("Nenhuma chave do Supabase configurada em Back-End/.env");
     }
 
     return {

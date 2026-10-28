@@ -7,9 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let userState = {
     isPro: user.plano === 'PRO',
     plan: user.plano || 'Gratuito',
-    ingredients: [],
     books: [],
-    activities: [],
     stats: {
       saved: 0,
       created: 0,
@@ -108,41 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
       timeVal.textContent = timeSlider.value + ' min';
     });
   }
-  const searchInput = document.getElementById('global-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase().trim();
-      const recipeCards = document.querySelectorAll('.recipe-card');
-      recipeCards.forEach(card => {
-        const title = card.dataset.title.toLowerCase();
-        const category = card.dataset.category ? card.dataset.category.toLowerCase() : '';
-        if (title.includes(query) || category.includes(query)) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-      const trendingCards = document.querySelectorAll('.trending-card');
-      trendingCards.forEach(card => {
-        const title = card.dataset.title.toLowerCase();
-        const category = card.dataset.category ? card.dataset.category.toLowerCase() : '';
-        if (title.includes(query) || category.includes(query)) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-      const bookCards = document.querySelectorAll('.book-card-item');
-      bookCards.forEach(card => {
-        const title = card.querySelector('h4').textContent.toLowerCase();
-        if (title.includes(query)) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    });
-  }
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('open');
@@ -204,11 +167,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   const notifBtn = document.getElementById('notifications-btn');
-  if (notifBtn) notifBtn.addEventListener('click', () => {
-    openModal('notifications-modal');
-    const badge = notifBtn.querySelector('.badge-dot');
-    if (badge) badge.style.display = 'none';
-  });
+  if (notifBtn) {
+    const initialBadge = notifBtn.querySelector('.badge-dot');
+    if (initialBadge) initialBadge.style.display = 'none';
+    notifBtn.addEventListener('click', () => {
+      openModal('notifications-modal');
+      const badge = notifBtn.querySelector('.badge-dot');
+      if (badge) badge.style.display = 'none';
+    });
+  }
   const settingsBtn = document.getElementById('settings-btn');
   if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
@@ -242,101 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   function triggerCelebrationEffects() {
-    addActivity('Seu plano foi atualizado para o <strong>Saboré PRO</strong>.', 'agora');
     userState.stats.saved += 10; 
     updateStatsUI();
-  }
-  const ingContainer = document.getElementById('widget-ingredients-container');
-  const addIngInput = document.getElementById('add-ing-input');
-  const addIngBtn = document.getElementById('add-ing-btn');
-  function renderIngredients() {
-    if (!ingContainer) return;
-    ingContainer.innerHTML = '';
-    userState.ingredients.forEach(ing => {
-      const label = document.createElement('label');
-      label.className = 'ingredient-checkbox';
-      label.innerHTML = `
-        <input type="checkbox" checked value="${ing}">
-        <span class="custom-chk"></span>
-        <span class="ing-name">${ing}</span>
-        <button class="ing-delete-btn"><i class="fa-solid fa-xmark"></i></button>
-      `;
-      const delBtn = label.querySelector('.ing-delete-btn');
-      delBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        removeIngredient(ing);
-      });
-      ingContainer.appendChild(label);
-    });
-    updateCursorHoverListeners();
-  }
-  async function addIngredient(name) {
-    name = name.trim();
-    if (!name) return;
-    name = name.charAt(0).toUpperCase() + name.slice(1);
-    try {
-      await api.post("/ingredientes-disponiveis/cadastrar", { nome: name });
-      if (!userState.ingredients.includes(name)) {
-        userState.ingredients.push(name);
-        renderIngredients();
-      }
-    } catch (err) {
-      alert("Erro ao adicionar ingrediente: " + err.message);
-    }
-  }
-  async function removeIngredient(name) {
-    try {
-      await api.delete(`/ingredientes-disponiveis/excluir/${name}`);
-      userState.ingredients = userState.ingredients.filter(ing => ing !== name);
-      renderIngredients();
-    } catch (err) {
-      alert("Erro ao remover ingrediente: " + err.message);
-    }
-  }
-  if (addIngBtn && addIngInput) {
-    addIngBtn.addEventListener('click', () => {
-      addIngredient(addIngInput.value);
-      addIngInput.value = '';
-    });
-    addIngInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        addIngredient(addIngInput.value);
-        addIngInput.value = '';
-      }
-    });
-  }
-  const manageIngBtn = document.getElementById('manage-ingredients-btn');
-  if (manageIngBtn) {
-    manageIngBtn.addEventListener('click', () => {
-      alert(`Você tem atualmente ${userState.ingredients.length} ingredientes na despensa:\n\n${userState.ingredients.join(', ')}`);
-    });
-  }
-  const generateDispensaBtn = document.getElementById('generate-dispensa-btn');
-  if (generateDispensaBtn) {
-    generateDispensaBtn.addEventListener('click', () => {
-      const checkedIngs = [];
-      const checkboxes = ingContainer.querySelectorAll('input[type="checkbox"]:checked');
-      checkboxes.forEach(chk => checkedIngs.push(chk.value));
-      if (checkedIngs.length === 0) {
-        alert('Por favor, selecione pelo menos um ingrediente na despensa.');
-        return;
-      }
-      const formContainer = document.getElementById('ai-form-container');
-      const loadingContainer = document.getElementById('ai-loading-container');
-      const resultContainer = document.getElementById('ai-result-container');
-      if (formContainer) formContainer.classList.remove('hidden');
-      if (loadingContainer) loadingContainer.classList.add('hidden');
-      if (resultContainer) resultContainer.classList.add('hidden');
-      const aiInput = document.getElementById('ai-ingredients');
-      if (aiInput) {
-        aiInput.value = checkedIngs.join(', ');
-      }
-      openModal('ai-generator-modal');
-      setTimeout(() => {
-        if (aiInput) aiInput.focus();
-      }, 300);
-    });
   }
   const newBookBtn = document.getElementById('new-book-btn');
   const newBookForm = document.getElementById('new-book-form');
@@ -367,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBooks();
         closeModal('add-book-modal');
         newBookForm.reset();
-        addActivity(`Criou o livro: <strong>${title}</strong>`, 'agora');
       } catch (err) {
         alert("Erro ao criar livro: " + err.message);
       }
@@ -403,28 +276,6 @@ document.addEventListener('DOMContentLoaded', () => {
       statsBubbles[2].textContent = userState.stats.aiGenerated;
       statsBubbles[3].textContent = userState.stats.booksCount;
     }
-  }
-  const activityFeed = document.querySelector('.activity-feed-timeline');
-  function renderActivities() {
-    if (!activityFeed) return;
-    activityFeed.innerHTML = '';
-    userState.activities.forEach((act, idx) => {
-      const item = document.createElement('div');
-      item.className = 'activity-item';
-      item.innerHTML = `
-        <span class="activity-dot ${idx === 0 ? 'active' : ''}"></span>
-        <div class="activity-detail">
-          <p>${act.text}</p>
-          <span class="activity-time">${act.time}</span>
-        </div>
-      `;
-      activityFeed.appendChild(item);
-    });
-  }
-  function addActivity(text, time = 'agora') {
-    userState.activities.unshift({ text, time });
-    if (userState.activities.length > 5) userState.activities.pop(); 
-    renderActivities();
   }
   const photoUploadZone = document.getElementById('photo-upload-zone');
   const photoFileInput = document.getElementById('photo-file-input');
@@ -764,9 +615,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       updatePlanUI();
       updateStatsUI();
-      const despensa = await api.get("/ingredientes-disponiveis/listar");
-      userState.ingredients = despensa;
-      renderIngredients();
       const books = await api.get("/livros/listar");
       userState.books = books.map(b => ({
         id: b.id,
@@ -785,8 +633,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   loadInitialData();
-  renderIngredients();
   renderBooks();
-  renderActivities();
   updateStatsUI();
 });

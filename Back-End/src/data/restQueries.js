@@ -88,12 +88,27 @@ async function listPantry(usuarioId) {
     return items.map((item) => item.ingrediente).filter(Boolean);
 }
 
+async function deleteRecipe(id, usuarioId) {
+    return supabaseRest(`Receita?id=eq.${encode(id)}&usuarioId=eq.${encode(usuarioId)}`, {
+        method: "DELETE"
+    });
+}
+
+async function updateRecipe(id, usuarioId, data) {
+    return supabaseRest(`Receita?id=eq.${encode(id)}&usuarioId=eq.${encode(usuarioId)}`, {
+        method: "PATCH",
+        body: data
+    });
+}
+
 module.exports = {
+    deleteRecipe,
     getProfile,
     listBooks,
     listFavorites,
     listPantry,
     listRecipes,
     listUsers,
-    recipeSelect
+    recipeSelect,
+    updateRecipe
 };

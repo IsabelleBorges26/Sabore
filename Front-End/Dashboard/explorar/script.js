@@ -15,11 +15,151 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'lanche', name: 'Lanches', emoji: 'fa-solid fa-burger' }
     ],
     recipes: [],
-    hashtags: ['#fit', '#vegano', '#rapido', '#massas', '#sobremesa', '#facil', '#jantar', '#entrada', '#oriental']
+    trendingTagsData: []
   };
   let activeCategoryFilter = 'all';
   let activeTabFilter = 'all';
   let activeHashtagFilter = null;
+  let currentWeeklyChallengeData = null;
+
+  const WEEKLY_CHALLENGES = [
+    {
+      id: "inverno",
+      title: "Receitas de Inverno & Conforto ❄️",
+      hashtag: "#DesafioInverno",
+      badge: "Chef Invernal",
+      description: "Crie um prato quente, sopa encorpada ou bebida cremosa para aquecer a comunidade Saboré!"
+    },
+    {
+      id: "massas",
+      title: "Festival de Massas Artesanais 🍝",
+      hashtag: "#DesafioMassas",
+      badge: "Mestre das Massas",
+      description: "Prepare uma massa fresca caseira ou um molho artesanal autêntico da nonna."
+    },
+    {
+      id: "fit",
+      title: "Marmita Fit & Alta Performance 🥗",
+      hashtag: "#DesafioFit",
+      badge: "Chef Saudável",
+      description: "Compartilhe uma refeição equilibrada, nutritiva e prática para o dia a dia fitness."
+    },
+    {
+      id: "doces",
+      title: "Doces & Sobremesas de Sonho 🍓",
+      hashtag: "#DesafioDoces",
+      badge: "Confeiteiro Saboré",
+      description: "Surpreenda a comunidade com tortas, bolos, mousses ou doces artesanais irresistíveis."
+    },
+    {
+      id: "oriental",
+      title: "Uma Viagem à Cozinha Oriental 🥢",
+      hashtag: "#DesafioOriental",
+      badge: "Chef Oriental",
+      description: "Traga o melhor da culinária asiática: sushis, woks, ramens ou yakisobas aromáticos."
+    },
+    {
+      id: "brunch",
+      title: "Café da Manhã de Cinema ☕",
+      hashtag: "#DesafioBrunch",
+      badge: "Mestre do Brunch",
+      description: "Pães quentinhos, ovos especiais, panquecas ou tigelas de açaí para começar o dia no topo."
+    },
+    {
+      id: "burger",
+      title: "Hambúrguer Gourmet Caseiro 🍔",
+      hashtag: "#DesafioBurger",
+      badge: "Burger Master",
+      description: "Monte um burger autoral: combine seu blend especial, molhos caseiros e queijos derretidos."
+    },
+    {
+      id: "sustentavel",
+      title: "Cozinha Sustentável & Zero Desperdício 🌿",
+      hashtag: "#DesafioSustentavel",
+      badge: "Chef Consciente",
+      description: "Use talos, cascas e sobras nobres para criar pratos deliciosos e sustentáveis."
+    },
+    {
+      id: "risotos",
+      title: "Mestres do Risoto Cremoso 🍚",
+      hashtag: "#DesafioRisoto",
+      badge: "Rei do Risoto",
+      description: "Acerte no ponto perfeito da textura e emulsão de um risoto sofisticado."
+    },
+    {
+      id: "petiscos",
+      title: "Comida de Boteco & Petiscos 🥟",
+      hashtag: "#DesafioPetiscos",
+      badge: "Chef Boêmio",
+      description: "Pastéis, croquetes, bolinhos de arroz e petiscos crocantes para celebrar com amigos."
+    },
+    {
+      id: "brasil",
+      title: "Sabores Regionais do Brasil 🥘",
+      hashtag: "#DesafioBrasil",
+      badge: "Chef Raiz",
+      description: "Celebre nossa culinária: moquecas, baião de dois, feijão tropeiro e temperos típicos."
+    },
+    {
+      id: "rapido",
+      title: "Prato Incrível em 15 Minutos ⏱️",
+      hashtag: "#Desafio15Min",
+      badge: "Chef Relâmpago",
+      description: "Mostre que agilidade e alto sabor andam juntos em receitas rápidas do dia a dia."
+    }
+  ];
+
+  function getWeeklyChallenge() {
+    const now = new Date();
+    const target = new Date(now.valueOf());
+    const dayNr = (now.getDay() + 6) % 7;
+    target.setDate(target.getDate() - dayNr + 3);
+    const firstThursday = target.valueOf();
+    target.setMonth(0, 1);
+    if (target.getDay() !== 4) {
+      target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+    }
+    const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
+    const year = now.getFullYear();
+    const dayOfWeek = now.getDay();
+    const daysRemaining = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+    const weekSeed = year * 53 + weekNumber;
+    const index = Math.abs(weekSeed) % WEEKLY_CHALLENGES.length;
+    const challenge = WEEKLY_CHALLENGES[index];
+    return {
+      ...challenge,
+      weekNumber,
+      year,
+      daysRemaining,
+      timeRemainingText: daysRemaining === 0 ? "Termina hoje às 23:59!" : `Termina em ${daysRemaining} dia${daysRemaining > 1 ? "s" : ""}`
+    };
+  }
+
+  function normalizeHashtag(str) {
+    if (!str) return '';
+    const clean = String(str).trim().toLowerCase().replace(/^#+/, '').replace(/\s+/g, '');
+    return clean ? `#${clean}` : '';
+  }
+
+  function extractRecipeTags(recipe) {
+    const tagsSet = new Set();
+    // Categorias descrevem a receita; hashtag é uma escolha explícita de quem publica.
+    // Não transforme "Importação", "Sobremesa" etc. em hashtag automaticamente.
+    (Array.isArray(recipe.hashtags) ? recipe.hashtags : []).forEach(value => {
+      const tag = normalizeHashtag(typeof value === 'string' ? value : value?.nome);
+      if (tag) tagsSet.add(tag);
+    });
+    const text = `${recipe.title || ''} ${recipe.description || ''}`;
+    const matches = text.match(/#([a-zA-Z0-9_\u00C0-\u017F]+)/g);
+    if (matches) {
+      matches.forEach(m => {
+        const tag = normalizeHashtag(m);
+        if (tag) tagsSet.add(tag);
+      });
+    }
+    return Array.from(tagsSet);
+  }
+
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
   document.body.appendChild(customCursor);
@@ -105,15 +245,17 @@ document.addEventListener('DOMContentLoaded', () => {
     `);
     const addPostToFeed = (recipe) => {
       const categories = recipe.categories || [recipe.category || 'Geral'];
+      const tags = extractRecipeTags(recipe);
       userState.recipes.unshift({
         id: recipe.id, title: recipe.title, description: recipe.description || '', time: recipe.time || 0,
-        difficulty: recipe.difficulty || 'Fácil', category: recipe.category || categories[0], categories,
-        tags: categories.map(item => `#${String(item).toLowerCase().replace(/\s+/g, '')}`), image: recipe.image || null,
+        difficulty: recipe.difficulty || 'Fácil', category: recipe.category || categories[0], categories, hashtags: recipe.hashtags || [],
+        tags, image: recipe.image || null,
         authorId: recipe.authorId, author: recipe.author || api.getUser()?.nome || 'Você', authorAvatar: recipe.authorAvatar || api.getUser()?.foto || null,
-        diet: recipe.category || categories[0], likes: 0, ingredients: recipe.ingredients || [], steps: recipe.steps || []
+        diet: recipe.category || categories[0], likes: 0, avaliacoes: 0, ingredients: recipe.ingredients || [], steps: recipe.steps || []
       });
       renderRecipes();
-      renderTags();
+      updateTrendingHashtags();
+      renderWeeklyChallenge();
     };
     const loadBookRecipes = async () => {
       const select = document.getElementById('post-existing-recipe');
@@ -156,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const created = await api.post('/receitas/cadastrar', {
           titulo: value('post-title'), descricao: value('post-description'), tempoPreparo: Number(value('post-time')),
-          dificuldade: value('post-difficulty'), categorias: [value('post-category'), ...hashtags], imagem: value('post-image') || null,
+          dificuldade: value('post-difficulty'), categorias: [value('post-category')], hashtags, imagem: value('post-image') || null,
           ingredientes: ingredients, modoPreparo: steps.join('\n'), criadaPorIA: false, publica: true
         });
         addPostToFeed(created);
@@ -219,6 +361,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
+    const initialBadge = notifBtn.querySelector('.badge-dot');
+    if (initialBadge) initialBadge.style.display = 'none';
     notifBtn.addEventListener('click', () => {
       openModal('notifications-modal');
       const badge = notifBtn.querySelector('.badge-dot');
@@ -267,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       tile.addEventListener('click', () => {
         if (activeCategoryFilter === cat.id) {
-          activeCategoryFilter = 'all'; 
+          activeCategoryFilter = 'all';
         } else {
           activeCategoryFilter = cat.id;
         }
@@ -293,15 +437,15 @@ document.addEventListener('DOMContentLoaded', () => {
     recipesContainer.innerHTML = '';
     const searchQuery = globalSearchInput ? globalSearchInput.value.toLowerCase().trim() : '';
     let filtered = userState.recipes.filter(rec => {
-      const matchesSearch = rec.title.toLowerCase().includes(searchQuery) || 
-                            rec.author.toLowerCase().includes(searchQuery) ||
-                            rec.category.toLowerCase().includes(searchQuery);
+      const matchesSearch = rec.title.toLowerCase().includes(searchQuery) ||
+        rec.author.toLowerCase().includes(searchQuery) ||
+        rec.category.toLowerCase().includes(searchQuery);
       let matchesCategory = true;
       if (activeCategoryFilter !== 'all') {
         const queryVal = activeCategoryFilter.toLowerCase();
         matchesCategory = rec.title.toLowerCase().includes(queryVal) ||
-                          rec.category.toLowerCase().includes(queryVal) ||
-                          rec.diet.toLowerCase().includes(queryVal);
+          rec.category.toLowerCase().includes(queryVal) ||
+          rec.diet.toLowerCase().includes(queryVal);
       }
       let matchesTab = true;
       if (activeTabFilter === 'fit') {
@@ -315,16 +459,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       let matchesHashtag = true;
       if (activeHashtagFilter) {
-        matchesHashtag = rec.tags.includes(activeHashtagFilter);
+        matchesHashtag = Array.isArray(rec.tags) && rec.tags.some(t => t.toLowerCase() === activeHashtagFilter.toLowerCase());
       }
       return matchesSearch && matchesCategory && matchesTab && matchesHashtag;
     });
     const interests = (JSON.parse(localStorage.getItem('sabore_user_preferences') || '[]'))
-      .map(item => String(item).toLowerCase());
+      .map(item => String(item).trim().toLocaleLowerCase('pt-BR'))
+      .filter(Boolean);
     if (interests.length) {
       filtered.sort((first, second) => {
-        const score = (recipe) => recipe.tags.concat(recipe.categories || [])
-          .reduce((total, item) => total + (interests.some(interest => String(item).toLowerCase().includes(interest)) ? 1 : 0), 0);
+        const score = (recipe) => {
+          const tags = (recipe.tags || []).join(' ').toLocaleLowerCase('pt-BR');
+          const categories = (recipe.categories || []).join(' ').toLocaleLowerCase('pt-BR');
+          const text = `${recipe.title || ''} ${recipe.description || ''}`.toLocaleLowerCase('pt-BR');
+          return interests.reduce((total, interest) => total
+            + (tags.includes(interest) ? 4 : 0)
+            + (categories.includes(interest) ? 2 : 0)
+            + (text.includes(interest) ? 1 : 0), 0);
+        };
         return score(second) - score(first);
       });
     }
@@ -353,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="explore-content-area">
           <div class="recipe-author-line">
-            ${rec.authorAvatar ? `<img src="${rec.authorAvatar}" alt="${rec.author}" class="author-avatar">` : `<span class="author-avatar author-avatar-placeholder">${rec.author.charAt(0).toUpperCase()}</span>`}
+            ${rec.authorAvatar ? `<img src="${rec.authorAvatar}" alt="${rec.author}" class="author-avatar" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\\'author-avatar author-avatar-placeholder\\'>${rec.author.charAt(0).toUpperCase()}</span>')">` : `<span class="author-avatar author-avatar-placeholder">${rec.author.charAt(0).toUpperCase()}</span>`}
             <span class="author-name">${rec.author}</span>
           </div>
           <h4>${rec.title}</h4>
@@ -365,6 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="post-social-actions">
             ${rec.authorId && rec.authorId !== api.getUser()?.id ? `<button class="follow-author-btn"><i class="fa-solid fa-user-plus"></i> Seguir</button>` : ''}
             <button class="share-post-btn"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
+            <button class="whatsapp-post-btn" aria-label="Compartilhar no WhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
           </div>
         </div>
       `;
@@ -376,11 +529,16 @@ document.addEventListener('DOMContentLoaded', () => {
             await api.delete(`/favoritos/excluir/${rec.id}`);
             favBtn.classList.remove('active');
             userState.favorites = userState.favorites.filter(id => id !== rec.id);
+            rec.likes = Math.max(0, (rec.likes || 0) - 1);
           } else {
             await api.post("/favoritos/cadastrar", { receitaId: rec.id });
             favBtn.classList.add('active');
             userState.favorites.push(rec.id);
+            rec.likes = (rec.likes || 0) + 1;
           }
+          const badge = card.querySelector('.recipe-likes-badge');
+          if (badge) badge.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> ${rec.likes}`;
+          updateTrendingHashtags();
         } catch (err) {
           alert("Erro ao favoritar receita: " + err.message);
         }
@@ -409,16 +567,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       card.querySelector('.share-post-btn').addEventListener('click', async (event) => {
         event.stopPropagation();
-        const shareData = { title: rec.title, text: `Veja a receita ${rec.title}, publicada por ${rec.author} no Saboré.` };
+        const url = new URL(`../../receita/?id=${rec.id}`, window.location.href).href;
+        const shareData = { title: rec.title, text: `Veja a receita ${rec.title}, publicada por ${rec.author} no Saboré.`, url };
         try {
           if (navigator.share) await navigator.share(shareData);
           else if (navigator.clipboard) {
-            await navigator.clipboard.writeText(`${shareData.text} ${window.location.href.split('?')[0]}?receita=${rec.id}`);
+            await navigator.clipboard.writeText(`${shareData.text} ${url}`);
             alert('Link da publicação copiado.');
           }
         } catch (error) {
           if (error.name !== 'AbortError') alert('Não foi possível compartilhar esta publicação.');
         }
+      });
+      card.querySelector('.whatsapp-post-btn').addEventListener('click', (event) => {
+        event.stopPropagation();
+        const url = new URL(`../../receita/?id=${rec.id}`, window.location.href).href;
+        const message = `Veja a receita ${rec.title}, publicada por ${rec.author} no Saboré. ${url}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
       });
       card.addEventListener('click', () => {
         openRecipeDetailsModal(rec);
@@ -443,14 +608,34 @@ document.addEventListener('DOMContentLoaded', () => {
     userState.chefs.forEach(chef => {
       const card = document.createElement('div');
       card.className = 'chef-card-item';
-      const avatarHtml = chef.avatar
-        ? `<img src="${chef.avatar}" alt="${chef.name}" class="chef-avatar-large">`
-        : `<div class="chef-avatar-large chef-avatar-placeholder" style="display:flex;align-items:center;justify-content:center;background:var(--accent-light);color:var(--accent);font-size:2rem;font-weight:700;border-radius:50%;">${chef.name.charAt(0).toUpperCase()}</div>`;
-      card.innerHTML = `
-        ${avatarHtml}
-        <h4>${chef.name}</h4>
-        <p>Membro da comunidade Saboré</p>
-      `;
+      const avatarInitial = chef.name.charAt(0).toUpperCase();
+      const placeholderStyle = 'display:flex;align-items:center;justify-content:center;background:var(--accent-light);color:var(--accent);font-size:2rem;font-weight:700;border-radius:50%;';
+      let avatarEl;
+      if (chef.avatar) {
+        avatarEl = document.createElement('img');
+        avatarEl.src = chef.avatar;
+        avatarEl.alt = chef.name;
+        avatarEl.className = 'chef-avatar-large';
+        avatarEl.onerror = () => {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'chef-avatar-large chef-avatar-placeholder';
+          placeholder.setAttribute('style', placeholderStyle);
+          placeholder.textContent = avatarInitial;
+          avatarEl.replaceWith(placeholder);
+        };
+      } else {
+        avatarEl = document.createElement('div');
+        avatarEl.className = 'chef-avatar-large chef-avatar-placeholder';
+        avatarEl.setAttribute('style', placeholderStyle);
+        avatarEl.textContent = avatarInitial;
+      }
+      card.appendChild(avatarEl);
+      const nameEl = document.createElement('h4');
+      nameEl.textContent = chef.name;
+      card.appendChild(nameEl);
+      const memberEl = document.createElement('p');
+      memberEl.textContent = 'Membro da comunidade Saboré';
+      card.appendChild(memberEl);
       const followButton = document.createElement('button');
       followButton.className = `btn-follow-chef ${chef.followed ? 'following' : ''}`;
       followButton.textContent = chef.followed ? 'Seguindo' : 'Seguir';
@@ -476,34 +661,154 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return num + ' seguidores';
   }
-  const joinBtn = document.getElementById('challenge-join-btn');
-  if (joinBtn) {
-    joinBtn.addEventListener('click', () => {
-      const isJoined = joinBtn.classList.toggle('joined');
-      if (isJoined) {
-        joinBtn.textContent = 'Inscrito no Desafio! ✓';
-        alert('Parabéns! Você se inscreveu no Desafio Saboré de Inverno. Crie sua receita temática e compartilhe na comunidade com a hashtag #DesafioInverno.');
-      } else {
-        joinBtn.textContent = 'Participar do Desafio';
-      }
+  function renderWeeklyChallenge() {
+    const card = document.getElementById('weekly-challenge-card');
+    if (!card) return;
+
+    const challenge = currentWeeklyChallengeData || getWeeklyChallenge();
+    currentWeeklyChallengeData = challenge;
+
+    const titleEl = document.getElementById('challenge-title');
+    const descEl = document.getElementById('challenge-description');
+    const badgeTextEl = document.getElementById('challenge-badge-text');
+    const hashtagEl = document.getElementById('challenge-hashtag');
+    const timeLeftEl = document.getElementById('challenge-time-left');
+    const participantsEl = document.getElementById('challenge-participants');
+    const countEl = document.getElementById('challenge-recipes-count');
+    const joinBtn = document.getElementById('challenge-join-btn');
+
+    if (titleEl) titleEl.textContent = challenge.title;
+    if (descEl) descEl.textContent = challenge.description;
+    if (badgeTextEl) badgeTextEl.textContent = `DESAFIO DA SEMANA • SEMANA ${challenge.weekNumber}`;
+    if (hashtagEl) {
+      hashtagEl.textContent = challenge.hashtag;
+      hashtagEl.onclick = () => {
+        const norm = challenge.hashtag.toLowerCase();
+        activeHashtagFilter = (activeHashtagFilter === norm) ? null : norm;
+        renderTags();
+        renderRecipes();
+        const grid = document.getElementById('explore-recipes-container');
+        if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+    }
+    if (timeLeftEl) {
+      timeLeftEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${challenge.timeRemainingText}`;
+    }
+
+    const matchingRecipes = userState.recipes.filter(rec => {
+      const tags = rec.tags || [];
+      return tags.some(t => t.toLowerCase() === challenge.hashtag.toLowerCase());
     });
+    const distinctLocalAuthors = new Set(matchingRecipes.map(r => r.authorId || r.author).filter(Boolean));
+    const recipesCount = typeof challenge.recipesCount === 'number' ? challenge.recipesCount : matchingRecipes.length;
+    const participants = typeof challenge.participantsCount === 'number' ? challenge.participantsCount : distinctLocalAuthors.size;
+
+    if (countEl) {
+      countEl.innerHTML = `<i class="fa-solid fa-utensils"></i> ${recipesCount} ${recipesCount === 1 ? 'receita criada' : 'receitas criadas'}`;
+    }
+    if (participantsEl) {
+      participantsEl.innerHTML = `<i class="fa-solid fa-user-group"></i> ${participants} ${participants === 1 ? 'participante' : 'participantes'}`;
+    }
+
+    if (joinBtn) {
+      const user = api.getUser();
+      const storageKey = `sabore_challenge_joined_${challenge.id}_${challenge.year}_w${challenge.weekNumber}_${user?.id || 'guest'}`;
+      let isJoined = localStorage.getItem(storageKey) === 'true';
+
+      const updateJoinBtnUI = () => {
+        if (isJoined) {
+          joinBtn.classList.add('joined');
+          joinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Inscrito no Desafio! ✓';
+        } else {
+          joinBtn.classList.remove('joined');
+          joinBtn.innerHTML = '<i class="fa-solid fa-trophy"></i> Participar do Desafio';
+        }
+      };
+      updateJoinBtnUI();
+
+      joinBtn.onclick = () => {
+        isJoined = !isJoined;
+        if (isJoined) {
+          localStorage.setItem(storageKey, 'true');
+          updateJoinBtnUI();
+          const hashtagsInput = document.getElementById('post-hashtags');
+          if (hashtagsInput) {
+            if (!hashtagsInput.value.includes(challenge.hashtag)) {
+              hashtagsInput.value = hashtagsInput.value ? `${hashtagsInput.value.trim()} ${challenge.hashtag}` : challenge.hashtag;
+            }
+          }
+          if (window.SaboreNotify) {
+            window.SaboreNotify(`Inscrição confirmada no ${challenge.title}! Crie suas receitas com a hashtag ${challenge.hashtag}.`, 'success');
+          } else {
+            alert(`Inscrição confirmada no ${challenge.title}! Compartilhe sua receita com a hashtag ${challenge.hashtag}.`);
+          }
+        } else {
+          localStorage.removeItem(storageKey);
+          updateJoinBtnUI();
+          if (window.SaboreNotify) {
+            window.SaboreNotify(`Inscrição no desafio ${challenge.title} cancelada.`, 'info');
+          }
+        }
+      };
+    }
+    updateCursorHoverListeners();
   }
+
+  function updateTrendingHashtags() {
+    const map = new Map();
+    userState.recipes.forEach(rec => {
+      const interactions = (Number(rec.likes) || 0) + (Number(rec.avaliacoes) || 0);
+      const tags = rec.tags || extractRecipeTags(rec);
+      tags.forEach(tag => {
+        const norm = tag.toLowerCase();
+        if (!map.has(norm)) {
+          map.set(norm, { name: norm, interactions: 0, count: 0 });
+        }
+        const item = map.get(norm);
+        item.interactions += interactions;
+        item.count += 1;
+      });
+    });
+
+    // Exibir APENAS as hashtags que realmente estão em alta com base nas interações dos usuários (> 0)
+    userState.trendingTagsData = Array.from(map.values())
+      .filter(item => item.interactions > 0)
+      .sort((a, b) => b.interactions - a.interactions || b.count - a.count);
+
+    renderTags();
+  }
+
   const tagCloud = document.getElementById('popular-tags-cloud');
   function renderTags() {
     if (!tagCloud) return;
     tagCloud.innerHTML = '';
-    userState.hashtags.forEach(tag => {
+
+    if (!userState.trendingTagsData || userState.trendingTagsData.length === 0) {
+      tagCloud.innerHTML = `
+        <div class="tags-empty-state">
+          <i class="fa-solid fa-arrow-trend-up"></i>
+          <span>Nenhuma hashtag com interações suficientes no momento. Curta e avalie receitas da comunidade para impulsionar as tendências culinárias!</span>
+        </div>
+      `;
+      return;
+    }
+
+    userState.trendingTagsData.forEach(item => {
       const chip = document.createElement('button');
+      chip.type = 'button';
       chip.className = 'tag-item-chip';
-      if (activeHashtagFilter === tag) {
+      if (activeHashtagFilter === item.name) {
         chip.classList.add('active');
       }
-      chip.textContent = tag;
+      chip.innerHTML = `
+        <span>${item.name}</span>
+        <span class="tag-fire-count" title="${item.interactions} interações dos usuários"><i class="fa-solid fa-fire"></i> ${item.interactions}</span>
+      `;
       chip.addEventListener('click', () => {
-        if (activeHashtagFilter === tag) {
-          activeHashtagFilter = null; 
+        if (activeHashtagFilter === item.name) {
+          activeHashtagFilter = null;
         } else {
-          activeHashtagFilter = tag;
+          activeHashtagFilter = item.name;
         }
         renderTags();
         renderRecipes();
@@ -615,10 +920,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const navName = document.querySelector('.user-name');
     if (navName) navName.textContent = user.nome;
     try {
-      const profileData = await api.get("/usuarios/perfil");
-      userState.isPro = profileData.plano === "PRO";
+      // Informações secundárias não podem impedir o carregamento das receitas públicas.
+      const [profileResult, booksResult, favoritesResult, recipesResult] = await Promise.allSettled([
+        api.get("/usuarios/perfil"),
+        api.get("/livros/listar"),
+        api.get("/favoritos/listar"),
+        api.get("/receitas/publicas")
+      ]);
+      const profileData = profileResult.status === 'fulfilled' ? profileResult.value : null;
+      userState.isPro = profileData?.plano === "PRO";
       updatePlanUI();
-      const books = await api.get("/livros/listar");
+      const books = booksResult.status === 'fulfilled' ? booksResult.value : [];
       userState.books = books.map(b => ({
         id: b.id,
         title: b.titulo,
@@ -626,11 +938,21 @@ document.addEventListener('DOMContentLoaded', () => {
         emoji: b.emoji || 'fa-solid fa-book',
         tag: b.tag
       }));
-      const favorites = await api.get("/favoritos/listar");
+      const favorites = favoritesResult.status === 'fulfilled' ? favoritesResult.value : [];
       userState.favorites = favorites.map(f => f.id);
-      const publicRecipes = await api.get("/receitas/publicas");
+      if (recipesResult.status !== 'fulfilled') throw recipesResult.reason;
+      const publicRecipes = recipesResult.value.filter(rec => {
+        const title = String(rec.title || rec.titulo || '').trim().toLowerCase();
+        const authorId = rec.authorId || rec.usuarioId;
+        // Exclui dados mockados/seeds legados e testes
+        if (authorId === 1) return false;
+        if (title === 'teste' || title.startsWith('teste ') || title === 'cereal') return false;
+        return Boolean(title);
+      });
       userState.recipes = publicRecipes.map(rec => {
         const categoriesList = rec.categories || [];
+        const hashtags = Array.isArray(rec.hashtags) ? rec.hashtags : [];
+        const tags = extractRecipeTags({ ...rec, categories: categoriesList, hashtags });
         return {
           id: rec.id,
           title: rec.title,
@@ -639,12 +961,14 @@ document.addEventListener('DOMContentLoaded', () => {
           difficulty: rec.difficulty,
           category: rec.category,
           likes: Number(rec.likes) || 0,
+          avaliacoes: Number(rec.avaliacoes) || 0,
           image: rec.image,
           authorId: rec.authorId,
           author: rec.author,
           authorAvatar: rec.authorAvatar,
           diet: rec.category,
-          tags: categoriesList.map(c => '#' + c.toLowerCase()),
+          tags,
+          hashtags,
           ingredients: rec.ingredients,
           steps: rec.steps,
           categories: categoriesList
@@ -659,9 +983,16 @@ document.addEventListener('DOMContentLoaded', () => {
           emoji: 'fa-solid fa-tag'
         }))
       ];
-      userState.hashtags = communityCategories.map(name => `#${name.toLocaleLowerCase('pt-BR').replace(/\s+/g, '')}`);
       renderCategories();
       renderRecipes();
+      updateTrendingHashtags();
+      try {
+        const desafioData = await api.get("/receitas/desafio-semanal");
+        currentWeeklyChallengeData = desafioData;
+      } catch (err) {
+        currentWeeklyChallengeData = getWeeklyChallenge();
+      }
+      renderWeeklyChallenge();
       try {
         const currentUser = api.getUser();
         const usuarios = await api.get("/social/perfis");
@@ -679,6 +1010,9 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
       }
       renderChefs();
+      // Os cards podem ter sido renderizados antes do retorno dos perfis sociais.
+      // Renderize novamente para refletir corretamente quem o usuário já segue.
+      renderRecipes();
       renderTags();
     } catch (err) {
     }
@@ -708,6 +1042,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         alert("Avaliação enviada com sucesso!");
         submitRatingBtn.style.display = 'none';
+        rec.avaliacoes = (rec.avaliacoes || 0) + 1;
+        updateTrendingHashtags();
       } catch (err) {
         alert("Erro ao enviar avaliação: " + err.message);
       }
@@ -728,6 +1064,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   renderCategories();
+  renderWeeklyChallenge();
   initRatingSystem();
   loadInitialData();
 });
+

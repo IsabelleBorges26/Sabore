@@ -249,17 +249,43 @@
                   </button>
                 </div>
               </div>
-              <div class="setup-widget">
-                <div class="widget-header">
-                  <h3><i class="fa-solid fa-utensils"></i> Minhas Criações</h3>
+              <div class="setup-widget insta-profile-widget">
+                <div class="widget-header insta-widget-header">
+                  <div class="insta-header-left">
+                    <h3><i class="fa-solid fa-utensils"></i> Minhas Criações</h3>
+                    <p class="setup-widget-desc">
+                      Seu feed de publicações culinárias no Saboré
+                    </p>
+                  </div>
+                  <div class="insta-header-actions">
+                    <a href="../chefIA/index.html" class="btn-create-recipe-insta">
+                      <i class="fa-solid fa-plus"></i> Nova Criação
+                    </a>
+                  </div>
                 </div>
-                <p class="setup-widget-desc">
-                  Receitas que você elaborou manualmente e salvou nas coleções
-                  do Saboré:
-                </p>
-                <div class="creations-grid">
+
+                <!-- Abas estilo perfil do Instagram -->
+                <div class="insta-tabs-bar" role="tablist">
+                  <button class="insta-tab-btn active" data-tab="todas" type="button" role="tab" aria-selected="true">
+                    <i class="fa-solid fa-table-cells"></i>
+                    <span>Publicações</span>
+                    <span class="insta-tab-count" id="count-all-creations">0</span>
+                  </button>
+                  <button class="insta-tab-btn" data-tab="publicas" type="button" role="tab" aria-selected="false">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Na Comunidade</span>
+                    <span class="insta-tab-count" id="count-public-creations">0</span>
+                  </button>
+                  <button class="insta-tab-btn" data-tab="privadas" type="button" role="tab" aria-selected="false">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Privadas</span>
+                    <span class="insta-tab-count" id="count-private-creations">0</span>
+                  </button>
+                </div>
+
+                <div class="creations-grid insta-creations-grid" id="creations-grid">
                   <div class="book-detail-empty" style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: rgba(242, 244, 243, 0.5);">
-                    <p>Nenhuma criação salva ainda.</p>
+                    <p>Carregando publicações...</p>
                   </div>
                 </div>
               </div>
@@ -328,6 +354,43 @@
         <button class="btn-celebration-close" id="close-celebration-btn">
           Entrar na minha cozinha PRO
         </button>
+      </div>
+    </div>
+    <!-- Modal de Publicação estilo Instagram -->
+    <div class="modal-overlay" id="insta-post-modal">
+      <div class="modal-card insta-post-modal-card">
+        <button class="modal-close-btn" id="close-insta-modal" type="button" aria-label="Fechar publicação">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="insta-modal-layout" id="insta-modal-content">
+          <!-- Conteúdo dinâmico preenchido pelo script -->
+        </div>
+      </div>
+    </div>
+    <!-- Modal de Seguidores e Seguindo -->
+    <div class="modal-overlay" id="followers-modal">
+      <div class="modal-card small-modal social-connections-card">
+        <button class="modal-close-btn" id="close-followers-modal" type="button" aria-label="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="social-modal-header">
+          <div class="social-modal-tabs">
+            <button class="social-tab-btn active" id="tab-followers-btn" type="button">
+              <i class="fa-solid fa-users"></i> Seguidores (<span id="modal-followers-badge">0</span>)
+            </button>
+            <button class="social-tab-btn" id="tab-following-btn" type="button">
+              <i class="fa-solid fa-user-check"></i> Seguindo (<span id="modal-following-badge">0</span>)
+            </button>
+          </div>
+        </div>
+        <div class="social-modal-body">
+          <div class="social-tab-content active" id="social-followers-panel">
+            <div class="notifications-list" id="followers-list"></div>
+          </div>
+          <div class="social-tab-content" id="social-following-panel">
+            <div class="notifications-list" id="following-list"></div>
+          </div>
+        </div>
       </div>
     </div>
     <script src="../../assets/js/api.js"></script>

@@ -1,4 +1,12 @@
 const prisma = require("../data/prisma");
+const { withDatabaseFallback } = require("../data/databaseFallback");
+const { listRecipes } = require("../data/restQueries");
+const normalizeHashtag = (value) => String(value || "")
+    .trim().replace(/^#+/, "").normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR")
+    .replace(/[^a-z0-9_]/g, "").slice(0, 40);
+const normalizeHashtags = (values) => [...new Set((Array.isArray(values) ? values : String(values || "").split(/\s+/))
+    .map(normalizeHashtag).filter(Boolean))].slice(0, 10);
 const parseIngredient = (input) => {
     let str = "";
     if (typeof input === "string") {
@@ -35,6 +43,8 @@ const formatRecipe = (recipe) => {
         author: recipe.usuario ? recipe.usuario.nome : "Chef",
         authorAvatar: recipe.usuario?.foto || null,
         likes: recipe._count?.favoritos || 0,
+        hashtags: recipe.hashtags ? recipe.hashtags.map(item => `#${item.hashtag.nome}`) : [],
+        publishedAt: recipe.publicadaEm || null,
         category: recipe.categorias && recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
         categories: recipe.categorias ? recipe.categorias.map(rc => rc.categoria.nome) : [],
         ingredients: recipe.ingredientes ? recipe.ingredientes.map(ri => {
@@ -67,7 +77,8 @@ const cadastrar = async (req, res) => {
         ingredients, 
         ingredientes, 
         categories, 
-        categorias 
+        categorias,
+        hashtags
     } = req.body;
     if (!titulo) {
         return res.status(400).json({ erro: "O título da receita é obrigatório." });
@@ -79,6 +90,7 @@ const cadastrar = async (req, res) => {
     const finalImage = image || imagem || null;
     const finalIngredients = ingredients || ingredientes || [];
     const finalCategories = categories || categorias || [];
+    const finalHashtags = normalizeHashtags(hashtags);
     let validLivroId = null;
     if (livroId) {
         const parsedLivroId = Number(livroId);
@@ -152,6 +164,10 @@ const cadastrar = async (req, res) => {
                     });
                 }
             }
+            for (const tagName of finalHashtags) {
+                const hashtag = await tx.hashtag.upsert({ where: { nome: tagName }, update: {}, create: { nome: tagName } });
+                await tx.receitaHashtag.create({ data: { receitaId: recipe.id, hashtagId: hashtag.id } });
+            }
             return recipe;
         });
         const fullRecipe = await prisma.receita.findUnique({
@@ -164,6 +180,7 @@ const cadastrar = async (req, res) => {
                 categorias: {
                     include: { categoria: true }
                 },
+                hashtags: { include: { hashtag: true } },
                 _count: { select: { favoritos: true } }
             }
         });
@@ -181,44 +198,99 @@ const listar = async (req, res) => {
         if (livroId) {
             filters.livroId = Number(livroId);
         }
-        const receitas = await prisma.receita.findMany({
-            where: filters,
-            include: {
-                usuario: true,
-                ingredientes: {
-                    include: { ingrediente: true }
+        const receitas = await withDatabaseFallback(
+            () => prisma.receita.findMany({
+                where: filters,
+                include: {
+                    usuario: true,
+                    ingredientes: {
+                        include: { ingrediente: true }
+                    },
+                    categorias: {
+                        include: { categoria: true }
+                    },
+                    hashtags: { include: { hashtag: true } },
+                    _count: { select: { favoritos: true } }
                 },
-                categorias: {
-                    include: { categoria: true }
-                },
-                _count: { select: { favoritos: true } }
-            },
-            orderBy: { createdAt: "desc" }
-        });
+                orderBy: { createdAt: "desc" }
+            }),
+            () => listRecipes(filters),
+            "listar receitas"
+        );
         res.status(200).json(receitas.map(formatRecipe));
     } catch (error) {
         res.status(500).json({ erro: "Erro ao listar receitas.", detalhe: error.message });
     }
 };
 const listarPublicas = async (req, res) => {
+    const includeRecipeRelations = (withHashtags = true) => ({
+        usuario: true,
+        ingredientes: { include: { ingrediente: true } },
+        categorias: { include: { categoria: true } },
+        ...(withHashtags ? { hashtags: { include: { hashtag: true } } } : {}),
+        _count: { select: { favoritos: true } }
+    });
     try {
-        const receitas = await prisma.receita.findMany({
-            where: { publica: true, publicadaEm: { not: null } },
+        const receitas = await withDatabaseFallback(
+            () => prisma.receita.findMany({
+                where: { 
+                    publica: true, 
+                    publicadaEm: { not: null },
+                    usuarioId: { not: 1 },
+                    NOT: [
+                        { titulo: { equals: "teste", mode: "insensitive" } },
+                        { titulo: { startsWith: "teste ", mode: "insensitive" } }
+                    ]
+                },
+                include: includeRecipeRelations(),
+                orderBy: { createdAt: "desc" }
+            }),
+            () => listRecipes({ publica: true }),
+            "listar receitas públicas"
+        );
+        const filtered = receitas.filter(rec => {
+            const title = String(rec.titulo || rec.title || "").trim().toLowerCase();
+            const authorId = rec.usuarioId || rec.authorId;
+            // Remove receitas de teste ou seeds do sistema legado
+            if (authorId === 1) return false;
+            if (title === "teste" || title.startsWith("teste ") || title === "cereal") return false;
+            // Apenas receitas com conteúdo real
+            if (!title) return false;
+            return true;
+        });
+        res.status(200).json(filtered.map(formatRecipe));
+    } catch (error) {
+        if (error.code === "P2021" || /ReceitaHashtag|Hashtag.*does not exist/i.test(error.message || "")) {
+            try {
+                const receitas = await prisma.receita.findMany({
+                    where: { publica: true, publicadaEm: { not: null } },
+                    include: includeRecipeRelations(false),
+                    orderBy: { createdAt: "desc" }
+                });
+                return res.status(200).json(receitas.map(formatRecipe));
+            } catch (fallbackError) {
+                error = fallbackError;
+            }
+        }
+        res.status(500).json({ erro: "Erro ao listar receitas públicas.", detalhe: error.message });
+    }
+};
+const buscarPublica = async (req, res) => {
+    try {
+        const recipe = await prisma.receita.findFirst({
+            where: { id: Number(req.params.id), publica: true, publicadaEm: { not: null } },
             include: {
                 usuario: true,
-                ingredientes: {
-                    include: { ingrediente: true }
-                },
-                categorias: {
-                    include: { categoria: true }
-                },
+                ingredientes: { include: { ingrediente: true } },
+                categorias: { include: { categoria: true } },
+                hashtags: { include: { hashtag: true } },
                 _count: { select: { favoritos: true } }
-            },
-            orderBy: { createdAt: "desc" }
+            }
         });
-        res.status(200).json(receitas.map(formatRecipe));
+        if (!recipe) return res.status(404).json({ erro: "Receita pública não encontrada." });
+        return res.status(200).json(formatRecipe(recipe));
     } catch (error) {
-        res.status(500).json({ erro: "Erro ao listar receitas públicas.", detalhe: error.message });
+        return res.status(500).json({ erro: "Erro ao abrir receita pública.", detalhe: error.message });
     }
 };
 const buscar = async (req, res) => {
@@ -233,7 +305,8 @@ const buscar = async (req, res) => {
                 },
                 categorias: {
                     include: { categoria: true }
-                }
+                },
+                hashtags: { include: { hashtag: true } }
             }
         });
         if (!recipe) {
@@ -263,7 +336,8 @@ const atualizar = async (req, res) => {
         ingredients,
         ingredientes,
         categories,
-        categorias
+        categorias,
+        hashtags
     } = req.body;
     try {
         const existing = await prisma.receita.findUnique({
@@ -282,6 +356,7 @@ const atualizar = async (req, res) => {
         const finalImage = image || imagem;
         const finalIngredients = ingredients || ingredientes;
         const finalCategories = categories || categorias;
+        const finalHashtags = hashtags === undefined ? undefined : normalizeHashtags(hashtags);
         const updated = await prisma.$transaction(async (tx) => {
             const dataToUpdate = {};
             if (titulo) dataToUpdate.titulo = titulo;
@@ -338,6 +413,13 @@ const atualizar = async (req, res) => {
                     });
                 }
             }
+            if (finalHashtags !== undefined) {
+                await tx.receitaHashtag.deleteMany({ where: { receitaId: r.id } });
+                for (const tagName of finalHashtags) {
+                    const hashtag = await tx.hashtag.upsert({ where: { nome: tagName }, update: {}, create: { nome: tagName } });
+                    await tx.receitaHashtag.create({ data: { receitaId: r.id, hashtagId: hashtag.id } });
+                }
+            }
             return r;
         });
         const fullRecipe = await prisma.receita.findUnique({
@@ -349,7 +431,8 @@ const atualizar = async (req, res) => {
                 },
                 categorias: {
                     include: { categoria: true }
-                }
+                },
+                hashtags: { include: { hashtag: true } }
             }
         });
         res.status(200).json(formatRecipe(fullRecipe));
@@ -382,6 +465,7 @@ module.exports = {
     cadastrar,
     listar,
     listarPublicas,
+    buscarPublica,
     buscar,
     atualizar,
     excluir
