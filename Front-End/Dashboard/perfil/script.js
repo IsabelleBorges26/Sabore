@@ -41,8 +41,27 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyAvatarToPage(url) {
     const navAvatar = document.querySelector('.user-avatar');
     if (navAvatar) {
-      if (url) { navAvatar.src = url; navAvatar.style.display = 'block'; }
-      else { navAvatar.style.display = 'none'; }
+      const wrap = navAvatar.parentElement;
+      if (url) { 
+        navAvatar.src = url; 
+        navAvatar.style.display = 'block'; 
+        if (wrap) {
+          const ph = wrap.querySelector('.user-avatar-placeholder');
+          if (ph) ph.remove();
+        }
+      } else { 
+        navAvatar.style.display = 'none'; 
+        if (wrap) {
+          let ph = wrap.querySelector('.user-avatar-placeholder');
+          if (!ph) {
+            ph = document.createElement('div');
+            ph.className = 'user-avatar-placeholder';
+            ph.style.cssText = 'width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--dark-deep);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;user-select:none;';
+            wrap.insertBefore(ph, wrap.firstChild);
+          }
+          ph.textContent = user.nome ? user.nome.charAt(0).toUpperCase() : 'U';
+        }
+      }
     }
     if (largeAvatarEl) {
       if (url) {
@@ -68,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
       removeAvatarBtn.style.display = url ? 'inline-flex' : 'none';
     }
   }
-  const savedAvatar = localStorage.getItem('sabore_user_avatar') || (user && user.foto) || null;
+  const savedAvatar = (user && user.foto) || null;
   applyAvatarToPage(savedAvatar);
   if (avatarContainer && avatarInput) {
     avatarContainer.addEventListener('click', () => avatarInput.click());
@@ -77,20 +96,42 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (event) => {
-        const dataUrl = event.target.result;
-        localStorage.setItem('sabore_user_avatar', dataUrl);
-        applyAvatarToPage(dataUrl);
+        const img = new Image();
+        img.onload = async () => {
+          const MAX = 400;
+          const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          applyAvatarToPage(dataUrl);
+          try {
+            const updated = await api.put(`/usuarios/atualizar/${user.id}`, { foto: dataUrl });
+            const newUser = { ...api.getUser(), foto: updated.foto };
+            api.setUser(newUser);
+          } catch (err) {
+            alert('Não foi possível salvar a foto: ' + err.message);
+          }
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     });
   }
   if (removeAvatarBtn) {
-    removeAvatarBtn.addEventListener('click', (e) => {
+    removeAvatarBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       if (!confirm('Deseja remover sua foto de perfil?')) return;
-      localStorage.removeItem('sabore_user_avatar');
       if (avatarInput) avatarInput.value = '';
       applyAvatarToPage(null);
+      try {
+        const updated = await api.put(`/usuarios/atualizar/${user.id}`, { foto: null });
+        const newUser = { ...api.getUser(), foto: null };
+        api.setUser(newUser);
+      } catch (err) {
+        alert('Não foi possível remover a foto: ' + err.message);
+      }
     });
   }
   function updatePlanUI() {
@@ -178,6 +219,99 @@ document.addEventListener('DOMContentLoaded', () => {
       if (badge) badge.style.display = 'none';
     });
   }
+  let activeConnectionsList = null;
+  function ensureConnectionsModal() {
+    let modal = document.getElementById('social-connections-modal');
+    if (modal) return modal;
+    modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'social-connections-modal';
+    modal.innerHTML = `
+      <div class="modal-card small-modal social-list-modal">
+        <button class="modal-close-btn" type="button" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+        <div class="modal-header-simple">
+          <h3 id="social-list-title">Conexões</h3>
+          <p id="social-list-subtitle">Pessoas da sua comunidade</p>
+        </div>
+        <div class="social-people-list" id="social-people-list"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    const close = () => modal.classList.remove('open');
+    modal.querySelector('.modal-close-btn').addEventListener('click', close);
+    modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+    return modal;
+  }
+  async function openConnectionsList(type) {
+    activeConnectionsList = type;
+    const modal = ensureConnectionsModal();
+    const list = modal.querySelector('#social-people-list');
+    modal.querySelector('#social-list-title').textContent = type === 'seguidores' ? 'Seguidores' : 'Seguindo';
+    modal.querySelector('#social-list-subtitle').textContent = type === 'seguidores'
+      ? 'Pessoas que acompanham suas publicações'
+      : 'Pessoas cujas publicações você acompanha';
+    list.innerHTML = '<div class="social-list-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando…</p></div>';
+    modal.classList.add('open');
+    try {
+      const data = await api.get('/social/conexoes');
+      const people = data[type] || [];
+      list.replaceChildren();
+      if (!people.length) {
+        const empty = document.createElement('div');
+        empty.className = 'social-list-empty';
+        empty.innerHTML = `<i class="fa-solid ${type === 'seguidores' ? 'fa-user-group' : 'fa-user-plus'}"></i><p>${type === 'seguidores' ? 'Você ainda não tem seguidores.' : 'Você ainda não segue ninguém.'}</p>`;
+        list.appendChild(empty);
+        return;
+      }
+      people.forEach((person) => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'social-person-row';
+        const avatar = document.createElement('span');
+        avatar.className = 'social-person-avatar';
+        avatar.textContent = (person.nome || 'S').charAt(0).toUpperCase();
+        if (person.foto) {
+          const image = document.createElement('img');
+          image.src = person.foto;
+          image.alt = '';
+          image.addEventListener('error', () => { avatar.textContent = (person.nome || 'S').charAt(0).toUpperCase(); }, { once: true });
+          avatar.replaceChildren(image);
+        }
+        const info = document.createElement('span');
+        info.className = 'social-person-info';
+        const name = document.createElement('strong');
+        name.textContent = person.nome;
+        const summary = document.createElement('span');
+        summary.textContent = `${person.receitasPublicas} publicações · ${person.seguidores} seguidores`;
+        info.append(name, summary);
+        const action = document.createElement('span');
+        action.className = 'social-person-action';
+        action.textContent = 'Ver perfil';
+        row.append(avatar, info, action);
+        row.addEventListener('click', () => api.openUserProfile(person.id));
+        list.appendChild(row);
+      });
+      updateCursorHoverListeners();
+    } catch (error) {
+      list.innerHTML = '<div class="social-list-empty"><i class="fa-solid fa-circle-exclamation"></i><p>Não foi possível carregar esta lista.</p></div>';
+    }
+  }
+  document.getElementById('open-followers-list')?.addEventListener('click', () => openConnectionsList('seguidores'));
+  document.getElementById('open-following-list')?.addEventListener('click', () => openConnectionsList('seguindo'));
+  document.getElementById('open-publications-list')?.addEventListener('click', () => {
+    document.querySelector('.creations-grid')?.closest('.setup-widget')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  window.addEventListener('sabore:follow-changed', async () => {
+    try {
+      const social = await api.get('/social/meu-resumo');
+      document.getElementById('profile-followers-count').textContent = social.seguidores;
+      document.getElementById('profile-following-count').textContent = social.seguindo;
+      document.getElementById('profile-recipes-count').textContent = social.receitasPublicas;
+      if (document.getElementById('social-connections-modal')?.classList.contains('open') && activeConnectionsList) {
+        openConnectionsList(activeConnectionsList);
+      }
+    } catch {}
+  });
   const settingsBtn = document.getElementById('settings-btn');
   if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
@@ -624,11 +758,42 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="btn-insta-empty-action" id="btn-retry-creations" type="button">
               <i class="fa-solid fa-rotate-right"></i> Tentar novamente
             </button>
+            ${rec.public ? `
+              <button class="btn-share-publication" style="margin-top:8px;width:100%;padding:9px 12px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass);color:var(--light);font:inherit;font-size:.78rem;font-weight:600;">
+                <i class="fa-solid fa-share-nodes"></i> Compartilhar publicação
+              </button>
+            ` : ''}
           </div>
         `;
+<<<<<<< HEAD
         const retryBtn = document.getElementById('btn-retry-creations');
         if (retryBtn) retryBtn.addEventListener('click', loadCreations);
       }
+=======
+        const publishButton = card.querySelector('.btn-publish-recipe');
+        publishButton.addEventListener('click', async (event) => {
+          event.stopPropagation();
+          try {
+            const updated = await api.put(`/receitas/atualizar/${rec.id}`, { public: !rec.public });
+            rec.public = updated.public;
+            loadCreations();
+          } catch (error) {
+            alert(`Não foi possível atualizar a publicação: ${error.message}`);
+          }
+        });
+        const shareButton = card.querySelector('.btn-share-publication');
+        if (shareButton) {
+          shareButton.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            await window.SaboreShareRecipe(rec);
+          });
+        }
+        container.appendChild(card);
+      });
+      updateCursorHoverListeners();
+    } catch (err) {
+      console.error("Erro ao carregar criações:", err);
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
     }
   }
 

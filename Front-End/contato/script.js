@@ -46,16 +46,35 @@ revealEls.forEach(el => revealObserver.observe(el));
 // Contact Form
 const contactForm = document.getElementById('contactForm');
 const formSuccess = document.getElementById('formSuccess');
+const formError = document.getElementById('formError');
 const submitBtn = document.getElementById('submitBtn');
 if (contactForm) {
-  contactForm.addEventListener('submit', (e) => {
+  contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    formSuccess.classList.remove('show');
+    formError.classList.remove('show');
+    if (!contactForm.checkValidity()) {
+      contactForm.reportValidity();
+      return;
+    }
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span>Enviando...</span> <i class="fa-solid fa-spinner fa-spin"></i>';
-    setTimeout(() => {
-      submitBtn.style.display = 'none';
+
+    try {
+      await api.post('/contato', {
+        nome: contactForm.nome.value.trim(),
+        email: contactForm.email.value.trim(),
+        assunto: contactForm.assunto.value,
+        mensagem: contactForm.mensagem.value.trim()
+      });
       formSuccess.classList.add('show');
       contactForm.reset();
-    }, 1500);
+    } catch (error) {
+      formError.textContent = error.message || 'Não foi possível enviar sua mensagem. Tente novamente.';
+      formError.classList.add('show');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Enviar mensagem</span> <i class="fa-solid fa-paper-plane"></i>';
+    }
   });
 }

@@ -4,12 +4,16 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
-// Imagens enviadas pela IA por foto podem ultrapassar o limite padrão do Express.
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "20mb" }));
 app.use(cors());
 
-// Servir arquivos estáticos do Front-End
-app.use(express.static(path.join(__dirname, "..", "Front-End")));
+const frontEndPath = path.resolve(__dirname, "..", "Front-End");
+app.use(express.static(frontEndPath));
+app.use("/Front-End", express.static(frontEndPath));
+app.get("/publicacao/:id", (req, res) => {
+    res.set("Cache-Control", "no-store");
+    res.sendFile(path.join(frontEndPath, "publicacao", "index.html"));
+});
 
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const receitasRoutes = require("./src/routes/receitas.routes");
@@ -27,6 +31,7 @@ const planosRoutes = require("./src/routes/planos.routes");
 const bibliotecasRoutes = require("./src/routes/bibliotecas.routes");
 const socialRoutes = require("./src/routes/social.routes");
 const estatisticasRoutes = require("./src/routes/estatisticas.routes");
+const contatoRoutes = require("./src/routes/contato.routes");
 
 app.use("/usuarios", usuariosRoutes);
 app.use("/receitas", receitasRoutes);
@@ -44,12 +49,17 @@ app.use("/planos", planosRoutes);
 app.use("/bibliotecas", bibliotecasRoutes);
 app.use("/social", socialRoutes);
 app.use("/estatisticas", estatisticasRoutes);
+app.use("/contato", contatoRoutes);
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "Front-End", "index.html"));
+    res.sendFile(path.join(frontEndPath, "index.html"));
 });
 
 const porta = process.env.PORT_APP || 3000;
-app.listen(porta, () => {
-    console.log(`Online na porta ${porta}`);
-});
+if (!process.env.VERCEL) {
+    app.listen(porta, () => {
+        console.log(`Online na porta ${porta}`);
+    });
+}
+
+module.exports = app;

@@ -17,43 +17,43 @@ enum Plano {
 }
 
 model Usuario {
-  id                        Int                       @id @default(autoincrement())
-  nome                      String
-  email                     String                    @unique
-  senha                     String
-  foto                      String?
-  plano                     Plano                     @default(FREE)
-  createdAt                 DateTime                  @default(now())  
-  updatedAt                 DateTime                  @updatedAt
-  receitas                  Receita[]
-  favoritos                 Favorito[]
-  avaliacoes                Avaliacao[]
-  ingredientesDisponiveis   IngredienteDisponivel[]
-  livros                    Livro[]
-  compartilhamentos        Compartilhamento[]
-  seguindo                 Seguidor[]                 @relation("Seguidor")
-  seguidores               Seguidor[]                 @relation("Seguido")
+  id                      Int                     @id @default(autoincrement())
+  nome                    String
+  email                   String                  @unique
+  senha                   String
+  foto                    String?
+  plano                   Plano                   @default(FREE)
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  receitas                Receita[]
+  favoritos               Favorito[]
+  avaliacoes              Avaliacao[]
+  ingredientesDisponiveis IngredienteDisponivel[]
+  livros                  Livro[]
+  compartilhamentos       Compartilhamento[]
+  seguindo                Seguidor[]              @relation("Seguidor")
+  seguidores              Seguidor[]              @relation("Seguido")
 }
 
 model Receita {
-  id                Int                      @id @default(autoincrement())
+  id                Int                  @id @default(autoincrement())
   titulo            String
-  descricao         String?          @db.Text
-  modoPreparo       String           @db.Text
+  descricao         String?              @db.Text
+  modoPreparo       String               @db.Text
   tempoPreparo      Int?
-  publica           Boolean          @default(false)
+  publica           Boolean              @default(false)
   publicadaEm       DateTime?
-  imagem            String?          @db.Text
+  imagem            String?              @db.Text
   dificuldade       String?
-  criadaPorIA       Boolean                  @default(false)
-  rascunho          Boolean                  @default(false)
+  criadaPorIA       Boolean              @default(false)
+  rascunho          Boolean              @default(false)
   linkImportacao    String?
   usuarioId         Int
   livroId           Int?
-  createdAt         DateTime                 @default(now())
-  updatedAt         DateTime                 @updatedAt
-  usuario           Usuario                  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  livro             Livro?                   @relation(fields: [livroId], references: [id], onDelete: Cascade)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  usuario           Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  livro             Livro?               @relation(fields: [livroId], references: [id], onDelete: Cascade)
   ingredientes      ReceitaIngrediente[]
   categorias        ReceitaCategoria[]
   hashtags          ReceitaHashtag[]
@@ -63,10 +63,10 @@ model Receita {
 }
 
 model Ingrediente {
-  id                        Int                       @id @default(autoincrement())
-  nome                      String                    @unique
-  receitas                  ReceitaIngrediente[]
-  disponivelPara            IngredienteDisponivel[]
+  id             Int                     @id @default(autoincrement())
+  nome           String                  @unique
+  receitas       ReceitaIngrediente[]
+  disponivelPara IngredienteDisponivel[]
 }
 
 model ReceitaIngrediente {
@@ -76,47 +76,47 @@ model ReceitaIngrediente {
   ingredienteId Int
   receita       Receita     @relation(fields: [receitaId], references: [id], onDelete: Cascade)
   ingrediente   Ingrediente @relation(fields: [ingredienteId], references: [id], onDelete: Cascade)
-  
+
   @@unique([receitaId, ingredienteId])
 }
 
 model Favorito {
-  id            Int      @id @default(autoincrement())
-  usuarioId     Int
-  receitaId     Int
-  createdAt     DateTime @default(now())
-  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  receita       Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
-  
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  receitaId Int
+  createdAt DateTime @default(now())
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  receita   Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+
   @@unique([usuarioId, receitaId])
 }
 
 model Avaliacao {
-  id            Int      @id @default(autoincrement())
-  nota          Int
-  comentario    String?
-  usuarioId     Int
-  receitaId     Int
-  createdAt     DateTime @default(now())
-  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  receita       Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
-  
+  id         Int      @id @default(autoincrement())
+  nota       Int
+  comentario String?
+  usuarioId  Int
+  receitaId  Int
+  createdAt  DateTime @default(now())
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+
   @@unique([usuarioId, receitaId])
 }
 
 model Categoria {
-  id            Int                 @id @default(autoincrement())
-  nome          String              @unique
-  receitas      ReceitaCategoria[]
+  id       Int                @id @default(autoincrement())
+  nome     String             @unique
+  receitas ReceitaCategoria[]
 }
 
 model ReceitaCategoria {
-  id            Int         @id @default(autoincrement())
-  receitaId     Int
-  categoriaId   Int
-  receita       Receita     @relation(fields: [receitaId], references: [id], onDelete: Cascade)
-  categoria     Categoria   @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
-  
+  id          Int       @id @default(autoincrement())
+  receitaId   Int
+  categoriaId Int
+  receita     Receita   @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+
   @@unique([receitaId, categoriaId])
 }
 
@@ -144,40 +144,52 @@ model IngredienteDisponivel {
   ingredienteId Int
   usuario       Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   ingrediente   Ingrediente @relation(fields: [ingredienteId], references: [id], onDelete: Cascade)
-  
+
   @@unique([usuarioId, ingredienteId])
 }
 
 model Livro {
-  id         Int       @id @default(autoincrement())
-  titulo     String
-  emoji      String    @default("fa-solid fa-book")
-  tag        String    @default("Pessoal")
-  usuarioId  Int
-  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  receitas   Receita[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id        Int       @id @default(autoincrement())
+  titulo    String
+  emoji     String    @default("fa-solid fa-book")
+  tag       String    @default("Pessoal")
+  usuarioId Int
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  receitas  Receita[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Compartilhamento {
-  id         Int      @id @default(autoincrement())
-  token      String   @unique
-  receitaId  Int
-  usuarioId  Int
-  createdAt  DateTime @default(now())
-  receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
-  usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  receitaId Int
+  usuarioId Int
+  createdAt DateTime @default(now())
+  receita   Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
 
 model Seguidor {
-  id          Int      @id @default(autoincrement())
-  seguidorId  Int
-  seguidoId   Int
-  createdAt   DateTime @default(now())
-  seguidor    Usuario  @relation("Seguidor", fields: [seguidorId], references: [id], onDelete: Cascade)
-  seguido     Usuario  @relation("Seguido", fields: [seguidoId], references: [id], onDelete: Cascade)
+  id         Int      @id @default(autoincrement())
+  seguidorId Int
+  seguidoId  Int
+  createdAt  DateTime @default(now())
+  seguidor   Usuario  @relation("Seguidor", fields: [seguidorId], references: [id], onDelete: Cascade)
+  seguido    Usuario  @relation("Seguido", fields: [seguidoId], references: [id], onDelete: Cascade)
 
   @@unique([seguidorId, seguidoId])
   @@index([seguidoId])
+}
+
+model MensagemContato {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(120)
+  email     String   @db.VarChar(254)
+  assunto   String   @db.VarChar(40)
+  mensagem  String   @db.Text
+  lida      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([lida, createdAt])
 }

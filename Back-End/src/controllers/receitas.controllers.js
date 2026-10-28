@@ -32,8 +32,8 @@ const formatRecipe = (recipe) => {
         difficulty: recipe.dificuldade || "Fácil",
         time: recipe.tempoPreparo || 0,
         public: recipe.publica,
-        communityPublished: Boolean(recipe.publicadaEm),
-        // Nunca apresentamos uma foto de banco de imagens como se fosse a receita do usuário.
+        communityPublished: Boolean(recipe.publica && !recipe.rascunho),
+        publishedAt: recipe.publica ? (recipe.publicadaEm || recipe.createdAt) : null,
         image: recipe.imagem || null,
         criadaPorIA: recipe.criadaPorIA,
         rascunho: recipe.rascunho,
@@ -43,8 +43,13 @@ const formatRecipe = (recipe) => {
         author: recipe.usuario ? recipe.usuario.nome : "Chef",
         authorAvatar: recipe.usuario?.foto || null,
         likes: recipe._count?.favoritos || 0,
+<<<<<<< HEAD
         hashtags: recipe.hashtags ? recipe.hashtags.map(item => `#${item.hashtag.nome}`) : [],
         publishedAt: recipe.publicadaEm || null,
+=======
+        avaliacoes: recipe._count?.avaliacoes || 0,
+        interacoes: (recipe._count?.favoritos || 0) + (recipe._count?.avaliacoes || 0),
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
         category: recipe.categorias && recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
         categories: recipe.categorias ? recipe.categorias.map(rc => rc.categoria.nome) : [],
         ingredients: recipe.ingredientes ? recipe.ingredientes.map(ri => {
@@ -231,6 +236,7 @@ const listarPublicas = async (req, res) => {
         _count: { select: { favoritos: true } }
     });
     try {
+<<<<<<< HEAD
         const receitas = await withDatabaseFallback(
             () => prisma.receita.findMany({
                 where: { 
@@ -286,6 +292,21 @@ const buscarPublica = async (req, res) => {
                 hashtags: { include: { hashtag: true } },
                 _count: { select: { favoritos: true } }
             }
+=======
+        const receitas = await prisma.receita.findMany({
+            where: { publica: true, rascunho: false },
+            include: {
+                usuario: true,
+                ingredientes: {
+                    include: { ingrediente: true }
+                },
+                categorias: {
+                    include: { categoria: true }
+                },
+                _count: { select: { favoritos: true, avaliacoes: true } }
+            },
+            orderBy: { createdAt: "desc" }
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
         });
         if (!recipe) return res.status(404).json({ erro: "Receita pública não encontrada." });
         return res.status(200).json(formatRecipe(recipe));
@@ -293,8 +314,33 @@ const buscarPublica = async (req, res) => {
         return res.status(500).json({ erro: "Erro ao abrir receita pública.", detalhe: error.message });
     }
 };
+const buscarPublica = async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id <= 0) {
+        return res.status(404).json({ erro: "Publicação não encontrada." });
+    }
+    try {
+        const recipe = await prisma.receita.findFirst({
+            where: { id, publica: true, rascunho: false },
+            include: {
+                usuario: { select: { nome: true, foto: true } },
+                ingredientes: { include: { ingrediente: true } },
+                categorias: { include: { categoria: true } },
+                _count: { select: { favoritos: true, avaliacoes: true } }
+            }
+        });
+        if (!recipe) return res.status(404).json({ erro: "Esta publicação não está disponível. Ela pode ter sido removida ou tornada privada." });
+        res.set("Cache-Control", "no-store");
+        res.status(200).json(formatRecipe(recipe));
+    } catch (error) {
+        res.status(500).json({ erro: "Não foi possível carregar esta publicação." });
+    }
+};
 const buscar = async (req, res) => {
     const { id } = req.params;
+    if (!Number.isSafeInteger(Number(id)) || Number(id) <= 0) {
+        return res.status(404).json({ erro: "Receita não encontrada." });
+    }
     try {
         const recipe = await prisma.receita.findUnique({
             where: { id: Number(id) },
@@ -309,7 +355,7 @@ const buscar = async (req, res) => {
                 hashtags: { include: { hashtag: true } }
             }
         });
-        if (!recipe) {
+        if (!recipe || (recipe.usuarioId !== req.usuario?.id && (!recipe.publica || recipe.rascunho))) {
             return res.status(404).json({ erro: "Receita não encontrada." });
         }
         res.status(200).json(formatRecipe(recipe));
@@ -365,7 +411,8 @@ const atualizar = async (req, res) => {
             if (finalTime !== undefined) dataToUpdate.tempoPreparo = finalTime;
             if (finalPublic !== undefined) {
                 dataToUpdate.publica = finalPublic;
-                dataToUpdate.publicadaEm = finalPublic ? new Date() : null;
+                dataToUpdate.publicadaEm = finalPublic ? (existing.publicadaEm || new Date()) : null;
+                if (finalPublic) dataToUpdate.rascunho = false;
             }
             if (finalImage !== undefined) dataToUpdate.imagem = finalImage;
             if (dificuldade) dataToUpdate.dificuldade = dificuldade;
@@ -461,6 +508,204 @@ const excluir = async (req, res) => {
         res.status(500).json({ erro: "Erro ao excluir receita.", detalhe: error.message });
     }
 };
+const DESAFIOS_SEMANAIS = [
+    {
+        id: "inverno",
+        title: "Receitas de Inverno & Conforto ❄️",
+        hashtag: "#DesafioInverno",
+        badge: "Chef Invernal",
+        description: "Crie um prato quente, sopa encorpada ou bebida cremosa para aquecer a comunidade Saboré!"
+    },
+    {
+        id: "massas",
+        title: "Festival de Massas Artesanais 🍝",
+        hashtag: "#DesafioMassas",
+        badge: "Mestre das Massas",
+        description: "Prepare uma massa fresca caseira ou um molho artesanal autêntico da nonna."
+    },
+    {
+        id: "fit",
+        title: "Marmita Fit & Alta Performance 🥗",
+        hashtag: "#DesafioFit",
+        badge: "Chef Saudável",
+        description: "Compartilhe uma refeição equilibrada, nutritiva e prática para o dia a dia fitness."
+    },
+    {
+        id: "doces",
+        title: "Doces & Sobremesas de Sonho 🍓",
+        hashtag: "#DesafioDoces",
+        badge: "Confeiteiro Saboré",
+        description: "Surpreenda a comunidade com tortas, bolos, mousses ou doces artesanais irresistíveis."
+    },
+    {
+        id: "oriental",
+        title: "Uma Viagem à Cozinha Oriental 🥢",
+        hashtag: "#DesafioOriental",
+        badge: "Chef Oriental",
+        description: "Traga o melhor da culinária asiática: sushis, woks, ramens ou yakisobas aromáticos."
+    },
+    {
+        id: "brunch",
+        title: "Café da Manhã de Cinema ☕",
+        hashtag: "#DesafioBrunch",
+        badge: "Mestre do Brunch",
+        description: "Pães quentinhos, ovos especiais, panquecas ou tigelas de açaí para começar o dia no topo."
+    },
+    {
+        id: "burger",
+        title: "Hambúrguer Gourmet Caseiro 🍔",
+        hashtag: "#DesafioBurger",
+        badge: "Burger Master",
+        description: "Monte um burger autoral: combine seu blend especial, molhos caseiros e queijos derretidos."
+    },
+    {
+        id: "sustentavel",
+        title: "Cozinha Sustentável & Zero Desperdício 🌿",
+        hashtag: "#DesafioSustentavel",
+        badge: "Chef Consciente",
+        description: "Use talos, cascas e sobras nobres para criar pratos deliciosos e sustentáveis."
+    },
+    {
+        id: "risotos",
+        title: "Mestres do Risoto Cremoso 🍚",
+        hashtag: "#DesafioRisoto",
+        badge: "Rei do Risoto",
+        description: "Acerte no ponto perfeito da textura e emulsão de um risoto sofisticado."
+    },
+    {
+        id: "petiscos",
+        title: "Comida de Boteco & Petiscos 🥟",
+        hashtag: "#DesafioPetiscos",
+        badge: "Chef Boêmio",
+        description: "Pastéis, croquetes, bolinhos de arroz e petiscos crocantes para celebrar com amigos."
+    },
+    {
+        id: "brasil",
+        title: "Sabores Regionais do Brasil 🥘",
+        hashtag: "#DesafioBrasil",
+        badge: "Chef Raiz",
+        description: "Celebre nossa culinária: moquecas, baião de dois, feijão tropeiro e temperos típicos."
+    },
+    {
+        id: "rapido",
+        title: "Prato Incrível em 15 Minutos ⏱️",
+        hashtag: "#Desafio15Min",
+        badge: "Chef Relâmpago",
+        description: "Mostre que agilidade e alto sabor andam juntos em receitas rápidas do dia a dia."
+    }
+];
+
+const listarHashtagsEmAlta = async (req, res) => {
+    try {
+        const receitas = await prisma.receita.findMany({
+            where: { publica: true, publicadaEm: { not: null } },
+            include: {
+                categorias: {
+                    include: { categoria: true }
+                },
+                _count: { select: { favoritos: true, avaliacoes: true } }
+            }
+        });
+
+        const hashtagMap = new Map();
+
+        for (const rec of receitas) {
+            const likes = rec._count?.favoritos || 0;
+            const avaliacoes = rec._count?.avaliacoes || 0;
+            const interacoes = likes + avaliacoes;
+
+            const tags = new Set();
+            if (rec.categorias) {
+                for (const rc of rec.categorias) {
+                    if (rc.categoria && rc.categoria.nome) {
+                        const clean = rc.categoria.nome.trim().toLowerCase().replace(/\s+/g, '');
+                        if (clean) tags.add(clean.startsWith('#') ? clean : `#${clean}`);
+                    }
+                }
+            }
+
+            const text = `${rec.titulo || ''} ${rec.descricao || ''}`;
+            const matches = text.match(/#([a-zA-Z0-9_\u00C0-\u017F]+)/g);
+            if (matches) {
+                for (const m of matches) {
+                    tags.add(m.toLowerCase());
+                }
+            }
+
+            for (const tag of tags) {
+                if (!hashtagMap.has(tag)) {
+                    hashtagMap.set(tag, { tag, interacoes: 0, receitas: 0 });
+                }
+                const entry = hashtagMap.get(tag);
+                entry.interacoes += interacoes;
+                entry.receitas += 1;
+            }
+        }
+
+        // Exibir apenas as hashtags que realmente estão em alta (com interações > 0)
+        const emAlta = Array.from(hashtagMap.values())
+            .filter(item => item.interacoes > 0)
+            .sort((a, b) => b.interacoes - a.interacoes || b.receitas - a.receitas);
+
+        res.status(200).json(emAlta);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao buscar hashtags em alta.", detalhe: error.message });
+    }
+};
+
+const obterDesafioSemanal = async (req, res) => {
+    try {
+        const now = new Date();
+        const target = new Date(now.valueOf());
+        const dayNr = (now.getDay() + 6) % 7;
+        target.setDate(target.getDate() - dayNr + 3);
+        const firstThursday = target.valueOf();
+        target.setMonth(0, 1);
+        if (target.getDay() !== 4) {
+            target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+        }
+        const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
+        const year = now.getFullYear();
+
+        const dayOfWeek = now.getDay();
+        const daysRemaining = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+
+        const weekSeed = year * 53 + weekNumber;
+        const index = Math.abs(weekSeed) % DESAFIOS_SEMANAIS.length;
+        const desafio = DESAFIOS_SEMANAIS[index];
+
+        const cleanTag = desafio.hashtag.replace(/^#/, "").toLowerCase();
+        const receitasDoDesafio = await prisma.receita.findMany({
+            where: {
+                publica: true,
+                publicadaEm: { not: null },
+                OR: [
+                    { categorias: { some: { categoria: { nome: { contains: cleanTag, mode: "insensitive" } } } } },
+                    { titulo: { contains: desafio.hashtag, mode: "insensitive" } },
+                    { descricao: { contains: desafio.hashtag, mode: "insensitive" } }
+                ]
+            },
+            select: { id: true, usuarioId: true }
+        }).catch(() => []);
+
+        const recipesCount = receitasDoDesafio.length;
+        const distinctUsers = new Set(receitasDoDesafio.map(r => r.usuarioId));
+        const participantsCount = distinctUsers.size;
+
+        res.status(200).json({
+            ...desafio,
+            weekNumber,
+            year,
+            daysRemaining,
+            timeRemainingText: daysRemaining === 0 ? "Termina hoje às 23:59!" : `Termina em ${daysRemaining} dia${daysRemaining > 1 ? "s" : ""}`,
+            recipesCount,
+            participantsCount
+        });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao obter desafio semanal.", detalhe: error.message });
+    }
+};
+
 module.exports = {
     cadastrar,
     listar,
@@ -468,5 +713,7 @@ module.exports = {
     buscarPublica,
     buscar,
     atualizar,
-    excluir
+    excluir,
+    listarHashtagsEmAlta,
+    obterDesafioSemanal
 };

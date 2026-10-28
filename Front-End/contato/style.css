@@ -269,6 +269,17 @@ a, button, input, select, textarea, .social-btn, .plan-btn, .hamburger, [role="b
 }
 .form-success.show { display: flex; }
 .form-success i { font-size: 1.2rem; }
+.form-error {
+  display: none;
+  margin-top: 14px;
+  padding: 13px 16px;
+  border: 1px solid rgba(224, 133, 122, 0.35);
+  border-radius: 12px;
+  background: rgba(224, 133, 122, 0.09);
+  color: var(--accent);
+  font-size: 0.82rem;
+}
+.form-error.show { display: block; }
 
 /* Info Cards */
 .contact-info { display: flex; flex-direction: column; gap: 16px; }
@@ -295,6 +306,8 @@ a, button, input, select, textarea, .social-btn, .plan-btn, .hamburger, [role="b
 }
 .info-content h3 { font-size: 0.92rem; font-weight: 600; color: var(--light); margin-bottom: 4px; }
 .info-content p { font-size: 0.88rem; color: rgba(242, 244, 243, 0.6); }
+.info-email { display: block; color: rgba(242, 244, 243, 0.65); font-size: 0.88rem; text-decoration: none; overflow-wrap: anywhere; }
+.info-email:hover { color: var(--accent); }
 .info-note { font-size: 0.75rem; color: rgba(242, 244, 243, 0.35); display: block; margin-top: 2px; }
 
 .faq-shortcut {

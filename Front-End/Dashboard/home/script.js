@@ -5,8 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   let userState = {
+<<<<<<< HEAD
     isPro: user.plano === 'PRO',
     plan: user.plano || 'Gratuito',
+=======
+    isPro: false,
+    plan: 'Gratuito',
+    ingredients: [],
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
     books: [],
     stats: {
       saved: 0,
@@ -194,23 +200,109 @@ document.addEventListener('DOMContentLoaded', () => {
   const upgradeTriggers = [upgradeBtnCompact, upgradeBtnWidget, proMenuLink];
   upgradeTriggers.forEach(trigger => {
     if (trigger) {
-      trigger.addEventListener('click', async (e) => {
+      trigger.addEventListener('click', (e) => {
         e.preventDefault();
-        try {
-          await api.put("/planos/atualizar", { plano: "PRO" });
-          userState.isPro = true;
-          updatePlanUI();
-          openModal('celebration-modal');
-          triggerCelebrationEffects();
-        } catch (err) {
-          alert("Erro ao assinar plano PRO: " + err.message);
-        }
+        alert('O plano Saboré PRO ainda está em fase de testes. Em breve você poderá assinar.');
       });
     }
   });
+<<<<<<< HEAD
   function triggerCelebrationEffects() {
     userState.stats.saved += 10; 
     updateStatsUI();
+=======
+  const ingContainer = document.getElementById('widget-ingredients-container');
+  const addIngInput = document.getElementById('add-ing-input');
+  const addIngBtn = document.getElementById('add-ing-btn');
+  function renderIngredients() {
+    if (!ingContainer) return;
+    ingContainer.innerHTML = '';
+    userState.ingredients.forEach(ing => {
+      const label = document.createElement('label');
+      label.className = 'ingredient-checkbox';
+      label.innerHTML = `
+        <input type="checkbox" checked value="${ing}">
+        <span class="custom-chk"></span>
+        <span class="ing-name">${ing}</span>
+        <button class="ing-delete-btn"><i class="fa-solid fa-xmark"></i></button>
+      `;
+      const delBtn = label.querySelector('.ing-delete-btn');
+      delBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        removeIngredient(ing);
+      });
+      ingContainer.appendChild(label);
+    });
+    updateCursorHoverListeners();
+  }
+  async function addIngredient(name) {
+    name = name.trim();
+    if (!name) return;
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+    try {
+      await api.post("/ingredientes-disponiveis/cadastrar", { nome: name });
+      if (!userState.ingredients.includes(name)) {
+        userState.ingredients.push(name);
+        renderIngredients();
+      }
+    } catch (err) {
+      alert("Erro ao adicionar ingrediente: " + err.message);
+    }
+  }
+  async function removeIngredient(name) {
+    try {
+      await api.delete(`/ingredientes-disponiveis/excluir/${name}`);
+      userState.ingredients = userState.ingredients.filter(ing => ing !== name);
+      renderIngredients();
+    } catch (err) {
+      alert("Erro ao remover ingrediente: " + err.message);
+    }
+  }
+  if (addIngBtn && addIngInput) {
+    addIngBtn.addEventListener('click', () => {
+      addIngredient(addIngInput.value);
+      addIngInput.value = '';
+    });
+    addIngInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        addIngredient(addIngInput.value);
+        addIngInput.value = '';
+      }
+    });
+  }
+  const manageIngBtn = document.getElementById('manage-ingredients-btn');
+  if (manageIngBtn) {
+    manageIngBtn.addEventListener('click', () => {
+      alert(`Você tem atualmente ${userState.ingredients.length} ingredientes na despensa:\n\n${userState.ingredients.join(', ')}`);
+    });
+  }
+  const generateDispensaBtn = document.getElementById('generate-dispensa-btn');
+  if (generateDispensaBtn) {
+    generateDispensaBtn.addEventListener('click', () => {
+      const checkedIngs = [];
+      const checkboxes = ingContainer.querySelectorAll('input[type="checkbox"]:checked');
+      checkboxes.forEach(chk => checkedIngs.push(chk.value));
+      if (checkedIngs.length === 0) {
+        alert('Por favor, selecione pelo menos um ingrediente na despensa.');
+        return;
+      }
+      const formContainer = document.getElementById('ai-form-container');
+      const loadingContainer = document.getElementById('ai-loading-container');
+      const resultContainer = document.getElementById('ai-result-container');
+      if (formContainer) formContainer.classList.remove('hidden');
+      if (loadingContainer) loadingContainer.classList.add('hidden');
+      if (resultContainer) resultContainer.classList.add('hidden');
+      const aiInput = document.getElementById('ai-ingredients');
+      if (aiInput) {
+        aiInput.value = checkedIngs.join(', ');
+      }
+      openModal('ai-generator-modal');
+      setTimeout(() => {
+        if (aiInput) aiInput.focus();
+      }, 300);
+    });
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
   }
   const newBookBtn = document.getElementById('new-book-btn');
   const newBookForm = document.getElementById('new-book-form');
@@ -606,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navName) navName.textContent = user.nome;
     try {
       const profileData = await api.get("/usuarios/perfil");
-      userState.isPro = profileData.plano === "PRO";
+      userState.isPro = false;
       userState.stats = {
         saved: profileData.stats.saved,
         created: profileData.stats.created,

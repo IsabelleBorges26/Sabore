@@ -143,10 +143,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function extractRecipeTags(recipe) {
     const tagsSet = new Set();
+<<<<<<< HEAD
     // Categorias descrevem a receita; hashtag é uma escolha explícita de quem publica.
     // Não transforme "Importação", "Sobremesa" etc. em hashtag automaticamente.
     (Array.isArray(recipe.hashtags) ? recipe.hashtags : []).forEach(value => {
       const tag = normalizeHashtag(typeof value === 'string' ? value : value?.nome);
+=======
+    const categories = Array.isArray(recipe.categories) && recipe.categories.length > 0 
+      ? recipe.categories 
+      : [recipe.category];
+    categories.filter(Boolean).forEach(cat => {
+      const tag = normalizeHashtag(cat);
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
       if (tag) tagsSet.add(tag);
     });
     const text = `${recipe.title || ''} ${recipe.description || ''}`;
@@ -248,7 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const tags = extractRecipeTags(recipe);
       userState.recipes.unshift({
         id: recipe.id, title: recipe.title, description: recipe.description || '', time: recipe.time || 0,
+<<<<<<< HEAD
         difficulty: recipe.difficulty || 'Fácil', category: recipe.category || categories[0], categories, hashtags: recipe.hashtags || [],
+=======
+        difficulty: recipe.difficulty || 'Fácil', category: recipe.category || categories[0], categories,
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
         tags, image: recipe.image || null,
         authorId: recipe.authorId, author: recipe.author || api.getUser()?.nome || 'Você', authorAvatar: recipe.authorAvatar || api.getUser()?.foto || null,
         diet: recipe.category || categories[0], likes: 0, avaliacoes: 0, ingredients: recipe.ingredients || [], steps: recipe.steps || []
@@ -517,11 +529,31 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="post-social-actions">
             ${rec.authorId && rec.authorId !== api.getUser()?.id ? `<button class="follow-author-btn"><i class="fa-solid fa-user-plus"></i> Seguir</button>` : ''}
             <button class="share-post-btn"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
+<<<<<<< HEAD
             <button class="whatsapp-post-btn" aria-label="Compartilhar no WhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+=======
+            <button class="share-post-btn share-whatsapp-btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
           </div>
         </div>
       `;
       const favBtn = card.querySelector('.favorite-toggle-btn');
+      const authorLine = card.querySelector('.recipe-author-line');
+      if (authorLine && rec.authorId) {
+        authorLine.setAttribute('role', 'button');
+        authorLine.tabIndex = 0;
+        const openAuthorProfile = (event) => {
+          event.stopPropagation();
+          api.openUserProfile(rec.authorId);
+        };
+        authorLine.addEventListener('click', openAuthorProfile);
+        authorLine.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openAuthorProfile(event);
+          }
+        });
+      }
       favBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         try {
@@ -567,6 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       card.querySelector('.share-post-btn').addEventListener('click', async (event) => {
         event.stopPropagation();
+<<<<<<< HEAD
         const url = new URL(`../../receita/?id=${rec.id}`, window.location.href).href;
         const shareData = { title: rec.title, text: `Veja a receita ${rec.title}, publicada por ${rec.author} no Saboré.`, url };
         try {
@@ -578,6 +611,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
           if (error.name !== 'AbortError') alert('Não foi possível compartilhar esta publicação.');
         }
+=======
+        await window.SaboreShareRecipe(rec);
+      });
+      card.querySelector('.share-whatsapp-btn').addEventListener('click', async (event) => {
+        event.stopPropagation();
+        await window.SaboreShareRecipe(rec, { platform: 'whatsapp' });
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
       });
       card.querySelector('.whatsapp-post-btn').addEventListener('click', (event) => {
         event.stopPropagation();
@@ -608,6 +648,11 @@ document.addEventListener('DOMContentLoaded', () => {
     userState.chefs.forEach(chef => {
       const card = document.createElement('div');
       card.className = 'chef-card-item';
+<<<<<<< HEAD
+=======
+      card.setAttribute('role', 'button');
+      card.tabIndex = 0;
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
       const avatarInitial = chef.name.charAt(0).toUpperCase();
       const placeholderStyle = 'display:flex;align-items:center;justify-content:center;background:var(--accent-light);color:var(--accent);font-size:2rem;font-weight:700;border-radius:50%;';
       let avatarEl;
@@ -639,7 +684,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const followButton = document.createElement('button');
       followButton.className = `btn-follow-chef ${chef.followed ? 'following' : ''}`;
       followButton.textContent = chef.followed ? 'Seguindo' : 'Seguir';
-      followButton.addEventListener('click', async () => {
+      followButton.addEventListener('click', async (event) => {
+        event.stopPropagation();
         try {
           const following = !chef.followed;
           await (following ? api.post(`/social/seguir/${chef.id}`, {}) : api.delete(`/social/seguir/${chef.id}`));
@@ -651,10 +697,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       card.appendChild(followButton);
+      card.addEventListener('click', () => api.openUserProfile(chef.id));
+      card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          api.openUserProfile(chef.id);
+        }
+      });
       chefsContainer.appendChild(card);
     });
     updateCursorHoverListeners();
   }
+  window.addEventListener('sabore:follow-changed', (event) => {
+    const chef = userState.chefs.find(item => item.id === event.detail?.userId);
+    if (!chef) return;
+    chef.followed = Boolean(event.detail.following);
+    renderChefs();
+    renderRecipes();
+  });
   function formatFollowers(num) {
     if (num >= 1000) {
       return (num / 1000).toFixed(1) + 'k seguidores';
@@ -951,8 +1011,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       userState.recipes = publicRecipes.map(rec => {
         const categoriesList = rec.categories || [];
+<<<<<<< HEAD
         const hashtags = Array.isArray(rec.hashtags) ? rec.hashtags : [];
         const tags = extractRecipeTags({ ...rec, categories: categoriesList, hashtags });
+=======
+        const tags = extractRecipeTags({ ...rec, categories: categoriesList });
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
         return {
           id: rec.id,
           title: rec.title,
@@ -968,7 +1032,10 @@ document.addEventListener('DOMContentLoaded', () => {
           authorAvatar: rec.authorAvatar,
           diet: rec.category,
           tags,
+<<<<<<< HEAD
           hashtags,
+=======
+>>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
           ingredients: rec.ingredients,
           steps: rec.steps,
           categories: categoriesList

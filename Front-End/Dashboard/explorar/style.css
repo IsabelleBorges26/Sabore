@@ -804,6 +804,8 @@ a {
 .explore-image-wrap { height: auto; min-height: 170px; aspect-ratio: 4 / 3; background: var(--dark-deep); }
 .explore-img { width: 100%; height: 100%; object-fit: cover; }
 .recipe-author-line { padding-bottom: 8px; border-bottom: 1px solid rgba(242,244,243,.08); }
+.recipe-author-line[role="button"] { border-radius: 9px; transition: color .2s, background .2s; }
+.recipe-author-line[role="button"]:hover, .recipe-author-line[role="button"]:focus-visible { color: var(--accent); background: rgba(242,244,243,.035); }
 @media (max-width: 580px) { .publish-from-book { grid-template-columns: 1fr; } .publish-from-book button { width: 100%; } }
 @media (max-width: 580px) { .composer-row { grid-template-columns: 1fr; } }
 .chef-card-item:hover {
