@@ -425,12 +425,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     updateCursorHoverListeners();
   }
-  const tabBtns = document.querySelectorAll('.feed-filter-btn');
+  const tabBtns = document.querySelectorAll('.feed-filter-btn:not(#btn-refresh-feed)');
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       tabBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      activeTabFilter = btn.dataset.feed;
+      activeTabFilter = btn.dataset.feed || 'all';
       renderRecipes();
     });
   });
@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .filter(Boolean);
 
     // ALGORITMO SOCIAL DO FEED SABORÉ DINÂMICO
-    // Ponderação: Engajamento (Likes x4, Avaliações x5, Interesses) + Dinamismo por Visita
+    // Ponderação: Engajamento (Likes x4, Avaliações x5, Interesses) + Variação Dinâmica Real por Visita/Atualização
     filtered.sort((first, second) => {
       const calculateSocialScore = (recipe) => {
         const likesScore = (Number(recipe.likes) || 0) * 4;
@@ -493,15 +493,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const chef = userState.chefs.find(c => c.id === recipe.authorId);
         const followingBonus = (chef && chef.followed) ? 12 : 0;
 
-        // Variação pseudo-aleatória determinística por visita (faz publicações alternarem a cada visita/refresh)
-        const visitJitter = ((Math.sin((recipe.id * 997) + sessionShuffleSeed * 1000) + 1) / 2) * 6;
+        // Variação dinâmica pseudo-aleatória a cada visita/refresh (peso 20 para alternar a ordem das receitas no feed)
+        const visitJitter = ((Math.sin((Number(recipe.id) * 37) + (sessionShuffleSeed * 10000)) + 1) / 2) * 20;
 
         return likesScore + reviewsScore + interestScore + followingBonus + visitJitter;
       };
 
-      const scoreDiff = calculateSocialScore(second) - calculateSocialScore(first);
-      if (Math.abs(scoreDiff) > 0.001) return scoreDiff;
-      return (Number(second.id) || 0) - (Number(first.id) || 0);
+      return calculateSocialScore(second) - calculateSocialScore(first);
     });
     if (filtered.length === 0) {
       recipesContainer.innerHTML = `
@@ -1320,35 +1318,57 @@ document.addEventListener('DOMContentLoaded', () => {
   initRatingSystem();
   loadInitialData();
 
+  // Função central para reembaralhar e recarregar o feed imediatamente
+  async function refreshExploreFeed(showFeedback = true) {
+    const refreshBtn = document.getElementById('btn-refresh-feed');
+    if (refreshBtn && showFeedback) {
+      refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i> Atualizando...';
+      refreshBtn.disabled = true;
+    }
+
+    sessionShuffleSeed = Math.random();
+    feedCurrentCount = feedPageLimit;
+
+    try {
+      await loadInitialData();
+    } finally {
+      if (refreshBtn && showFeedback) {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizado!';
+        setTimeout(() => {
+          refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar';
+        }, 1500);
+      }
+    }
+  }
+
   // Botão de Atualizar Feed Manual
   const refreshFeedBtn = document.getElementById('btn-refresh-feed');
   if (refreshFeedBtn) {
-    refreshFeedBtn.addEventListener('click', async () => {
-      refreshFeedBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i> Atualizando...';
-      sessionShuffleSeed = Math.random();
-      feedCurrentCount = feedPageLimit;
-      await loadInitialData();
-      refreshFeedBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizado!';
-      setTimeout(() => {
-        refreshFeedBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar';
-      }, 1500);
+    refreshFeedBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      refreshExploreFeed(true);
     });
   }
 
-  // Recarregar feed sempre que o usuário retornar à página ou trocar de aba
+  // Recarregar feed sempre que o usuário retornar à página (pageshow sem restrição persisted)
   window.addEventListener('pageshow', (event) => {
+    sessionShuffleSeed = Math.random();
     if (event.persisted) {
-      sessionShuffleSeed = Math.random();
-      feedCurrentCount = feedPageLimit;
-      loadInitialData();
+      refreshExploreFeed(false);
     }
   });
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      sessionShuffleSeed = Math.random();
-      loadInitialData();
+      refreshExploreFeed(false);
     }
+  });
+
+  // Atualizar quando a janela ganha foco
+  window.addEventListener('focus', () => {
+    refreshExploreFeed(false);
   });
 });
 
