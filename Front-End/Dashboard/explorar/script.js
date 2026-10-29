@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let feedPageLimit = 12;
   let feedCurrentCount = 12;
   let isInfiniteScrollActive = false;
+  let latestFeedLoad = 0;
   // Seed dinâmico da sessão: muda a cada visita ou refresh da página para trazer variedade e dinamismo ao feed
   let sessionShuffleSeed = Math.random();
 
@@ -496,7 +497,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Variação dinâmica pseudo-aleatória a cada visita/refresh (peso 20 para alternar a ordem das receitas no feed)
         const visitJitter = ((Math.sin((Number(recipe.id) * 37) + (sessionShuffleSeed * 10000)) + 1) / 2) * 20;
 
-        return likesScore + reviewsScore + interestScore + followingBonus + visitJitter;
+        const publishedAt = new Date(recipe.publishedAt || 0).getTime();
+        const ageInHours = publishedAt ? Math.max(0, (Date.now() - publishedAt) / 3600000) : Infinity;
+        const recencyScore = Math.max(0, 60 - ageInHours);
+        return likesScore + reviewsScore + interestScore + followingBonus + recencyScore + visitJitter;
       };
 
       return calculateSocialScore(second) - calculateSocialScore(first);
@@ -1077,6 +1081,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navAvatar && user.foto) navAvatar.src = user.foto;
     const navName = document.querySelector('.user-name');
     if (navName) navName.textContent = user.nome;
+    const feedLoadId = ++latestFeedLoad;
+    const isCurrentFeedLoad = () => feedLoadId === latestFeedLoad;
     try {
       // Informações secundárias não podem impedir o carregamento das receitas públicas.
       const [profileResult, booksResult, favoritesResult, recipesResult] = await Promise.allSettled([
@@ -1085,6 +1091,7 @@ document.addEventListener('DOMContentLoaded', () => {
         api.get("/favoritos/listar"),
         api.get("/receitas/publicas?_t=" + Date.now())
       ]);
+      if (!isCurrentFeedLoad()) return;
       const profileData = profileResult.status === 'fulfilled' ? profileResult.value : null;
       userState.isPro = profileData?.plano === "PRO";
       updatePlanUI();
@@ -1099,14 +1106,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const favorites = favoritesResult.status === 'fulfilled' ? favoritesResult.value : [];
       userState.favorites = favorites.map(f => f.id);
       if (recipesResult.status !== 'fulfilled') throw recipesResult.reason;
-      const currentLoggedUser = api.getUser();
       const publicRecipes = recipesResult.value.filter(rec => {
         const title = String(rec.title || rec.titulo || '').trim().toLowerCase();
-        const authorId = rec.authorId || rec.usuarioId;
-        // Não exibe publicações feitas pelo próprio usuário logado (exclusivo para descobrir outros)
-        if (currentLoggedUser && (authorId === currentLoggedUser.id || authorId === Number(currentLoggedUser.id))) {
-          return false;
-        }
         if (title === 'teste' || title === 'teste 123') return false;
         return Boolean(title);
       });
@@ -1130,6 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
           diet: rec.category,
           tags,
           hashtags,
+          publishedAt: rec.publishedAt,
           ingredients: rec.ingredients,
           steps: rec.steps,
           categories: categoriesList
@@ -1170,6 +1172,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }));
       } catch (err) {
       }
+      if (!isCurrentFeedLoad()) return;
       renderChefs();
       // Os cards podem ter sido renderizados antes do retorno dos perfis sociais.
       // Renderize novamente para refletir corretamente quem o usuário já segue.
