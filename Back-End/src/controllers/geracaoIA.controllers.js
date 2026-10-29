@@ -171,8 +171,10 @@ Diretrizes de resposta:
 2. Se o usuário pedir explicitamente para criar, detalhar os ingredientes e passo a passo de uma receita específica (ex: "me dê a receita de frango grelhado", "monte uma receita com os ingredientes da geladeira"), defina "isRecipe" como true e preencha os respectivos campos de receita ("title", "description", "ingredients", "steps", etc.).
 3. Adapte o tom da conversa ("message" ou "description") com base no perfil e preferências do usuário.`;
     const modelsToTry = [
-        "google/gemma-4-26b-a4b-it:free",
-        "openrouter/free"
+        "openrouter/free",
+        "nvidia/nemotron-3.5-lightning:free",
+        "liquid/lfm-2.5-2.6b:free",
+        "google/gemma-4-26b-a4b-it:free"
     ];
     try {
         const sdk = await import("@openrouter/sdk");
@@ -193,7 +195,8 @@ Diretrizes de resposta:
                         ]
                     }
                 });
-                const content = response.choices[0]?.message?.content;
+                const choice = response.choices?.[0]?.message;
+                const content = choice?.content?.trim() || choice?.reasoning?.trim();
                 if (!content) {
                     throw new Error("O modelo retornou uma resposta vazia.");
                 }

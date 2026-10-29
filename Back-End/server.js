@@ -1,7 +1,10 @@
-require("dotenv").config();
+const path = require("path");
+// Carrega explicitamente o .env localizado em Back-End/.env ou na raiz
+require("dotenv").config({ path: path.resolve(__dirname, ".env") });
+require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
+
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 
 const app = express();
 app.use(express.json({ limit: "20mb" }));
