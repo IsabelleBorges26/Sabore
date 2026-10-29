@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeTabFilter = 'all';
   let activeHashtagFilter = null;
   let currentWeeklyChallengeData = null;
+  let feedPageLimit = 12;
+  let feedCurrentCount = 12;
+  let isInfiniteScrollActive = false;
 
   const WEEKLY_CHALLENGES = [
     {
@@ -504,29 +507,46 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       return;
     }
-    filtered.forEach(rec => {
+    // Feed Contínuo (Infinite Scroll): fatiar para renderizar progressivamente
+    const visibleRecipes = filtered.slice(0, feedCurrentCount);
+
+    visibleRecipes.forEach(rec => {
       const card = document.createElement('article');
       card.className = 'explore-recipe-card';
       let diffClass = 'easy';
       if (rec.difficulty === 'Médio') diffClass = 'medium';
       else if (rec.difficulty === 'Difícil') diffClass = 'hard';
-      const isFav = userState.favorites.includes(rec.id);
+
+      // Checa se o usuário curtiu (usando favorites)
+      const isLiked = userState.favorites.includes(rec.id);
+      const isSaved = false;
+
       card.innerHTML = `
         <div class="explore-image-wrap ${rec.image ? '' : 'without-recipe-image'}">
           ${rec.image ? `<img src="${rec.image}" alt="${rec.title}" class="explore-img">` : '<i class="fa-solid fa-utensils" aria-hidden="true"></i>'}
-          <div class="recipe-likes-badge"><i class="fa-solid fa-thumbs-up"></i> ${rec.likes}</div>
-          <button class="favorite-toggle-btn ${isFav ? 'active' : ''}" title="Curtir publicação"><i class="fa-solid fa-heart"></i></button>
+          <div class="recipe-likes-badge"><i class="fa-solid fa-heart" style="color:#ff4757;"></i> ${rec.likes}</div>
+          <div class="card-top-actions">
+            <button class="like-toggle-btn ${isLiked ? 'active' : ''}" title="${isLiked ? 'Descurtir receita' : 'Curtir publicação'}">
+              <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+            </button>
+            <button class="bookmark-toggle-btn ${isSaved ? 'active' : ''}" title="Salvar no meu Livro de Receitas">
+              <i class="fa-regular fa-bookmark"></i>
+            </button>
+          </div>
         </div>
         <div class="explore-content-area">
           <div class="recipe-author-line">
-            ${rec.authorAvatar ? `<img src="${rec.authorAvatar}" alt="${rec.author}" class="author-avatar" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\\'author-avatar author-avatar-placeholder\\'>${rec.author.charAt(0).toUpperCase()}</span>')">` : `<span class="author-avatar author-avatar-placeholder">${rec.author.charAt(0).toUpperCase()}</span>`}
-            <span class="author-name">${rec.author}</span>
+            ${rec.authorAvatar ? `<img src="${rec.authorAvatar}" alt="${rec.author}" class="author-avatar" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\\'author-avatar author-avatar-placeholder\\'>' + (rec.author || 'S').charAt(0).toUpperCase() + '</span>')">` : `<span class="author-avatar author-avatar-placeholder">${(rec.author || 'S').charAt(0).toUpperCase()}</span>`}
+            <span class="author-name">${rec.author || 'Membro da Comunidade'}</span>
           </div>
           <h4>${rec.title}</h4>
           <p class="post-caption">${rec.description || 'Receita compartilhada pela comunidade Saboré.'}</p>
           <div class="explore-meta-bottom">
-            <span><i class="fa-regular fa-clock"></i> ${rec.time} min</span>
-            <span class="recipe-difficulty ${diffClass}">${rec.difficulty}</span>
+            <span><i class="fa-regular fa-clock"></i> ${rec.time || 30} min</span>
+            <span class="recipe-difficulty ${diffClass}">${rec.difficulty || 'Fácil'}</span>
+            <button type="button" class="card-comment-action-btn" title="Ver comentários">
+              <i class="fa-regular fa-comment-dots"></i> ${rec.avaliacoes || 0}
+            </button>
           </div>
           <div class="post-social-actions">
             ${rec.authorId && rec.authorId !== api.getUser()?.id ? `<button class="follow-author-btn"><i class="fa-solid fa-user-plus"></i> Seguir</button>` : ''}
@@ -535,7 +555,57 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
       `;
-      const favBtn = card.querySelector('.favorite-toggle-btn');
+
+      // 1. CURTIR (LIKE COM CORAÇÃO)
+      const likeBtn = card.querySelector('.like-toggle-btn');
+      likeBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+          if (likeBtn.classList.contains('active')) {
+            await api.delete(`/favoritos/excluir/${rec.id}`);
+            likeBtn.classList.remove('active');
+            likeBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+            likeBtn.title = 'Curtir publicação';
+            userState.favorites = userState.favorites.filter(id => id !== rec.id);
+            rec.likes = Math.max(0, (rec.likes || 0) - 1);
+          } else {
+            await api.post("/favoritos/cadastrar", { receitaId: rec.id });
+            likeBtn.classList.add('active');
+            likeBtn.innerHTML = '<i class="fa-solid fa-heart"></i>';
+            likeBtn.title = 'Descurtir receita';
+            userState.favorites.push(rec.id);
+            rec.likes = (rec.likes || 0) + 1;
+          }
+          const badge = card.querySelector('.recipe-likes-badge');
+          if (badge) badge.innerHTML = `<i class="fa-solid fa-heart" style="color:#ff4757;"></i> ${rec.likes}`;
+          updateTrendingHashtags();
+        } catch (err) {
+          alert("Erro ao curtir receita: " + err.message);
+        }
+      });
+
+      // 2. SALVAR NO LIVRO (ÍCONE DE SALVAR / BOOKMARK)
+      const bookmarkBtn = card.querySelector('.bookmark-toggle-btn');
+      bookmarkBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userState.selectedExploreRecipe = rec;
+        renderBookSaveOptions();
+        openModal('save-to-book-modal');
+      });
+
+      // 3. COMENTÁRIOS DO CARD
+      const commentCardBtn = card.querySelector('.card-comment-action-btn');
+      if (commentCardBtn) {
+        commentCardBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openRecipeDetailsModal(rec);
+          setTimeout(() => {
+            const commentsSec = document.getElementById('recipe-comments-section') || document.querySelector('.recipe-social-section');
+            if (commentsSec) commentsSec.scrollIntoView({ behavior: 'smooth' });
+          }, 250);
+        });
+      }
+
       const authorLine = card.querySelector('.recipe-author-line');
       if (authorLine && rec.authorId) {
         authorLine.setAttribute('role', 'button');
@@ -552,27 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       }
-      favBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        try {
-          if (favBtn.classList.contains('active')) {
-            await api.delete(`/favoritos/excluir/${rec.id}`);
-            favBtn.classList.remove('active');
-            userState.favorites = userState.favorites.filter(id => id !== rec.id);
-            rec.likes = Math.max(0, (rec.likes || 0) - 1);
-          } else {
-            await api.post("/favoritos/cadastrar", { receitaId: rec.id });
-            favBtn.classList.add('active');
-            userState.favorites.push(rec.id);
-            rec.likes = (rec.likes || 0) + 1;
-          }
-          const badge = card.querySelector('.recipe-likes-badge');
-          if (badge) badge.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> ${rec.likes}`;
-          updateTrendingHashtags();
-        } catch (err) {
-          alert("Erro ao favoritar receita: " + err.message);
-        }
-      });
+
       const followAuthorBtn = card.querySelector('.follow-author-btn');
       if (followAuthorBtn) {
         const chef = userState.chefs.find(item => item.id === rec.authorId);
@@ -595,6 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       }
+
       card.querySelector('.share-post-btn').addEventListener('click', async (event) => {
         event.stopPropagation();
         if (window.SaboreShareRecipe) {
@@ -609,19 +660,57 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       });
+
       card.querySelector('.whatsapp-post-btn').addEventListener('click', (event) => {
         event.stopPropagation();
         const url = new URL(`../../receita/?id=${rec.id}`, window.location.href).href;
         const message = `Veja a receita ${rec.title}, publicada por ${rec.author} no Saboré. ${url}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
       });
+
+      // ABRIR PUBLICAÇÃO COMPLETA AO CLICAR NO CARD
       card.addEventListener('click', () => {
         openRecipeDetailsModal(rec);
       });
+
       recipesContainer.appendChild(card);
     });
+
+    if (visibleRecipes.length < filtered.length) {
+      const scrollTrigger = document.createElement('div');
+      scrollTrigger.className = 'infinite-scroll-trigger';
+      scrollTrigger.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Carregando mais publicações da comunidade...';
+      recipesContainer.appendChild(scrollTrigger);
+    }
+
+    setupInfiniteFeedObserver(filtered.length);
     updateCursorHoverListeners();
   }
+
+  function setupInfiniteFeedObserver(totalAvailable) {
+    if (isInfiniteScrollActive) return;
+    const trigger = document.querySelector('.infinite-scroll-trigger');
+    const scrollContainer = document.querySelector('.dashboard-body') || window;
+    
+    const handleScroll = () => {
+      if (feedCurrentCount >= totalAvailable) return;
+      const targetEl = document.querySelector('.infinite-scroll-trigger');
+      if (!targetEl) return;
+      const rect = targetEl.getBoundingClientRect();
+      if (rect.top <= window.innerHeight + 150) {
+        feedCurrentCount += feedPageLimit;
+        renderRecipes();
+      }
+    };
+
+    if (scrollContainer === window) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    } else {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    isInfiniteScrollActive = true;
+  }
+
   const chefsContainer = document.getElementById('chefs-spotlight-container');
   function renderChefs() {
     if (!chefsContainer) return;
@@ -874,28 +963,54 @@ document.addEventListener('DOMContentLoaded', () => {
   const detailStepsList = document.getElementById('recipe-detail-steps-list');
   const detailSaveBtn = document.getElementById('recipe-detail-save-btn');
   function openRecipeDetailsModal(rec) {
+    if (!rec) return;
     userState.selectedExploreRecipe = rec;
-    detailAuthorAvatar.src = rec.authorAvatar;
-    detailAuthorName.textContent = 'Por ' + rec.author;
-    detailTitle.textContent = rec.title;
-    detailTime.textContent = rec.time + ' min';
-    detailDifficulty.textContent = rec.difficulty;
-    detailDietTag.textContent = rec.diet;
-    detailIngredientsList.innerHTML = '';
-    rec.ingredients.forEach(ing => {
-      const li = document.createElement('li');
-      li.textContent = ing;
-      detailIngredientsList.appendChild(li);
-    });
-    detailStepsList.innerHTML = '';
-    rec.steps.forEach(step => {
-      const li = document.createElement('li');
-      li.textContent = step;
-      detailStepsList.appendChild(li);
-    });
-    selectedRating = 0;
-    updateStarsUI(0);
-    if (submitRatingBtn) submitRatingBtn.style.display = 'none';
+    if (detailAuthorAvatar) {
+      detailAuthorAvatar.src = rec.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
+    }
+    if (detailAuthorName) {
+      detailAuthorName.textContent = 'Por ' + (rec.author || 'Comunidade Saboré');
+    }
+    if (detailTitle) {
+      detailTitle.textContent = rec.title || 'Sem título';
+    }
+    if (detailTime) {
+      detailTime.textContent = (rec.time || 30) + ' min';
+    }
+    if (detailDifficulty) {
+      detailDifficulty.textContent = rec.difficulty || 'Fácil';
+    }
+    if (detailDietTag) {
+      detailDietTag.textContent = rec.diet || rec.category || 'Geral';
+    }
+    if (detailIngredientsList) {
+      detailIngredientsList.innerHTML = '';
+      const ings = Array.isArray(rec.ingredients) ? rec.ingredients : [];
+      if (ings.length === 0) {
+        detailIngredientsList.innerHTML = '<li>Ingredientes a gosto.</li>';
+      } else {
+        ings.forEach(ing => {
+          const li = document.createElement('li');
+          li.textContent = ing;
+          detailIngredientsList.appendChild(li);
+        });
+      }
+    }
+    if (detailStepsList) {
+      detailStepsList.innerHTML = '';
+      const steps = Array.isArray(rec.steps) ? rec.steps : [];
+      if (steps.length === 0) {
+        detailStepsList.innerHTML = '<li>Modo de preparo livre.</li>';
+      } else {
+        steps.forEach(step => {
+          const li = document.createElement('li');
+          li.textContent = step;
+          detailStepsList.appendChild(li);
+        });
+      }
+    }
+    selectedRating = 5;
+    updateStarsUI(5);
     loadRecipeCommentsAndRatings(rec.id);
     openModal('recipe-details-modal');
   }
@@ -980,11 +1095,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const favorites = favoritesResult.status === 'fulfilled' ? favoritesResult.value : [];
       userState.favorites = favorites.map(f => f.id);
       if (recipesResult.status !== 'fulfilled') throw recipesResult.reason;
+      const currentLoggedUser = api.getUser();
       const publicRecipes = recipesResult.value.filter(rec => {
         const title = String(rec.title || rec.titulo || '').trim().toLowerCase();
         const authorId = rec.authorId || rec.usuarioId;
-        // Exclui dados mockados/seeds legados e testes
-        // Exibir receitas reais da comunidade
+        // Não exibe publicações feitas pelo próprio usuário logado (exclusivo para descobrir outros)
+        if (currentLoggedUser && (authorId === currentLoggedUser.id || authorId === Number(currentLoggedUser.id))) {
+          return false;
+        }
         if (title === 'teste' || title === 'teste 123') return false;
         return Boolean(title);
       });
