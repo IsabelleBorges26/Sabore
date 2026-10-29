@@ -9,6 +9,7 @@
     "dev": "node --watch Back-End/server.js"
   },
   "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
     "@google/generative-ai": "^0.24.1",
     "@openrouter/sdk": "^0.12.79",
     "@prisma/adapter-mariadb": "^7.4.0",

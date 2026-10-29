@@ -440,7 +440,18 @@ document.addEventListener('DOMContentLoaded', () => {
   async function analyzeImageWithOpenRouter(imageUrl, onSuccess, onError) {
     try {
       const resizedUrl = await resizeImageIfNeeded(imageUrl);
-      const parsedData = await api.post("/ia/analisar-foto", { image: resizedUrl });
+      let parsedData;
+      let lastError;
+      for (let attempt = 1; attempt <= 2; attempt += 1) {
+        try {
+          parsedData = await api.post("/ia/analisar-foto", { image: resizedUrl });
+          break;
+        } catch (error) {
+          lastError = error;
+          if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
+      if (!parsedData) throw lastError || new Error("Não foi possível analisar a imagem.");
       onSuccess(parsedData);
     } catch (error) {
       onError(error);
@@ -457,12 +468,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (localStorage.getItem('sabore_diet_keto') === 'true') activeDiets.push('Cetogênica');
       const configRestrictionText = activeDiets.length > 0 ? activeDiets.join(', ') : "Nenhuma restrição";
       const servings = localStorage.getItem('sabore_ai_servings') || "2";
-      const parsedData = await api.post("/ia/gerar-receita-foto", {
-        dishName,
-        ingredientsList,
-        diet: configRestrictionText,
-        servings: servings
-      });
+      let parsedData;
+      let lastError;
+      for (let attempt = 1; attempt <= 2; attempt += 1) {
+        try {
+          parsedData = await api.post("/ia/gerar-receita-foto", {
+            dishName,
+            ingredientsList,
+            diet: configRestrictionText,
+            servings: servings
+          });
+          break;
+        } catch (error) {
+          lastError = error;
+          if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
+      if (!parsedData) throw lastError || new Error("Não foi possível gerar a receita.");
       onSuccess(parsedData);
     } catch (error) {
       onError(error);

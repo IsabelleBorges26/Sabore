@@ -313,7 +313,7 @@ ${jsonSchema}`;
                         messages: [{ role: "user", content: gemmaPrompt }]
                     }
                 });
-                content = gemmaResponse.choices[0]?.message?.content;
+                content = gemmaResponse.choices?.[0]?.message?.content?.trim();
                 if (content) console.log("[IA Vision] Sucesso via HuggingFace + Gemma!");
             } catch (err) {
                 console.warn("[IA Vision] Gemma falhou, tentando visão direta:", err.message);
