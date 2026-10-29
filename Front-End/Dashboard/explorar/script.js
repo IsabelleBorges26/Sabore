@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let feedPageLimit = 12;
   let feedCurrentCount = 12;
   let isInfiniteScrollActive = false;
+  // Seed dinâmico da sessão: muda a cada visita ou refresh da página para trazer variedade e dinamismo ao feed
+  let sessionShuffleSeed = Math.random();
 
   const WEEKLY_CHALLENGES = [
     {
@@ -470,6 +472,8 @@ document.addEventListener('DOMContentLoaded', () => {
       .map(item => String(item).trim().toLocaleLowerCase('pt-BR'))
       .filter(Boolean);
 
+    // ALGORITMO SOCIAL DO FEED SABORÉ DINÂMICO
+    // Ponderação: Engajamento (Likes x4, Avaliações x5, Interesses) + Dinamismo por Visita
     filtered.sort((first, second) => {
       const calculateSocialScore = (recipe) => {
         const likesScore = (Number(recipe.likes) || 0) * 4;
@@ -486,15 +490,17 @@ document.addEventListener('DOMContentLoaded', () => {
             + (text.includes(interest) ? 1 : 0), 0);
         }
 
-        // Bônus para criadores seguidos
         const chef = userState.chefs.find(c => c.id === recipe.authorId);
-        const followingBonus = (chef && chef.followed) ? 10 : 0;
+        const followingBonus = (chef && chef.followed) ? 12 : 0;
 
-        return likesScore + reviewsScore + interestScore + followingBonus;
+        // Variação pseudo-aleatória determinística por visita (faz publicações alternarem a cada visita/refresh)
+        const visitJitter = ((Math.sin((recipe.id * 997) + sessionShuffleSeed * 1000) + 1) / 2) * 6;
+
+        return likesScore + reviewsScore + interestScore + followingBonus + visitJitter;
       };
 
       const scoreDiff = calculateSocialScore(second) - calculateSocialScore(first);
-      if (scoreDiff !== 0) return scoreDiff;
+      if (Math.abs(scoreDiff) > 0.001) return scoreDiff;
       return (Number(second.id) || 0) - (Number(first.id) || 0);
     });
     if (filtered.length === 0) {
@@ -1079,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', () => {
         api.get("/usuarios/perfil"),
         api.get("/livros/listar"),
         api.get("/favoritos/listar"),
-        api.get("/receitas/publicas")
+        api.get("/receitas/publicas?_t=" + Date.now())
       ]);
       const profileData = profileResult.status === 'fulfilled' ? profileResult.value : null;
       userState.isPro = profileData?.plano === "PRO";
@@ -1313,5 +1319,36 @@ document.addEventListener('DOMContentLoaded', () => {
   renderWeeklyChallenge();
   initRatingSystem();
   loadInitialData();
+
+  // Botão de Atualizar Feed Manual
+  const refreshFeedBtn = document.getElementById('btn-refresh-feed');
+  if (refreshFeedBtn) {
+    refreshFeedBtn.addEventListener('click', async () => {
+      refreshFeedBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i> Atualizando...';
+      sessionShuffleSeed = Math.random();
+      feedCurrentCount = feedPageLimit;
+      await loadInitialData();
+      refreshFeedBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizado!';
+      setTimeout(() => {
+        refreshFeedBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar';
+      }, 1500);
+    });
+  }
+
+  // Recarregar feed sempre que o usuário retornar à página ou trocar de aba
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      sessionShuffleSeed = Math.random();
+      feedCurrentCount = feedPageLimit;
+      loadInitialData();
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      sessionShuffleSeed = Math.random();
+      loadInitialData();
+    }
+  });
 });
 

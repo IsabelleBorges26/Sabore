@@ -256,6 +256,9 @@ const listarPublicas = async (req, res) => {
             if (!title) return false;
             return true;
         });
+        res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+        res.set("Pragma", "no-cache");
+        res.set("Expires", "0");
         res.status(200).json(filtered.map(formatRecipe));
     } catch (error) {
         if (error.code === "P2021" || /ReceitaHashtag|Hashtag.*does not exist/i.test(error.message || "")) {
