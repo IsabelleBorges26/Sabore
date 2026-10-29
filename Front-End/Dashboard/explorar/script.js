@@ -461,23 +461,39 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return matchesSearch && matchesCategory && matchesTab && matchesHashtag;
     });
+    // ALGORITMO SOCIAL DO FEED SABORÉ (ESTILO REDE SOCIAL)
+    // Ranqueamento inteligente: Likes (peso 4) + Avaliações/Comentários (peso 5) + Interesses + Seguidos
     const interests = (JSON.parse(localStorage.getItem('sabore_user_preferences') || '[]'))
       .map(item => String(item).trim().toLocaleLowerCase('pt-BR'))
       .filter(Boolean);
-    if (interests.length) {
-      filtered.sort((first, second) => {
-        const score = (recipe) => {
+
+    filtered.sort((first, second) => {
+      const calculateSocialScore = (recipe) => {
+        const likesScore = (Number(recipe.likes) || 0) * 4;
+        const reviewsScore = (Number(recipe.avaliacoes) || 0) * 5;
+        
+        let interestScore = 0;
+        if (interests.length) {
           const tags = (recipe.tags || []).join(' ').toLocaleLowerCase('pt-BR');
           const categories = (recipe.categories || []).join(' ').toLocaleLowerCase('pt-BR');
           const text = `${recipe.title || ''} ${recipe.description || ''}`.toLocaleLowerCase('pt-BR');
-          return interests.reduce((total, interest) => total
-            + (tags.includes(interest) ? 4 : 0)
-            + (categories.includes(interest) ? 2 : 0)
+          interestScore = interests.reduce((total, interest) => total
+            + (tags.includes(interest) ? 5 : 0)
+            + (categories.includes(interest) ? 3 : 0)
             + (text.includes(interest) ? 1 : 0), 0);
-        };
-        return score(second) - score(first);
-      });
-    }
+        }
+
+        // Bônus para criadores seguidos
+        const chef = userState.chefs.find(c => c.id === recipe.authorId);
+        const followingBonus = (chef && chef.followed) ? 10 : 0;
+
+        return likesScore + reviewsScore + interestScore + followingBonus;
+      };
+
+      const scoreDiff = calculateSocialScore(second) - calculateSocialScore(first);
+      if (scoreDiff !== 0) return scoreDiff;
+      return (Number(second.id) || 0) - (Number(first.id) || 0);
+    });
     if (filtered.length === 0) {
       recipesContainer.innerHTML = `
         <div class="book-detail-empty" style="grid-column: 1 / -1; padding: 60px 20px;">
@@ -880,15 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedRating = 0;
     updateStarsUI(0);
     if (submitRatingBtn) submitRatingBtn.style.display = 'none';
-    api.get(`/avaliacoes/listar?receitaId=${rec.id}`).then(ratings => {
-      const currentUser = api.getUser();
-      const existing = ratings.find(r => r.usuarioId === currentUser.id);
-      if (existing) {
-        selectedRating = existing.nota;
-        updateStarsUI(existing.nota);
-      }
-    }).catch(err => {
-    });
+    loadRecipeCommentsAndRatings(rec.id);
     openModal('recipe-details-modal');
   }
   const saveOptionsContainer = document.getElementById('save-book-options-container');
@@ -976,8 +984,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = String(rec.title || rec.titulo || '').trim().toLowerCase();
         const authorId = rec.authorId || rec.usuarioId;
         // Exclui dados mockados/seeds legados e testes
-        if (authorId === 1) return false;
-        if (title === 'teste' || title.startsWith('teste ') || title === 'cereal') return false;
+        // Exibir receitas reais da comunidade
+        if (title === 'teste' || title === 'teste 123') return false;
         return Boolean(title);
       });
       userState.recipes = publicRecipes.map(rec => {
@@ -1048,43 +1056,132 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
     }
   }
-  let selectedRating = 0;
+  let selectedRating = 5;
   const ratingStarsContainer = document.getElementById('recipe-rating-stars');
-  const submitRatingBtn = document.getElementById('recipe-submit-rating');
+  const commentForm = document.getElementById('recipe-comment-form');
+  const commentInput = document.getElementById('recipe-comment-input');
+  const commentsListContainer = document.getElementById('recipe-comments-list');
+  const commentsCountBadge = document.getElementById('recipe-comments-count');
+  const commentFeedbackStatus = document.getElementById('comment-feedback-status');
+
   function initRatingSystem() {
-    if (!ratingStarsContainer || !submitRatingBtn) return;
+    if (!ratingStarsContainer) return;
     const stars = ratingStarsContainer.querySelectorAll('i');
     stars.forEach(star => {
       star.addEventListener('click', () => {
-        const rating = parseInt(star.dataset.rating);
+        const rating = parseInt(star.dataset.rating) || 5;
         selectedRating = rating;
         updateStarsUI(rating);
-        submitRatingBtn.style.display = 'block';
       });
     });
-    submitRatingBtn.addEventListener('click', async () => {
-      const rec = userState.selectedExploreRecipe;
-      if (!rec || selectedRating === 0) return;
-      try {
-        await api.post("/avaliacoes/cadastrar", {
-          receitaId: rec.id,
-          nota: selectedRating,
-          comentario: ""
-        });
-        alert("Avaliação enviada com sucesso!");
-        submitRatingBtn.style.display = 'none';
-        rec.avaliacoes = (rec.avaliacoes || 0) + 1;
-        updateTrendingHashtags();
-      } catch (err) {
-        alert("Erro ao enviar avaliação: " + err.message);
-      }
-    });
+
+    if (commentForm) {
+      commentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const rec = userState.selectedExploreRecipe;
+        if (!rec) return;
+        const text = commentInput ? commentInput.value.trim() : '';
+        if (!text) return;
+
+        const submitBtn = document.getElementById('btn-submit-comment');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+        }
+
+        try {
+          await api.post("/avaliacoes/cadastrar", {
+            receitaId: rec.id,
+            nota: selectedRating || 5,
+            comentario: text
+          });
+
+          if (commentInput) commentInput.value = '';
+          rec.avaliacoes = (rec.avaliacoes || 0) + 1;
+          
+          if (commentFeedbackStatus) {
+            commentFeedbackStatus.textContent = 'Comentário publicado!';
+            commentFeedbackStatus.style.display = 'inline';
+            setTimeout(() => { if (commentFeedbackStatus) commentFeedbackStatus.style.display = 'none'; }, 3000);
+          }
+
+          // Atualizar lista de comentários e receita em tempo real
+          await loadRecipeCommentsAndRatings(rec.id);
+          renderRecipes();
+          updateTrendingHashtags();
+        } catch (err) {
+          alert("Não foi possível enviar o comentário: " + err.message);
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right: 5px;"></i> Publicar';
+          }
+        }
+      });
+    }
   }
+
+  async function loadRecipeCommentsAndRatings(recipeId) {
+    if (!commentsListContainer) return;
+    commentsListContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 10px;">Carregando comentários...</div>';
+    
+    try {
+      const ratings = await api.get(`/avaliacoes/listar?receitaId=${recipeId}`);
+      const list = Array.isArray(ratings) ? ratings : [];
+      
+      if (commentsCountBadge) {
+        commentsCountBadge.textContent = list.length;
+      }
+
+      const currentUser = api.getUser();
+      const userRating = list.find(r => r.usuarioId === currentUser?.id);
+      if (userRating) {
+        selectedRating = userRating.nota || 5;
+        updateStarsUI(selectedRating);
+      } else {
+        selectedRating = 5;
+        updateStarsUI(5);
+      }
+
+      if (list.length === 0) {
+        commentsListContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 14px;">Nenhum comentário ainda. Seja o primeiro a compartilhar sua opinião!</div>';
+        return;
+      }
+
+      commentsListContainer.innerHTML = '';
+      list.forEach(item => {
+        const commentCard = document.createElement('div');
+        commentCard.className = 'recipe-comment-item';
+        commentCard.style.cssText = 'display: flex; gap: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); align-items: flex-start;';
+        
+        const avatarUrl = item.usuario?.foto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
+        const userName = item.usuario?.nome || 'Usuário da Comunidade';
+        const starsHtml = Array.from({ length: 5 }, (_, i) => 
+          `<i class="fa-solid fa-star" style="font-size: 0.75rem; color: ${i < item.nota ? 'var(--accent)' : 'rgba(255,255,255,0.2)'};"></i>`
+        ).join('');
+
+        commentCard.innerHTML = `
+          <img src="${avatarUrl}" alt="${userName}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 600; font-size: 0.88rem; color: #fff;">${userName}</span>
+              <div style="display: flex; gap: 2px;">${starsHtml}</div>
+            </div>
+            <p style="margin: 0; font-size: 0.84rem; color: #d4d4d8; line-height: 1.4;">${item.comentario || 'Deixou uma avaliação.'}</p>
+          </div>
+        `;
+        commentsListContainer.appendChild(commentCard);
+      });
+    } catch (err) {
+      commentsListContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 10px;">Não foi possível carregar os comentários.</div>';
+    }
+  }
+
   function updateStarsUI(rating) {
     if (!ratingStarsContainer) return;
     const stars = ratingStarsContainer.querySelectorAll('i');
     stars.forEach(star => {
-      const starRating = parseInt(star.dataset.rating);
+      const starRating = parseInt(star.dataset.rating) || 0;
       if (starRating <= rating) {
         star.className = 'fa-solid fa-star';
         star.style.color = 'var(--accent)';

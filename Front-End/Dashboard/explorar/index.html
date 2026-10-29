@@ -194,16 +194,39 @@
             </ol>
           </div>
         </div>
-        <div class="recipe-rating-section" style="padding: 15px 25px; border-top: 1px solid rgba(242, 244, 243, 0.1); margin-top: 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
-          <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-light);"><i class="fa-solid fa-star" style="color: var(--accent);"></i> Avaliar esta Receita</h4>
-          <div class="rating-stars" id="recipe-rating-stars" style="display: flex; gap: 8px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">
-            <i class="fa-regular fa-star" data-rating="1"></i>
-            <i class="fa-regular fa-star" data-rating="2"></i>
-            <i class="fa-regular fa-star" data-rating="3"></i>
-            <i class="fa-regular fa-star" data-rating="4"></i>
-            <i class="fa-regular fa-star" data-rating="5"></i>
+        <!-- Avaliação e Comentários da Comunidade -->
+        <div class="recipe-social-section" style="padding: 18px 25px; border-top: 1px solid rgba(242, 244, 243, 0.1); margin-top: 15px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <h4 style="margin: 0; font-size: 1rem; color: var(--text-light); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-comments" style="color: var(--accent);"></i> Comentários & Avaliações (<span id="recipe-comments-count">0</span>)
+            </h4>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 0.82rem; color: var(--text-muted);">Sua nota:</span>
+              <div class="rating-stars" id="recipe-rating-stars" style="display: flex; gap: 5px; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">
+                <i class="fa-solid fa-star" data-rating="1"></i>
+                <i class="fa-solid fa-star" data-rating="2"></i>
+                <i class="fa-solid fa-star" data-rating="3"></i>
+                <i class="fa-solid fa-star" data-rating="4"></i>
+                <i class="fa-solid fa-star" data-rating="5"></i>
+              </div>
+            </div>
           </div>
-          <button class="btn-primary-modal" id="recipe-submit-rating" style="padding: 8px 16px; font-size: 0.8rem; border-radius: 6px; display: none;">Enviar Nota</button>
+
+          <!-- Formulário para Comentar -->
+          <form id="recipe-comment-form" style="display: flex; flex-direction: column; gap: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 12px; border-radius: 10px;">
+            <textarea id="recipe-comment-input" rows="2" placeholder="O que achou deste prato? Escreva seu comentário ou dica..." style="width: 100%; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(0, 0, 0, 0.3); color: #fff; padding: 10px; font-size: 0.88rem; resize: vertical; outline: none; font-family: inherit;" required></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span id="comment-feedback-status" style="font-size: 0.8rem; color: #10b981; display: none;"></span>
+              <button type="submit" id="btn-submit-comment" class="btn-primary-modal" style="padding: 7px 16px; font-size: 0.82rem; border-radius: 6px; cursor: pointer; margin-left: auto;">
+                <i class="fa-solid fa-paper-plane" style="margin-right: 5px;"></i> Publicar
+              </button>
+            </div>
+          </form>
+
+          <!-- Lista de Comentários -->
+          <div id="recipe-comments-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+            <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 12px;">Carregando comentários...</div>
+          </div>
         </div>
         <div class="recipe-result-footer">
           <button class="btn-secondary-modal" id="recipe-detail-close-btn">Fechar</button>

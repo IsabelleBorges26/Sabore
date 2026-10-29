@@ -41,6 +41,7 @@ const formatRecipe = (recipe) => {
         livroId: recipe.livroId,
         authorId: recipe.usuarioId,
         author: recipe.usuario ? recipe.usuario.nome : "Chef",
+        authorAvatar: recipe.usuario?.foto || null,
         likes: recipe._count?.favoritos || 0,
         hashtags: recipe.hashtags ? recipe.hashtags.map(item => `#${item.hashtag.nome}`) : [],
         publishedAt: recipe.publicadaEm || null,
@@ -237,7 +238,6 @@ const listarPublicas = async (req, res) => {
                 where: { 
                     publica: true, 
                     rascunho: false,
-                    usuarioId: { not: 1 },
                     NOT: [
                         { titulo: { equals: "teste", mode: "insensitive" } },
                         { titulo: { startsWith: "teste ", mode: "insensitive" } }
@@ -251,11 +251,8 @@ const listarPublicas = async (req, res) => {
         );
         const filtered = receitas.filter(rec => {
             const title = String(rec.titulo || rec.title || "").trim().toLowerCase();
-            const authorId = rec.usuarioId || rec.authorId;
-            // Remove receitas de teste ou seeds do sistema legado
-            if (authorId === 1) return false;
-            if (title === "teste" || title.startsWith("teste ") || title === "cereal") return false;
-            // Apenas receitas com conteúdo real
+            // Remove apenas testes óbvios
+            if (title === "teste" || title.startsWith("teste ") || title === "teste 2") return false;
             if (!title) return false;
             return true;
         });
@@ -640,8 +637,9 @@ const obterDesafioSemanal = async (req, res) => {
         const receitasDoDesafio = await prisma.receita.findMany({
             where: {
                 publica: true,
-                publicadaEm: { not: null },
+                rascunho: false,
                 OR: [
+                    { hashtags: { some: { hashtag: { nome: { equals: cleanTag, mode: "insensitive" } } } } },
                     { categorias: { some: { categoria: { nome: { contains: cleanTag, mode: "insensitive" } } } } },
                     { titulo: { contains: desafio.hashtag, mode: "insensitive" } },
                     { descricao: { contains: desafio.hashtag, mode: "insensitive" } }
