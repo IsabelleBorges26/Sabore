@@ -757,43 +757,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>${escapeHtml(err.message || 'Verifique se o backend do Saboré está ativo.')}</p>
             <button class="btn-insta-empty-action" id="btn-retry-creations" type="button">
               <i class="fa-solid fa-rotate-right"></i> Tentar novamente
-            </button>
-            ${rec.public ? `
-              <button class="btn-share-publication" style="margin-top:8px;width:100%;padding:9px 12px;border:1px solid var(--glass-border);border-radius:10px;background:var(--glass);color:var(--light);font:inherit;font-size:.78rem;font-weight:600;">
-                <i class="fa-solid fa-share-nodes"></i> Compartilhar publicação
-              </button>
-            ` : ''}
           </div>
         `;
-<<<<<<< HEAD
         const retryBtn = document.getElementById('btn-retry-creations');
         if (retryBtn) retryBtn.addEventListener('click', loadCreations);
       }
-=======
-        const publishButton = card.querySelector('.btn-publish-recipe');
-        publishButton.addEventListener('click', async (event) => {
-          event.stopPropagation();
-          try {
-            const updated = await api.put(`/receitas/atualizar/${rec.id}`, { public: !rec.public });
-            rec.public = updated.public;
-            loadCreations();
-          } catch (error) {
-            alert(`Não foi possível atualizar a publicação: ${error.message}`);
-          }
-        });
-        const shareButton = card.querySelector('.btn-share-publication');
-        if (shareButton) {
-          shareButton.addEventListener('click', async (event) => {
-            event.stopPropagation();
-            await window.SaboreShareRecipe(rec);
-          });
-        }
-        container.appendChild(card);
-      });
-      updateCursorHoverListeners();
-    } catch (err) {
-      console.error("Erro ao carregar criações:", err);
->>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
     }
   }
 

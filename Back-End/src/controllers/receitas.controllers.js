@@ -41,15 +41,11 @@ const formatRecipe = (recipe) => {
         livroId: recipe.livroId,
         authorId: recipe.usuarioId,
         author: recipe.usuario ? recipe.usuario.nome : "Chef",
-        authorAvatar: recipe.usuario?.foto || null,
         likes: recipe._count?.favoritos || 0,
-<<<<<<< HEAD
         hashtags: recipe.hashtags ? recipe.hashtags.map(item => `#${item.hashtag.nome}`) : [],
         publishedAt: recipe.publicadaEm || null,
-=======
         avaliacoes: recipe._count?.avaliacoes || 0,
         interacoes: (recipe._count?.favoritos || 0) + (recipe._count?.avaliacoes || 0),
->>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
         category: recipe.categorias && recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
         categories: recipe.categorias ? recipe.categorias.map(rc => rc.categoria.nome) : [],
         ingredients: recipe.ingredientes ? recipe.ingredientes.map(ri => {
@@ -233,15 +229,14 @@ const listarPublicas = async (req, res) => {
         ingredientes: { include: { ingrediente: true } },
         categorias: { include: { categoria: true } },
         ...(withHashtags ? { hashtags: { include: { hashtag: true } } } : {}),
-        _count: { select: { favoritos: true } }
+        _count: { select: { favoritos: true, avaliacoes: true } }
     });
     try {
-<<<<<<< HEAD
         const receitas = await withDatabaseFallback(
             () => prisma.receita.findMany({
                 where: { 
                     publica: true, 
-                    publicadaEm: { not: null },
+                    rascunho: false,
                     usuarioId: { not: 1 },
                     NOT: [
                         { titulo: { equals: "teste", mode: "insensitive" } },
@@ -269,7 +264,7 @@ const listarPublicas = async (req, res) => {
         if (error.code === "P2021" || /ReceitaHashtag|Hashtag.*does not exist/i.test(error.message || "")) {
             try {
                 const receitas = await prisma.receita.findMany({
-                    where: { publica: true, publicadaEm: { not: null } },
+                    where: { publica: true, rascunho: false },
                     include: includeRecipeRelations(false),
                     orderBy: { createdAt: "desc" }
                 });
@@ -279,39 +274,6 @@ const listarPublicas = async (req, res) => {
             }
         }
         res.status(500).json({ erro: "Erro ao listar receitas públicas.", detalhe: error.message });
-    }
-};
-const buscarPublica = async (req, res) => {
-    try {
-        const recipe = await prisma.receita.findFirst({
-            where: { id: Number(req.params.id), publica: true, publicadaEm: { not: null } },
-            include: {
-                usuario: true,
-                ingredientes: { include: { ingrediente: true } },
-                categorias: { include: { categoria: true } },
-                hashtags: { include: { hashtag: true } },
-                _count: { select: { favoritos: true } }
-            }
-=======
-        const receitas = await prisma.receita.findMany({
-            where: { publica: true, rascunho: false },
-            include: {
-                usuario: true,
-                ingredientes: {
-                    include: { ingrediente: true }
-                },
-                categorias: {
-                    include: { categoria: true }
-                },
-                _count: { select: { favoritos: true, avaliacoes: true } }
-            },
-            orderBy: { createdAt: "desc" }
->>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
-        });
-        if (!recipe) return res.status(404).json({ erro: "Receita pública não encontrada." });
-        return res.status(200).json(formatRecipe(recipe));
-    } catch (error) {
-        return res.status(500).json({ erro: "Erro ao abrir receita pública.", detalhe: error.message });
     }
 };
 const buscarPublica = async (req, res) => {

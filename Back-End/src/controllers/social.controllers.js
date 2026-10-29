@@ -249,10 +249,6 @@ const deixarDeSeguir = async (req, res) => {
     }
 };
 
-<<<<<<< HEAD
-module.exports = { listarPerfis, meuResumo, meusSeguidores, meusSeguindo, seguir, deixarDeSeguir, removerSeguidor };
-
-=======
 // O feed usa atividades existentes; não exige uma nova tabela de notificações.
 const listarNotificacoes = async (req, res) => {
     const usuarioId = req.usuario.id;
@@ -394,10 +390,13 @@ const listarNotificacoes = async (req, res) => {
 module.exports = {
     listarPerfis,
     meuResumo,
+    meusSeguidores,
+    meusSeguindo,
+    removerSeguidor,
     listarConexoes,
     detalharPerfil,
     seguir,
     deixarDeSeguir,
     listarNotificacoes
 };
->>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
+

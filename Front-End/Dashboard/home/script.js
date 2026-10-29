@@ -5,14 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   let userState = {
-<<<<<<< HEAD
     isPro: user.plano === 'PRO',
     plan: user.plano || 'Gratuito',
-=======
-    isPro: false,
-    plan: 'Gratuito',
     ingredients: [],
->>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
     books: [],
     stats: {
       saved: 0,
@@ -206,11 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
-<<<<<<< HEAD
   function triggerCelebrationEffects() {
     userState.stats.saved += 10; 
     updateStatsUI();
-=======
+  }
+
   const ingContainer = document.getElementById('widget-ingredients-container');
   const addIngInput = document.getElementById('add-ing-input');
   const addIngBtn = document.getElementById('add-ing-btn');
@@ -302,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (aiInput) aiInput.focus();
       }, 300);
     });
->>>>>>> bf6bdb9ad30543104ca05bc226459cc5e5d70ba7
   }
   const newBookBtn = document.getElementById('new-book-btn');
   const newBookForm = document.getElementById('new-book-form');
