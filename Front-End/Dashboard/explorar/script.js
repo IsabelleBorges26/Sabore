@@ -25,6 +25,23 @@ document.addEventListener('DOMContentLoaded', () => {
   let feedCurrentCount = 12;
   let isInfiniteScrollActive = false;
   let latestFeedLoad = 0;
+  const isOwnRecipe = (recipe) => {
+    const userId = api.getUser()?.id;
+    const authorId = recipe?.authorId ?? recipe?.usuarioId;
+    return userId != null && authorId != null && String(authorId) === String(userId);
+  };
+  const showAuthorAvatar = (element, recipe) => {
+    if (!element) return;
+    const initial = String(recipe.author || 'S').trim().charAt(0).toUpperCase() || 'S';
+    element.textContent = initial;
+    if (recipe.authorAvatar) {
+      const image = document.createElement('img');
+      image.src = recipe.authorAvatar;
+      image.alt = '';
+      image.addEventListener('error', () => { element.textContent = initial; }, { once: true });
+      element.replaceChildren(image);
+    }
+  };
   // Seed dinâmico da sessão: muda a cada visita ou refresh da página para trazer variedade e dinamismo ao feed
   let sessionShuffleSeed = Math.random();
 
@@ -247,20 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
     `);
-    const addPostToFeed = (recipe) => {
-      const categories = recipe.categories || [recipe.category || 'Geral'];
-      const tags = extractRecipeTags(recipe);
-      userState.recipes.unshift({
-        id: recipe.id, title: recipe.title, description: recipe.description || '', time: recipe.time || 0,
-        difficulty: recipe.difficulty || 'Fácil', category: recipe.category || categories[0], categories, hashtags: recipe.hashtags || [],
-        tags, image: recipe.image || null,
-        authorId: recipe.authorId, author: recipe.author || api.getUser()?.nome || 'Você', authorAvatar: recipe.authorAvatar || api.getUser()?.foto || null,
-        diet: recipe.category || categories[0], likes: 0, avaliacoes: 0, ingredients: recipe.ingredients || [], steps: recipe.steps || []
-      });
-      renderRecipes();
-      updateTrendingHashtags();
-      renderWeeklyChallenge();
-    };
     const loadBookRecipes = async () => {
       const select = document.getElementById('post-existing-recipe');
       const recipes = await api.get('/receitas/listar');
@@ -285,8 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const recipeId = Number(document.getElementById('post-existing-recipe').value);
       if (!recipeId) return alert('Selecione uma receita de um livro para publicar.');
       try {
-        const published = await api.put(`/receitas/atualizar/${recipeId}`, { public: true });
-        addPostToFeed(published);
+        await api.put(`/receitas/atualizar/${recipeId}`, { public: true });
         closeModal('create-post-modal');
         alert('Receita do livro publicada na comunidade.');
       } catch (error) {
@@ -300,12 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const steps = value('post-steps').split('\n').map(item => item.trim()).filter(Boolean);
       const hashtags = value('post-hashtags').split(/\s+/).map(item => item.replace(/^#/, '').trim()).filter(Boolean);
       try {
-        const created = await api.post('/receitas/cadastrar', {
+        await api.post('/receitas/cadastrar', {
           titulo: value('post-title'), descricao: value('post-description'), tempoPreparo: Number(value('post-time')),
           dificuldade: value('post-difficulty'), categorias: [value('post-category')], hashtags, imagem: value('post-image') || null,
           ingredientes: ingredients, modoPreparo: steps.join('\n'), criadaPorIA: false, publica: true
         });
-        addPostToFeed(created);
         closeModal('create-post-modal');
         alert('Publicação criada. Ela já está visível para a comunidade.');
         event.target.reset();
@@ -441,6 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recipesContainer.innerHTML = '';
     const searchQuery = globalSearchInput ? globalSearchInput.value.toLowerCase().trim() : '';
     let filtered = userState.recipes.filter(rec => {
+      if (isOwnRecipe(rec)) return false;
       const matchesSearch = rec.title.toLowerCase().includes(searchQuery) ||
         rec.author.toLowerCase().includes(searchQuery) ||
         rec.category.toLowerCase().includes(searchQuery);
@@ -544,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="explore-content-area">
           <div class="recipe-author-line">
-            ${rec.authorAvatar ? `<img src="${rec.authorAvatar}" alt="${rec.author}" class="author-avatar" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<span class=\\'author-avatar author-avatar-placeholder\\'>' + (rec.author || 'S').charAt(0).toUpperCase() + '</span>')">` : `<span class="author-avatar author-avatar-placeholder">${(rec.author || 'S').charAt(0).toUpperCase()}</span>`}
+            <span class="author-avatar author-avatar-placeholder" aria-hidden="true"></span>
             <span class="author-name">${rec.author || 'Membro da Comunidade'}</span>
           </div>
           <h4>${rec.title}</h4>
@@ -563,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
       `;
+      showAuthorAvatar(card.querySelector('.author-avatar'), rec);
 
       // 1. CURTIR (LIKE COM CORAÇÃO)
       const likeBtn = card.querySelector('.like-toggle-btn');
@@ -973,9 +976,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function openRecipeDetailsModal(rec) {
     if (!rec) return;
     userState.selectedExploreRecipe = rec;
-    if (detailAuthorAvatar) {
-      detailAuthorAvatar.src = rec.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
-    }
+    showAuthorAvatar(detailAuthorAvatar, rec);
     if (detailAuthorName) {
       detailAuthorName.textContent = 'Por ' + (rec.author || 'Comunidade Saboré');
     }
@@ -1109,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const publicRecipes = recipesResult.value.filter(rec => {
         const title = String(rec.title || rec.titulo || '').trim().toLowerCase();
         if (title === 'teste' || title === 'teste 123') return false;
-        return Boolean(title);
+        return Boolean(title) && !isOwnRecipe(rec);
       });
       userState.recipes = publicRecipes.map(rec => {
         const categoriesList = rec.categories || [];
@@ -1279,14 +1280,13 @@ document.addEventListener('DOMContentLoaded', () => {
         commentCard.className = 'recipe-comment-item';
         commentCard.style.cssText = 'display: flex; gap: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); align-items: flex-start;';
         
-        const avatarUrl = item.usuario?.foto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
         const userName = item.usuario?.nome || 'Usuário da Comunidade';
         const starsHtml = Array.from({ length: 5 }, (_, i) => 
           `<i class="fa-solid fa-star" style="font-size: 0.75rem; color: ${i < item.nota ? 'var(--accent)' : 'rgba(255,255,255,0.2)'};"></i>`
         ).join('');
 
         commentCard.innerHTML = `
-          <img src="${avatarUrl}" alt="${userName}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0;">
+          <span class="comment-author-avatar" aria-hidden="true"></span>
           <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="font-weight: 600; font-size: 0.88rem; color: #fff;">${userName}</span>
@@ -1295,6 +1295,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <p style="margin: 0; font-size: 0.84rem; color: #d4d4d8; line-height: 1.4;">${item.comentario || 'Deixou uma avaliação.'}</p>
           </div>
         `;
+        showAuthorAvatar(commentCard.querySelector('.comment-author-avatar'), {
+          author: userName,
+          authorAvatar: item.usuario?.foto
+        });
         commentsListContainer.appendChild(commentCard);
       });
     } catch (err) {

@@ -27,10 +27,10 @@ html, body {
   color: var(--light);
   overflow: hidden;
   height: 100vh;
-  cursor: none !important;
+
 }
 a, button, input, select, textarea, [role="button"], option, .pref-tag-chip {
-  cursor: none !important;
+
 }
 a {
   color: inherit;
@@ -53,7 +53,7 @@ a {
 .custom-cursor {
   width: 48px;
   height: 48px;
-  background-image: url('../../assets/cursor mouse.png');
+  display: none !important;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;

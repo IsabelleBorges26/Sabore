@@ -39,11 +39,11 @@ body::before {
 }
 
 /* Custom Cursor */
-html, body { cursor: none !important; }
-a, button, input, select, textarea, .social-btn, .plan-btn, .hamburger, [role="button"] { cursor: none !important; }
+html, body {  }
+a, button, input, select, textarea, .social-btn, .plan-btn, .hamburger, [role="button"] {  }
 .custom-cursor {
   width: 48px; height: 48px;
-  background-image: url('../assets/cursor mouse.png');
+  display: none !important;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;

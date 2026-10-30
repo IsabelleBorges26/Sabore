@@ -219,85 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (badge) badge.style.display = 'none';
     });
   }
-  let activeConnectionsList = null;
-  function ensureConnectionsModal() {
-    let modal = document.getElementById('social-connections-modal');
-    if (modal) return modal;
-    modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.id = 'social-connections-modal';
-    modal.innerHTML = `
-      <div class="modal-card small-modal social-list-modal">
-        <button class="modal-close-btn" type="button" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
-        <div class="modal-header-simple">
-          <h3 id="social-list-title">Conexões</h3>
-          <p id="social-list-subtitle">Pessoas da sua comunidade</p>
-        </div>
-        <div class="social-people-list" id="social-people-list"></div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    const close = () => modal.classList.remove('open');
-    modal.querySelector('.modal-close-btn').addEventListener('click', close);
-    modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
-    return modal;
-  }
-  async function openConnectionsList(type) {
-    activeConnectionsList = type;
-    const modal = ensureConnectionsModal();
-    const list = modal.querySelector('#social-people-list');
-    modal.querySelector('#social-list-title').textContent = type === 'seguidores' ? 'Seguidores' : 'Seguindo';
-    modal.querySelector('#social-list-subtitle').textContent = type === 'seguidores'
-      ? 'Pessoas que acompanham suas publicações'
-      : 'Pessoas cujas publicações você acompanha';
-    list.innerHTML = '<div class="social-list-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando…</p></div>';
-    modal.classList.add('open');
-    try {
-      const data = await api.get('/social/conexoes');
-      const people = data[type] || [];
-      list.replaceChildren();
-      if (!people.length) {
-        const empty = document.createElement('div');
-        empty.className = 'social-list-empty';
-        empty.innerHTML = `<i class="fa-solid ${type === 'seguidores' ? 'fa-user-group' : 'fa-user-plus'}"></i><p>${type === 'seguidores' ? 'Você ainda não tem seguidores.' : 'Você ainda não segue ninguém.'}</p>`;
-        list.appendChild(empty);
-        return;
-      }
-      people.forEach((person) => {
-        const row = document.createElement('button');
-        row.type = 'button';
-        row.className = 'social-person-row';
-        const avatar = document.createElement('span');
-        avatar.className = 'social-person-avatar';
-        avatar.textContent = (person.nome || 'S').charAt(0).toUpperCase();
-        if (person.foto) {
-          const image = document.createElement('img');
-          image.src = person.foto;
-          image.alt = '';
-          image.addEventListener('error', () => { avatar.textContent = (person.nome || 'S').charAt(0).toUpperCase(); }, { once: true });
-          avatar.replaceChildren(image);
-        }
-        const info = document.createElement('span');
-        info.className = 'social-person-info';
-        const name = document.createElement('strong');
-        name.textContent = person.nome;
-        const summary = document.createElement('span');
-        summary.textContent = `${person.receitasPublicas} publicações · ${person.seguidores} seguidores`;
-        info.append(name, summary);
-        const action = document.createElement('span');
-        action.className = 'social-person-action';
-        action.textContent = 'Ver perfil';
-        row.append(avatar, info, action);
-        row.addEventListener('click', () => api.openUserProfile(person.id));
-        list.appendChild(row);
-      });
-      updateCursorHoverListeners();
-    } catch (error) {
-      list.innerHTML = '<div class="social-list-empty"><i class="fa-solid fa-circle-exclamation"></i><p>Não foi possível carregar esta lista.</p></div>';
-    }
-  }
-  document.getElementById('open-followers-list')?.addEventListener('click', () => openConnectionsList('seguidores'));
-  document.getElementById('open-following-list')?.addEventListener('click', () => openConnectionsList('seguindo'));
   document.getElementById('open-publications-list')?.addEventListener('click', () => {
     document.querySelector('.creations-grid')?.closest('.setup-widget')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
@@ -307,8 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('profile-followers-count').textContent = social.seguidores;
       document.getElementById('profile-following-count').textContent = social.seguindo;
       document.getElementById('profile-recipes-count').textContent = social.receitasPublicas;
-      if (document.getElementById('social-connections-modal')?.classList.contains('open') && activeConnectionsList) {
-        openConnectionsList(activeConnectionsList);
+      if (document.getElementById('followers-modal')?.classList.contains('open')) {
+        loadSocialTab(currentSocialTab);
       }
     } catch {}
   });

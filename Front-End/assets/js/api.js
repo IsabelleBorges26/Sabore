@@ -537,6 +537,7 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
     };
     let notifications = [];
     let loadingPromise = null;
+    const selectedIds = new Set();
 
     const readStorageKey = () => {
         const user = api.getUser();
@@ -547,6 +548,20 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
         if (!key) return new Set();
         try {
             return new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+        } catch {
+            return new Set();
+        }
+    };
+    const deletedStorageKey = () => {
+        const user = api.getUser();
+        return user ? `sabore_notifications_deleted_${user.id}` : null;
+    };
+    const getDeletedIds = () => {
+        const key = deletedStorageKey();
+        if (!key) return new Set();
+        try {
+            const ids = JSON.parse(localStorage.getItem(key) || "[]");
+            return new Set(Array.isArray(ids) ? ids : []);
         } catch {
             return new Set();
         }
@@ -568,17 +583,92 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
         }
         return "Agora";
     };
-    const visibleNotifications = () => notifications.filter((item) => (
-        item.tipo !== "recomendacao" || localStorage.getItem("sabore_notif_daily") !== "false"
-    ));
+    const visibleNotifications = () => {
+        const deletedIds = getDeletedIds();
+        return notifications.filter((item) => !deletedIds.has(item.id) && (
+            item.tipo !== "recomendacao" || localStorage.getItem("sabore_notif_daily") !== "false"
+        ));
+    };
+    const ensureSelectionControls = (list) => {
+        let toolbar = list.parentElement.querySelector(".notification-actions");
+        if (toolbar) return toolbar;
+
+        if (!document.getElementById("notification-selection-style")) {
+            const style = document.createElement("style");
+            style.id = "notification-selection-style";
+            style.textContent = `
+                .notification-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; }
+                .notification-actions[hidden] { display:none; }
+                .notification-actions label { display:inline-flex; align-items:center; gap:8px; font-size:.78rem; color:var(--light); cursor:pointer; }
+                .notification-actions input, .notification-item-select { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+                .notification-actions button { padding:7px 10px; border:1px solid rgba(255,95,86,.35); border-radius:8px; background:rgba(255,95,86,.12); color:var(--light); font:inherit; font-size:.75rem; cursor:pointer; }
+                .notification-actions button:disabled { opacity:.45; cursor:not-allowed; }
+                .notif-item.is-selected { border-color:rgba(224,133,122,.4); background:var(--accent-light); }
+                .notification-item-select { align-self:center; }
+                .notification-item-main { display:flex; align-items:flex-start; gap:12px; flex:1; min-width:0; }
+                .notification-item-main[role="link"] { cursor:pointer; }
+                .notification-item-main .notif-info { flex:1; min-width:0; }
+            `;
+            document.head.appendChild(style);
+        }
+
+        toolbar = document.createElement("div");
+        toolbar.className = "notification-actions";
+        const label = document.createElement("label");
+        const selectAll = document.createElement("input");
+        selectAll.type = "checkbox";
+        selectAll.setAttribute("aria-label", "Selecionar todas as notificações");
+        label.append(selectAll, document.createTextNode("Selecionar todas"));
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.textContent = "Excluir";
+        toolbar.append(label, deleteButton);
+        list.before(toolbar);
+
+        selectAll.addEventListener("change", () => {
+            visibleNotifications().forEach((item) => {
+                if (selectAll.checked) selectedIds.add(item.id);
+                else selectedIds.delete(item.id);
+            });
+            renderNotifications();
+        });
+        deleteButton.addEventListener("click", () => {
+            if (!selectedIds.size) return;
+            const key = deletedStorageKey();
+            if (!key) return;
+            const deletedIds = getDeletedIds();
+            selectedIds.forEach((id) => deletedIds.add(id));
+            try {
+                localStorage.setItem(key, JSON.stringify(Array.from(deletedIds).slice(-1000)));
+            } catch {
+                window.SaboreNotify?.("Não foi possível excluir as notificações.", "error");
+                return;
+            }
+            selectedIds.clear();
+            renderNotifications();
+        });
+        return toolbar;
+    };
+    const updateSelectionControls = (toolbar, items) => {
+        const selectAll = toolbar.querySelector('input[type="checkbox"]');
+        const deleteButton = toolbar.querySelector("button");
+        toolbar.hidden = items.length === 0;
+        selectAll.checked = items.length > 0 && selectedIds.size === items.length;
+        selectAll.indeterminate = selectedIds.size > 0 && selectedIds.size < items.length;
+        deleteButton.disabled = selectedIds.size === 0;
+        deleteButton.textContent = selectedIds.size ? `Excluir (${selectedIds.size})` : "Excluir";
+    };
     const renderNotifications = () => {
         const list = document.querySelector("#notifications-modal .notifications-list");
         const button = document.getElementById("notifications-btn");
         const dot = button?.querySelector(".badge-dot");
         if (!list || !button) return;
 
+        const toolbar = ensureSelectionControls(list);
         const readIds = getReadIds();
         const items = visibleNotifications();
+        const visibleIds = new Set(items.map((item) => item.id));
+        selectedIds.forEach((id) => { if (!visibleIds.has(id)) selectedIds.delete(id); });
         list.innerHTML = "";
         if (!items.length) {
             const empty = document.createElement("div");
@@ -590,11 +680,25 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
             items.forEach((item) => {
                 const row = document.createElement("article");
                 row.className = `notif-item${readIds.has(item.id) ? "" : " unread"}`;
+                row.classList.toggle("is-selected", selectedIds.has(item.id));
                 const actionable = Boolean(item.receitaId || item.usuarioId);
-                row.tabIndex = actionable ? 0 : -1;
+                const select = document.createElement("input");
+                select.type = "checkbox";
+                select.className = "notification-item-select";
+                select.checked = selectedIds.has(item.id);
+                select.setAttribute("aria-label", `Selecionar notificação: ${item.titulo || "Novidade"}`);
+                select.addEventListener("change", () => {
+                    if (select.checked) selectedIds.add(item.id);
+                    else selectedIds.delete(item.id);
+                    row.classList.toggle("is-selected", select.checked);
+                    updateSelectionControls(toolbar, items);
+                });
+
+                const main = document.createElement("div");
+                main.className = "notification-item-main";
                 if (actionable) {
-                    row.setAttribute("role", "link");
-                    row.style.cursor = "pointer";
+                    main.setAttribute("role", "link");
+                    main.tabIndex = 0;
                 }
 
                 const icon = document.createElement("span");
@@ -610,15 +714,16 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
                 time.className = "notif-time";
                 time.textContent = formatRelativeTime(item.createdAt);
                 info.append(message, time);
-                row.append(icon, info);
+                main.append(icon, info);
+                row.append(select, main);
 
                 if (actionable) {
                     const openTarget = () => {
                         if (item.receitaId) window.location.href = api.publicationUrl(item.receitaId);
                         else api.openUserProfile(item.usuarioId);
                     };
-                    row.addEventListener("click", openTarget);
-                    row.addEventListener("keydown", (event) => {
+                    main.addEventListener("click", openTarget);
+                    main.addEventListener("keydown", (event) => {
                         if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
                             openTarget();
@@ -629,6 +734,7 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
             });
         }
 
+        updateSelectionControls(toolbar, items);
         const unreadCount = items.filter((item) => !readIds.has(item.id)).length;
         if (dot) dot.style.display = unreadCount ? "block" : "none";
         button.title = unreadCount ? `Notificações (${unreadCount} novas)` : "Notificações";
@@ -669,7 +775,8 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
             markVisibleAsRead();
         });
         window.addEventListener("storage", (event) => {
-            if (event.key === readStorageKey() || event.key === "sabore_notif_daily") renderNotifications();
+            if (event.key === deletedStorageKey()) selectedIds.clear();
+            if (event.key === readStorageKey() || event.key === deletedStorageKey() || event.key === "sabore_notif_daily") renderNotifications();
         });
     });
 })();
@@ -808,7 +915,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 text-align: left;
                 width: 100%;
                 font-family: inherit;
-                cursor: none !important;
             }
             .profile-dropdown-menu .dropdown-item:hover {
                 background: var(--glass-hover);

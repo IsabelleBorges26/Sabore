@@ -268,8 +268,8 @@ if (localUser) {
   if (navCta) {
     navCta.innerHTML = `
       <span class="user-greeting" style="font-size: 0.9rem; font-weight: 500; color: var(--light); margin-right: 15px;">Olá, ${displayName}!</span>
-      <a href="../Dashboard/home/index.html" class="btn-nav-login" style="margin-right: 10px; text-decoration: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 18px; border-radius: 40px; cursor: none;">Dashboard</a>
-      <button id="btnLogout" class="btn-nav-signup" style="background: transparent; border: 1px solid rgba(242,244,243,0.2); color: var(--light) !important; padding: 8px 18px; cursor: none;">Sair</button>
+      <a href="../Dashboard/home/index.html" class="btn-nav-login" style="margin-right: 10px; text-decoration: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 18px; border-radius: 40px;">Dashboard</a>
+      <button id="btnLogout" class="btn-nav-signup" style="background: transparent; border: 1px solid rgba(242,244,243,0.2); color: var(--light) !important; padding: 8px 18px;">Sair</button>
     `;
     document.getElementById('btnLogout').addEventListener('click', () => {
       signOutFromLanding();

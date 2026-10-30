@@ -61,11 +61,12 @@ if (contactForm) {
     submitBtn.innerHTML = '<span>Enviando...</span> <i class="fa-solid fa-spinner fa-spin"></i>';
 
     try {
+      const formData = new FormData(contactForm);
       await api.post('/contato', {
-        nome: contactForm.nome.value.trim(),
-        email: contactForm.email.value.trim(),
-        assunto: contactForm.assunto.value,
-        mensagem: contactForm.mensagem.value.trim()
+        nome: String(formData.get('nome') || '').trim(),
+        email: String(formData.get('email') || '').trim(),
+        assunto: String(formData.get('assunto') || ''),
+        mensagem: String(formData.get('mensagem') || '').trim()
       });
       formSuccess.classList.add('show');
       contactForm.reset();

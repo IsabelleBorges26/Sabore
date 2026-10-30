@@ -30,7 +30,8 @@ const enviar = async (req, res) => {
 
     try {
         const contato = await prisma.mensagemContato.create({
-            data: { nome, email, assunto, mensagem }
+            data: { nome, email, assunto, mensagem },
+            select: { id: true }
         });
         res.status(201).json({
             id: contato.id,
