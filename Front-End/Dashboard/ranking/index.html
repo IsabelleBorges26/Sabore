@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SABORÉ — Ranking de Engajamento</title>
+  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../home/style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../../inicial/index.html" class="logo-area">
+          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
+        </a>
+        <p class="sidebar-slogan">Saboreie novas possibilidades</p>
+      </div>
+      <nav class="sidebar-menu">
+        <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
+        <a href="../explorar/index.html" class="menu-item" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
+        <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
+        <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
+        <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
+        <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
+        <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
+        <a href="#" class="menu-item active" data-target="ranking"><i class="fa-solid fa-trophy"></i> Ranking PRO</a>
+        <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
+      </nav>
+      <div class="sidebar-footer-promo">
+        <div class="promo-card-compact">
+          <div class="promo-icon"><i class="fa-solid fa-trophy"></i></div>
+          <div class="promo-info">
+            <h4>Conquiste o PRO!</h4>
+            <p>Os 5 mais engajados ganham PRO</p>
+            <button class="btn-promo-action" id="btn-open-rules"><i class="fa-solid fa-circle-info"></i> Ver Regras</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="navbar">
+        <div class="navbar-left">
+          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+          <div class="nav-welcome-text">
+            <h2>Ranking de Engajamento <i class="fa-solid fa-trophy" style="color: #FFD700; margin-left: 6px;"></i></h2>
+            <p>Conquiste o plano Saboré PRO participando ativamente da comunidade</p>
+          </div>
+        </div>
+        <div class="navbar-right">
+          <button class="nav-action-btn" id="btn-show-rules-nav" title="Regras de Pontuação">
+            <i class="fa-solid fa-circle-question"></i>
+          </button>
+          <button class="nav-action-btn" id="settings-btn" title="Configurações">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+          <div class="user-profile-badge" id="profile-dropdown-trigger">
+            <div class="user-avatar-wrap">
+              <img src="" alt="Avatar" class="user-avatar">
+              <span class="user-status-dot online"></span>
+            </div>
+            <div class="user-meta">
+              <span class="user-name">Usuário</span>
+              <span class="user-plan-tag free" id="navbar-plan-tag">FREE</span>
+            </div>
+            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+          </div>
+        </div>
+      </header>
+
+      <div class="dashboard-body">
+        <!-- Hero explicativo do ranking com contagem regressiva -->
+        <section class="ranking-hero-card">
+          <div class="ranking-hero-content">
+            <div class="ranking-badge-tag"><i class="fa-solid fa-crown"></i> ZONA CLASSIFICATÓRIA SIES</div>
+            <h1 class="ranking-hero-title">O Top 5 do mês ganha o Saboré PRO gratuitamente</h1>
+            <p class="ranking-hero-subtitle">
+              Compartilhe suas melhores receitas, interaja com outros cozinheiros e acumule pontos.
+              Ao final do mês, os cinco primeiros colocados conquistam o plano PRO com recursos exclusivos de IA para o mês seguinte!
+            </p>
+            <div class="ranking-hero-actions">
+              <a href="../chefIA/index.html" class="btn-hero-primary"><i class="fa-solid fa-plus"></i> Publicar Receita (+10 pts)</a>
+              <button class="btn-hero-outline" id="btn-my-history"><i class="fa-solid fa-list-check"></i> Meu Histórico de Pontos</button>
+            </div>
+          </div>
+          <div class="ranking-hero-countdown-box">
+            <span class="countdown-label"><i class="fa-regular fa-clock"></i> Encerramento do Período</span>
+            <div class="countdown-values">
+              <div class="countdown-item">
+                <span class="countdown-num" id="countdown-days">--</span>
+                <span class="countdown-txt">dias</span>
+              </div>
+              <div class="countdown-sep">:</div>
+              <div class="countdown-item">
+                <span class="countdown-num" id="countdown-hours">--</span>
+                <span class="countdown-txt">horas</span>
+              </div>
+            </div>
+            <p class="countdown-reference-month" id="ranking-month-label">Mês de Referência: --</p>
+          </div>
+        </section>
+
+        <!-- Status do Usuário Logado -->
+        <section class="user-ranking-strip" id="user-ranking-strip">
+          <div class="strip-avatar-wrap">
+            <img src="" alt="Sua foto" id="strip-user-avatar" class="strip-user-avatar">
+          </div>
+          <div class="strip-user-info">
+            <div class="strip-name-row">
+              <h3 id="strip-user-name">Carregando sua posição...</h3>
+              <span class="strip-plan-pill" id="strip-plan-pill">FREE</span>
+              <span class="strip-zone-pill hidden" id="strip-zone-pill"><i class="fa-solid fa-star"></i> Zona PRO (G-5)</span>
+            </div>
+            <p class="strip-status-desc" id="strip-status-desc">Acumulando pontos no mês atual</p>
+          </div>
+          <div class="strip-stats-group">
+            <div class="strip-stat-item">
+              <span class="strip-stat-val" id="strip-user-pos">#--</span>
+              <span class="strip-stat-lbl">Sua Posição</span>
+            </div>
+            <div class="strip-stat-item">
+              <span class="strip-stat-val points-highlight" id="strip-user-points">0</span>
+              <span class="strip-stat-lbl">Seus Pontos</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Top 5 Destaques (Pódio / Cards de Destaque) -->
+        <section class="ranking-podium-section">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title"><i class="fa-solid fa-crown" style="color: #FFD700;"></i> Zona de Conquista PRO (Top 5)</h2>
+              <p class="section-desc">Estes cozinheiros estão garantindo o Saboré PRO no próximo mês</p>
+            </div>
+            <button class="btn-rules-small" id="btn-quick-rules"><i class="fa-solid fa-circle-info"></i> Como pontuar?</button>
+          </div>
+          <div class="podium-cards-grid" id="podium-cards-grid">
+            <!-- Inserido dinamicamente via JS -->
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </section>
+
+        <!-- Tabela Completa do Ranking -->
+        <section class="full-ranking-section">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title"><i class="fa-solid fa-users"></i> Classificação Geral da Comunidade</h2>
+              <p class="section-desc" id="total-participants-label">Participantes no ranking deste mês</p>
+            </div>
+          </div>
+          <div class="ranking-table-card">
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th style="width: 80px;">Posição</th>
+                    <th>Cozinheiro</th>
+                    <th>Plano Atual</th>
+                    <th>Receitas no Mês</th>
+                    <th style="text-align: right;">Pontuação</th>
+                  </tr>
+                </thead>
+                <tbody id="ranking-table-body">
+                  <!-- Inserido dinamicamente via JS -->
+                  <tr><td colspan="5" style="text-align:center; padding: 30px;">Carregando ranking...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de Regras de Pontuação -->
+  <div class="modal-overlay" id="rules-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="close-rules-modal"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header-simple">
+        <div class="rules-icon-header"><i class="fa-solid fa-award"></i></div>
+        <h3>Como conquistar pontos para o Plano PRO?</h3>
+        <p>A pontuação é calculada mensalmente com base na sua participação genuína na culinária do Saboré:</p>
+      </div>
+      <div class="rules-table-list">
+        <div class="rule-item">
+          <div class="rule-icon-box recipe-pts"><i class="fa-solid fa-utensils"></i></div>
+          <div class="rule-info">
+            <h4>Publicar uma receita válida</h4>
+            <p>Receita estruturada com ingredientes, passos e modo de preparo.</p>
+          </div>
+          <span class="rule-pts-badge">+10 pts</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon-box review-pts"><i class="fa-solid fa-star"></i></div>
+          <div class="rule-info">
+            <h4>Receber uma avaliação em sua receita</h4>
+            <p>Quando outro usuário avalia ou comenta um prato seu.</p>
+          </div>
+          <span class="rule-pts-badge">+3 pts</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon-box favorite-pts"><i class="fa-solid fa-heart"></i></div>
+          <div class="rule-info">
+            <h4>Receber um favorito em sua receita</h4>
+            <p>Quando alguém guarda seu prato no livro de favoritos.</p>
+          </div>
+          <span class="rule-pts-badge">+2 pts</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon-box login-pts"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="rule-info">
+            <h4>Acessar a plataforma em dias diferentes</h4>
+            <p>Contabilizado no máximo 1 vez por dia por usuário.</p>
+          </div>
+          <span class="rule-pts-badge">+2 pts/dia</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon-box profile-pts"><i class="fa-solid fa-id-badge"></i></div>
+          <div class="rule-info">
+            <h4>Completar o seu perfil</h4>
+            <p>Adicionar foto e dados de apresentação (1 vez por conta).</p>
+          </div>
+          <span class="rule-pts-badge">+5 pts</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon-box follow-pts"><i class="fa-solid fa-user-plus"></i></div>
+          <div class="rule-info">
+            <h4>Seguir outro cozinheiro</h4>
+            <p>Ao se conectar com membros ativos da comunidade.</p>
+          </div>
+          <span class="rule-pts-badge">+1 pt</span>
+        </div>
+      </div>
+      <div class="rules-footer-note">
+        <p><i class="fa-solid fa-shield-halved"></i> <strong>Critérios de Desempate:</strong> Caso dois usuários empatem em pontos, ganha quem publicou mais receitas válidas no mês. Persistindo o empate, ganha quem alcançou a pontuação primeiro.</p>
+      </div>
+      <button class="btn-rules-got-it" id="btn-close-rules-action">Entendido, quero subir no Ranking!</button>
+    </div>
+  </div>
+
+  <!-- Modal de Meu Histórico de Pontos -->
+  <div class="modal-overlay" id="history-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="close-history-modal"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header-simple">
+        <div class="rules-icon-header" style="background: rgba(224, 133, 122, 0.2); color: var(--accent);"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <h3>Histórico de Atividades</h3>
+        <p id="history-modal-subtitle">Seu extrato de pontuações conquistadas este mês:</p>
+      </div>
+      <div class="history-list-container" id="history-list-container">
+        <!-- Itens inseridos via JS -->
+      </div>
+      <div class="history-total-bar">
+        <span>Total Acumulado no Mês:</span>
+        <strong id="history-total-points">0 pts</strong>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

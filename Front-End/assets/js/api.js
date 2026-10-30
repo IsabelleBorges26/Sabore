@@ -198,8 +198,102 @@ const api = {
     get: (endpoint) => api.request(endpoint, { method: "GET" }),
     post: (endpoint, body) => api.request(endpoint, { method: "POST", body: JSON.stringify(body) }),
     put: (endpoint, body) => api.request(endpoint, { method: "PUT", body: JSON.stringify(body) }),
-    delete: (endpoint) => api.request(endpoint, { method: "DELETE" })
+    delete: (endpoint) => api.request(endpoint, { method: "DELETE" }),
+    getPlanInfo: async () => {
+        try {
+            return await api.get("/planos/verificar");
+        } catch {
+            return null;
+        }
+    }
 };
+
+// Sincroniza tags de plano, contadores de cota e bloqueios PRO em qualquer tela do Dashboard
+window.SaboreSyncPlanUI = async function() {
+    try {
+        const info = await api.getPlanInfo();
+        if (!info) return;
+
+        const isPro = info.isPro || info.plano === "PRO";
+        const consumo = info.consumo;
+
+        // Atualiza tags na navbar
+        const navbarTag = document.getElementById("navbar-plan-tag");
+        if (navbarTag) {
+            navbarTag.textContent = isPro ? "PRO" : "FREE";
+            navbarTag.className = `user-plan-tag ${isPro ? "pro" : "free"}`;
+        }
+
+        // Atualiza botão lateral ou banner PRO
+        const sidebarUpgradeBtn = document.getElementById("sidebar-upgrade-btn");
+        if (sidebarUpgradeBtn) {
+            if (isPro) {
+                sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-gem"></i> Saboré PRO';
+                sidebarUpgradeBtn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
+                sidebarUpgradeBtn.style.color = "#121F1C";
+                sidebarUpgradeBtn.onclick = () => { window.location.href = "../ranking/index.html"; };
+            } else {
+                sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-trophy"></i> Conquistar PRO';
+                sidebarUpgradeBtn.onclick = () => { window.location.href = "../ranking/index.html"; };
+            }
+        }
+
+        // Atualiza links do menu PRO
+        const proMenuLinks = document.querySelectorAll('.pro-menu-item, [data-target="pro"]');
+        proMenuLinks.forEach(link => {
+            link.href = "../ranking/index.html";
+            link.innerHTML = '<i class="fa-solid fa-trophy"></i> Ranking PRO';
+        });
+
+        // Se o usuário for administrador, adiciona link de admin no menu se ainda não existir
+        if (info.isAdmin) {
+            const sidebarMenu = document.querySelector(".sidebar-menu");
+            if (sidebarMenu && !document.getElementById("sidebar-admin-link")) {
+                const adminLink = document.createElement("a");
+                adminLink.id = "sidebar-admin-link";
+                adminLink.href = "../admin/index.html";
+                adminLink.className = "menu-item";
+                adminLink.innerHTML = '<i class="fa-solid fa-screwdriver-wrench"></i> Painel Admin';
+                sidebarMenu.appendChild(adminLink);
+            }
+        }
+
+        // Atualiza contadores de IA se os elementos existirem na tela
+        const pillText = document.getElementById("ia-usage-counter-text");
+        if (pillText && consumo) {
+            if (isPro) {
+                pillText.innerHTML = `<strong>${consumo.restantes}</strong> de ${consumo.limiteTotal} usos esta semana`;
+            } else {
+                pillText.innerHTML = `<strong>${consumo.restantes}</strong> de ${consumo.limiteTotal} msgs este mês`;
+            }
+        }
+
+        // Bloqueio de tela para abas exclusivas do PRO (iaFotos e importVideo)
+        const proGate = document.getElementById("pro-gate-overlay");
+        const mainGridFotos = document.getElementById("ia-fotos-main-grid");
+        const mainGridVideo = document.getElementById("import-video-main-grid");
+
+        if (!isPro) {
+            if (proGate) proGate.classList.remove("hidden");
+            if (mainGridFotos) mainGridFotos.style.display = "none";
+            if (mainGridVideo) mainGridVideo.style.display = "none";
+        } else {
+            if (proGate) proGate.classList.add("hidden");
+            if (mainGridFotos) mainGridFotos.style.display = "";
+            if (mainGridVideo) mainGridVideo.style.display = "";
+        }
+
+        return info;
+    } catch (e) {
+        console.warn("[SaboreSyncPlanUI] Falha ao sincronizar estado do plano:", e);
+    }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (api.getUser()) {
+        window.SaboreSyncPlanUI();
+    }
+});
 
 api.publicationUrl = (recipeId) => `${API_BASE_URL}/publicacao/${encodeURIComponent(recipeId)}`;
 

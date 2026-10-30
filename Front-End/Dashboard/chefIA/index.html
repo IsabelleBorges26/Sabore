@@ -26,7 +26,7 @@
         <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
         <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
         <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
-        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
+        <a href="../ranking/index.html" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-trophy"></i> Ranking PRO</a>
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
       <div class="sidebar-footer-promo">
@@ -136,7 +136,12 @@
                   <p>Online • Pronto para cozinhar</p>
                 </div>
               </div>
-              <button class="btn-clear-chat" id="clear-chat-btn" title="Limpar conversa"><i class="fa-solid fa-trash-arrow-up"></i></button>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="ia-usage-pill" id="ia-usage-counter-pill" style="font-size: 0.75rem; background: rgba(224, 133, 122, 0.15); border: 1px solid rgba(224, 133, 122, 0.3); color: var(--accent); padding: 5px 12px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-sparkles"></i> <span id="ia-usage-counter-text">Carregando cota...</span>
+                </div>
+                <button class="btn-clear-chat" id="clear-chat-btn" title="Limpar conversa"><i class="fa-solid fa-trash-arrow-up"></i></button>
+              </div>
             </div>
             <div class="chat-messages-container" id="chat-messages-container">
               <div class="message-bubble assistant">

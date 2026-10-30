@@ -26,7 +26,7 @@
         <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
         <a href="../favoritos/index.html" class="menu-item" data-target="favoritas"><i class="fa-solid fa-heart"></i> Favoritas</a>
         <a href="../perfil/index.html" class="menu-item" data-target="perfil"><i class="fa-solid fa-user"></i> Perfil</a>
-        <a href="#pro" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-gem"></i> Plano PRO</a>
+        <a href="../ranking/index.html" class="menu-item pro-menu-item" data-target="pro"><i class="fa-solid fa-trophy"></i> Ranking PRO</a>
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
       <div class="sidebar-footer-promo">
@@ -50,20 +50,19 @@
           </div>
         </div>
         <div class="navbar-right">
-          <button class="nav-action-btn" id="notifications-btn" title="Notificações">
-            <i class="fa-solid fa-bell"></i>
-            <span class="badge-dot"></span>
-          </button>
+          <div class="ia-usage-pill" id="ia-usage-counter-pill" style="font-size: 0.75rem; background: rgba(224, 133, 122, 0.15); border: 1px solid rgba(224, 133, 122, 0.3); color: var(--accent); padding: 5px 12px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-gem" style="color: #FFD700;"></i> <span id="ia-usage-counter-text">Carregando cota...</span>
+          </div>
           <button class="nav-action-btn" id="settings-btn" title="Configurações">
             <i class="fa-solid fa-gear"></i>
           </button>
           <div class="user-profile-badge" id="profile-dropdown-trigger">
             <div class="user-avatar-wrap">
-              <img src="" alt="Avatar Davi" class="user-avatar">
+              <img src="" alt="Avatar" class="user-avatar">
               <span class="user-status-dot online"></span>
             </div>
             <div class="user-meta">
-              <span class="user-name">Davi</span>
+              <span class="user-name">Usuário</span>
               <span class="user-plan-tag pro" id="navbar-plan-tag">PRO</span>
             </div>
             <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
@@ -71,7 +70,32 @@
         </div>
       </header>
       <div class="dashboard-body">
-        <div class="ia-fotos-grid">
+        <!-- Bloqueio PRO para usuários FREE -->
+        <div id="pro-gate-overlay" class="hidden" style="background: linear-gradient(135deg, rgba(27, 43, 39, 0.98), rgba(18, 31, 28, 0.98)); border: 1.5px solid rgba(255, 215, 0, 0.3); border-radius: 20px; padding: 40px; text-align: center; max-width: 680px; margin: 40px auto; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);">
+          <div style="width: 68px; height: 68px; border-radius: 50%; background: rgba(255, 215, 0, 0.15); color: #FFD700; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--light); margin-bottom: 12px;">Recurso Exclusivo do Saboré PRO</h2>
+          <p style="color: rgba(242, 244, 243, 0.75); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+            O escaneamento e reconhecimento de receitas a partir de fotografias faz parte dos benefícios exclusivos do <strong>Plano PRO</strong>. Os usuários FREE têm acesso ao Chat de IA (até 5 mensagens por mês).
+          </p>
+          <div style="background: rgba(18, 31, 28, 0.6); border: 1px solid var(--glass-border); border-radius: 14px; padding: 18px; margin-bottom: 26px; text-align: left;">
+            <h4 style="font-size: 0.95rem; color: var(--secondary); margin-bottom: 6px;"><i class="fa-solid fa-crown" style="color: #FFD700; margin-right: 6px;"></i> Como conquistar o Saboré PRO gratuitamente?</h4>
+            <p style="font-size: 0.85rem; color: rgba(242, 244, 243, 0.65); line-height: 1.45;">
+              Participe da comunidade publicando receitas, avaliando e interagindo. Os 5 cozinheiros com maior pontuação no ranking conquistam o plano PRO todos os meses sem pagar nada!
+            </p>
+          </div>
+          <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+            <a href="../ranking/index.html" class="btn-primary-action-full" style="width: auto; padding: 12px 28px; background: var(--accent); color: var(--light); border-radius: 12px; font-weight: 600; text-decoration: none;">
+              <i class="fa-solid fa-trophy"></i> Ver Ranking de Engajamento
+            </a>
+            <a href="../chefIA/index.html" class="btn-secondary-action-full" style="width: auto; padding: 12px 24px; border-radius: 12px; text-decoration: none;">
+              <i class="fa-solid fa-robot"></i> Usar Chat do Chef IA
+            </a>
+          </div>
+        </div>
+
+        <div class="ia-fotos-grid" id="ia-fotos-main-grid">
           <div class="ia-panel-left">
             <div class="setup-widget">
               <div class="widget-header">

@@ -23,6 +23,7 @@ model Usuario {
   senha                   String
   foto                    String?
   plano                   Plano                   @default(FREE)
+  isAdmin                 Boolean                 @default(false)
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
   receitas                Receita[]
@@ -33,6 +34,10 @@ model Usuario {
   compartilhamentos       Compartilhamento[]
   seguindo                Seguidor[]              @relation("Seguidor")
   seguidores              Seguidor[]              @relation("Seguido")
+  atividadesEngajamento   AtividadeEngajamento[]
+  concessoesPro           ConcessaoPro[]
+  usosIA                  UsoIA[]
+  fechamentosExecutados   FechamentoMensal[]
 }
 
 model Receita {
@@ -193,3 +198,78 @@ model MensagemContato {
 
   @@index([lida, createdAt])
 }
+
+enum TipoEngajamento {
+  RECEITA_VALIDA
+  ACESSO_DIARIO
+  FAVORITO_RECEBIDO
+  AVALIACAO_RECEBIDA
+  PERFIL_COMPLETO
+  SEGUIR_USUARIO
+}
+
+model AtividadeEngajamento {
+  id             Int             @id @default(autoincrement())
+  usuarioId      Int
+  tipo           TipoEngajamento
+  pontos         Int
+  chaveUnica     String?         @unique // Para evitar pontuações duplicadas e requisições repetidas
+  descricao      String?
+  referenciaId   Int?            // ID da receita, avaliação, seguidor, etc.
+  mesReferencia  String          // Ex: "2026-10" no fuso America/Sao_Paulo
+  createdAt      DateTime        @default(now())
+  usuario        Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, mesReferencia])
+  @@index([mesReferencia, createdAt])
+}
+
+model ConcessaoPro {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int
+  mesReferencia String   // O mês em que o usuário foi premiado (ex: "2026-10")
+  mesVigencia   String   // O mês de fruição do benefício (ex: "2026-11")
+  posicao       Int      // 1 a 5
+  pontos        Int
+  inicioEm      DateTime
+  expiraEm      DateTime
+  ativo         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, mesVigencia])
+  @@index([usuarioId, ativo])
+  @@index([expiraEm])
+}
+
+model FechamentoMensal {
+  id              Int      @id @default(autoincrement())
+  mesReferencia   String   @unique // Ex: "2026-10"
+  executadoEm     DateTime @default(now())
+  executadoPorId  Int?
+  topUsuarios     Json     // Detalhes dos 5 vencedores e pontuações
+  totalApurado    Int      @default(0)
+  observacoes     String?
+  executadoPor    Usuario? @relation(fields: [executadoPorId], references: [id], onDelete: SetNull)
+}
+
+enum ModalidadeIA {
+  CHAT
+  IMAGEM
+  VIDEO
+}
+
+model UsoIA {
+  id            Int          @id @default(autoincrement())
+  usuarioId     Int
+  modalidade    ModalidadeIA
+  planoNoUso    Plano
+  mesReferencia String       // Ex: "2026-10"
+  semanaChave   String       // Ex: "2026-W44"
+  createdAt     DateTime     @default(now())
+  usuario       Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, mesReferencia, modalidade])
+  @@index([usuarioId, semanaChave])
+}
+

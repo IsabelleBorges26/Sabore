@@ -186,6 +186,17 @@ const cadastrar = async (req, res) => {
                 _count: { select: { favoritos: true } }
             }
         });
+
+        // Contabiliza pontos de engajamento se a receita for válida (tem título, etapas e não é rascunho)
+        if (!fullRecipe.rascunho && fullRecipe.titulo && fullRecipe.modoPreparo) {
+            try {
+                const { registrarPublicacaoReceita } = require("../services/engajamento.service");
+                await registrarPublicacaoReceita(usuarioId, fullRecipe.id, fullRecipe.titulo);
+            } catch (engErr) {
+                console.error("[Engajamento] Erro ao pontuar receita:", engErr.message);
+            }
+        }
+
         res.status(201).json(formatRecipe(fullRecipe));
     } catch (error) {
         console.error("[Receitas Controller] Erro ao cadastrar receita:", error);

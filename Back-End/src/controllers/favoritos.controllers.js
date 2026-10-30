@@ -32,6 +32,11 @@ const cadastrar = async (req, res) => {
         return res.status(400).json({ erro: "O ID da receita é obrigatório." });
     }
     try {
+        const receita = await prisma.receita.findUnique({
+            where: { id: Number(receitaId) },
+            select: { usuarioId: true }
+        });
+
         const item = await prisma.favorito.upsert({
             where: {
                 usuarioId_receitaId: {
@@ -45,6 +50,17 @@ const cadastrar = async (req, res) => {
                 receitaId: Number(receitaId)
             }
         });
+
+        // Pontua o autor da receita favoritada (se não for o próprio autor)
+        if (receita && receita.usuarioId !== usuarioId) {
+            try {
+                const { registrarFavoritoRecebido } = require("../services/engajamento.service");
+                await registrarFavoritoRecebido(receita.usuarioId, usuarioId, Number(receitaId));
+            } catch (engErr) {
+                console.error("[Engajamento] Erro ao pontuar favorito recebido:", engErr.message);
+            }
+        }
+
         res.status(201).json(item);
     } catch (error) {
         res.status(500).json({ erro: "Erro ao adicionar favorito.", detalhe: error.message });

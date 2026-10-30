@@ -58,10 +58,47 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(frontEndPath, "index.html"));
 });
 
+app.get("/ranking", (req, res) => {
+    res.sendFile(path.join(frontEndPath, "Dashboard", "ranking", "index.html"));
+});
+app.get("/admin", (req, res) => {
+    res.sendFile(path.join(frontEndPath, "Dashboard", "admin", "index.html"));
+});
+
 const porta = process.env.PORT_APP || 3000;
 if (!process.env.VERCEL) {
     app.listen(porta, () => {
         console.log(`Online na porta ${porta}`);
+
+        // Agendamento periódico de verificação de fechamento mensal automático (a cada 12 horas)
+        try {
+            const { getSaoPauloDate, getMesReferencia, executarFechamentoMensal } = require("./src/services/engajamento.service");
+            const checarFechamentoAutomatico = async () => {
+                const sp = getSaoPauloDate();
+                // Se for o 1º dia do mês (ou 2º), verifica se o mês anterior já foi fechado
+                if (sp.getDate() <= 2) {
+                    let mesAnteriorNum = sp.getMonth(); // 0 a 11, onde 0 é janeiro
+                    let anoAnterior = sp.getFullYear();
+                    if (mesAnteriorNum === 0) {
+                        mesAnteriorNum = 12;
+                        anoAnterior -= 1;
+                    }
+                    const mesAnteriorRef = `${anoAnterior}-${String(mesAnteriorNum).padStart(2, "0")}`;
+                    try {
+                        const resFechamento = await executarFechamentoMensal(mesAnteriorRef);
+                        if (!resFechamento.jaExecutado) {
+                            console.log(`[Fechamento Automático] Mês ${mesAnteriorRef} fechado com sucesso.`);
+                        }
+                    } catch (e) {
+                        console.error("[Fechamento Automático] Erro:", e.message);
+                    }
+                }
+            };
+            setInterval(checarFechamentoAutomatico, 12 * 60 * 60 * 1000);
+            checarFechamentoAutomatico();
+        } catch (jobErr) {
+            console.warn("[Cron Fechamento] Agendador local não iniciado:", jobErr.message);
+        }
     });
 }
 

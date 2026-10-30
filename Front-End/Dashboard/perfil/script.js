@@ -710,6 +710,26 @@ document.addEventListener('DOMContentLoaded', () => {
       if (followersVal) followersVal.textContent = social.seguidores;
       if (followingVal) followingVal.textContent = social.seguindo;
       if (recipesVal) recipesVal.textContent = social.receitasPublicas;
+
+      // Popula dados de engajamento e ranking
+      if (profileData.engajamento) {
+        const pointsEl = document.getElementById('profile-points-val');
+        const rankPosEl = document.getElementById('profile-rank-pos');
+        const zoneInfoEl = document.getElementById('profile-zone-info');
+
+        if (pointsEl) pointsEl.textContent = `${profileData.engajamento.pontosMes} pts`;
+        if (rankPosEl) rankPosEl.textContent = `#${profileData.engajamento.posicaoRanking}`;
+
+        if (zoneInfoEl) {
+          if (profileData.engajamento.naZonaPro) {
+            zoneInfoEl.innerHTML = '<span style="color: #27C93F; font-weight: 700;"><i class="fa-solid fa-crown" style="color: #FFD700;"></i> Você está na Zona PRO (G-5)!</span>';
+          } else if (profileData.engajamento.pontosParaTop5 > 0) {
+            zoneInfoEl.textContent = `Faltam ${profileData.engajamento.pontosParaTop5} pontos para você entrar no G-5 do PRO!`;
+          } else {
+            zoneInfoEl.textContent = 'Publique receitas e interaja para subir no ranking!';
+          }
+        }
+      }
     } catch (err) {
       console.error("Erro ao carregar dados do perfil:", err);
     }

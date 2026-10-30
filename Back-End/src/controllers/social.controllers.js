@@ -184,6 +184,14 @@ const seguir = async (req, res) => {
             update: {},
             create: { seguidorId, seguidoId }
         });
+
+        try {
+            const { registrarSeguirUsuario } = require("../services/engajamento.service");
+            await registrarSeguirUsuario(seguidorId, seguidoId);
+        } catch (engErr) {
+            console.error("[Engajamento] Erro ao pontuar seguidor:", engErr.message);
+        }
+
         res.status(200).json({ seguindo: true });
     } catch (error) {
         res.status(500).json({ erro: "Não foi possível seguir este usuário.", detalhe: error.message });

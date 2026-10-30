@@ -9,6 +9,11 @@ const cadastrar = async (req, res) => {
     const finalNota = nota !== undefined ? Number(nota) : 5;
     const finalComentario = typeof comentario === "string" ? comentario.trim() : "";
     try {
+        const receita = await prisma.receita.findUnique({
+            where: { id: Number(receitaId) },
+            select: { usuarioId: true }
+        });
+
         const item = await prisma.avaliacao.upsert({
             where: {
                 usuarioId_receitaId: {
@@ -36,6 +41,17 @@ const cadastrar = async (req, res) => {
                 }
             }
         });
+
+        // Pontua o autor da receita (se não for o próprio autor)
+        if (receita && receita.usuarioId !== usuarioId) {
+            try {
+                const { registrarAvaliacaoRecebida } = require("../services/engajamento.service");
+                await registrarAvaliacaoRecebida(receita.usuarioId, usuarioId, Number(receitaId));
+            } catch (engErr) {
+                console.error("[Engajamento] Erro ao pontuar avaliação recebida:", engErr.message);
+            }
+        }
+
         res.status(201).json(item);
     } catch (error) {
         res.status(500).json({ erro: "Erro ao cadastrar avaliação/comentário.", detalhe: error.message });

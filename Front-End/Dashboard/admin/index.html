@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SABORÉ — Painel Administrativo de Engajamento</title>
+  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../home/style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="../../inicial/index.html" class="logo-area">
+          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
+        </a>
+        <p class="sidebar-slogan">Painel de Controle Oficial</p>
+      </div>
+      <nav class="sidebar-menu">
+        <a href="../home/index.html" class="menu-item"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="../ranking/index.html" class="menu-item"><i class="fa-solid fa-trophy"></i> Ranking Público</a>
+        <a href="#" class="menu-item active"><i class="fa-solid fa-screwdriver-wrench"></i> Painel Admin</a>
+        <a href="../configuracoes/index.html" class="menu-item"><i class="fa-solid fa-gear"></i> Configurações</a>
+      </nav>
+      <div class="sidebar-footer-promo">
+        <div class="promo-card-compact">
+          <div class="promo-icon" style="background: rgba(39, 201, 63, 0.15); color: var(--success);"><i class="fa-solid fa-shield-check"></i></div>
+          <div class="promo-info">
+            <h4>Acesso Restrito</h4>
+            <p>Sessão Administrativa Ativa</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="navbar">
+        <div class="navbar-left">
+          <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+          <div class="nav-welcome-text">
+            <h2>Gestão do Plano PRO & Engajamento <i class="fa-solid fa-shield" style="color: var(--accent); margin-left: 6px;"></i></h2>
+            <p>Auditoria de pontos, controle de vencedores e fechamento mensal</p>
+          </div>
+        </div>
+        <div class="navbar-right">
+          <div class="user-profile-badge">
+            <div class="user-avatar-wrap">
+              <img src="" alt="Avatar" class="user-avatar">
+              <span class="user-status-dot online"></span>
+            </div>
+            <div class="user-meta">
+              <span class="user-name">Administrador</span>
+              <span class="user-plan-tag pro">ADMIN</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="dashboard-body">
+        <!-- Ação de Fechamento Mensal -->
+        <section class="admin-action-card">
+          <div class="admin-action-left">
+            <div class="admin-badge"><i class="fa-solid fa-calendar-check"></i> FECHAMENTO MENSAL</div>
+            <h2>Executar Apuração e Concessão do Plano PRO</h2>
+            <p>
+              Calcula a pontuação final dos usuários no mês de referência selecionado, concede automaticamente o plano PRO aos 5 mais engajados para vigência no mês seguinte e arquiva a apuração de forma idempotente e transacional.
+            </p>
+          </div>
+          <div class="admin-action-right">
+            <div class="input-month-group">
+              <label for="fechamento-mes-input">Mês de Referência (YYYY-MM):</label>
+              <input type="text" id="fechamento-mes-input" placeholder="Ex: 2026-10">
+            </div>
+            <button class="btn-executar-fechamento" id="btn-executar-fechamento">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Executar Fechamento Agora
+            </button>
+          </div>
+        </section>
+
+        <!-- Grade de Resumo -->
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card">
+            <i class="fa-solid fa-users-viewfinder"></i>
+            <div>
+              <span class="astat-val" id="stat-total-usuarios">--</span>
+              <span class="astat-lbl">Participantes Ativos</span>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <i class="fa-solid fa-trophy" style="color: #FFD700;"></i>
+            <div>
+              <span class="astat-val" id="stat-pontos-lider">--</span>
+              <span class="astat-lbl">Pontos do Líder Atual</span>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <i class="fa-solid fa-gem" style="color: var(--accent);"></i>
+            <div>
+              <span class="astat-val" id="stat-total-concessoes">--</span>
+              <span class="astat-lbl">Concessões PRO Registradas</span>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <i class="fa-solid fa-box-archive"></i>
+            <div>
+              <span class="astat-val" id="stat-total-fechamentos">--</span>
+              <span class="astat-lbl">Fechamentos Concluídos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Abas Administrativas -->
+        <div class="admin-tabs-nav">
+          <button class="admin-tab-btn active" data-tab="tab-ranking">Ranking em Tempo Real</button>
+          <button class="admin-tab-btn" data-tab="tab-fechamentos">Histórico de Fechamentos</button>
+          <button class="admin-tab-btn" data-tab="tab-concessoes">Concessões PRO Emitidas</button>
+          <button class="admin-tab-btn" data-tab="tab-atividades">Auditoria de Atividades Recentes</button>
+        </div>
+
+        <!-- Conteúdo das Abas -->
+        <div class="admin-tab-content active" id="tab-ranking">
+          <div class="admin-table-card">
+            <div class="card-table-header">
+              <h3>Classificação em Tempo Real do Mês</h3>
+            </div>
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Posição</th>
+                    <th>Usuário</th>
+                    <th>E-mail</th>
+                    <th>Plano</th>
+                    <th>Receitas Válidas</th>
+                    <th style="text-align: right;">Pontos Acumulados</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-ranking-tbody">
+                  <tr><td colspan="6" style="text-align: center; padding: 30px;">Carregando dados...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-tab-content" id="tab-fechamentos">
+          <div class="admin-table-card">
+            <div class="card-table-header">
+              <h3>Histórico de Fechamentos Mensais Concluídos</h3>
+            </div>
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Mês Ref.</th>
+                    <th>Executado Em</th>
+                    <th>Executado Por</th>
+                    <th>Pontos Apurados</th>
+                    <th>Vencedores Premiados (Top 5)</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-fechamentos-tbody">
+                  <tr><td colspan="5" style="text-align: center; padding: 30px;">Nenhum fechamento registrado.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-tab-content" id="tab-concessoes">
+          <div class="admin-table-card">
+            <div class="card-table-header">
+              <h3>Concessões de Plano PRO Válidas e Históricas</h3>
+            </div>
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Usuário</th>
+                    <th>Posição</th>
+                    <th>Pontos</th>
+                    <th>Mês Ref.</th>
+                    <th>Mês Vigência</th>
+                    <th>Válido Até</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-concessoes-tbody">
+                  <tr><td colspan="7" style="text-align: center; padding: 30px;">Nenhuma concessão registrada.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-tab-content" id="tab-atividades">
+          <div class="admin-table-card">
+            <div class="card-table-header">
+              <h3>Log de Auditoria: Últimas 50 Atividades de Pontuação</h3>
+            </div>
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Data/Hora</th>
+                    <th>Usuário</th>
+                    <th>Tipo</th>
+                    <th>Pontos</th>
+                    <th>Descrição</th>
+                    <th>Chave Única Anti-Abuso</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-atividades-tbody">
+                  <tr><td colspan="6" style="text-align: center; padding: 30px;">Nenhuma atividade registrada.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="../../assets/js/api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

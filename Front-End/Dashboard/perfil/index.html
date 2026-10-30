@@ -64,8 +64,8 @@
           <a href="#" class="menu-item active" data-target="perfil"
             ><i class="fa-solid fa-user"></i> Perfil</a
           >
-          <a href="#pro" class="menu-item pro-menu-item" data-target="pro"
-            ><i class="fa-solid fa-gem"></i> Plano PRO</a
+          <a href="../ranking/index.html" class="menu-item pro-menu-item" data-target="pro"
+            ><i class="fa-solid fa-trophy"></i> Ranking PRO</a
           >
           <a
             href="../configuracoes/index.html"
@@ -198,6 +198,29 @@
                     <span class="p-stat-lbl">Publicações</span>
                   </button>
                 </div>
+
+                <!-- Card de Engajamento e Ranking Mensal -->
+                <div class="perfil-engagement-card" style="background: rgba(18, 31, 28, 0.6); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px 18px; margin: 16px 0; width: 100%;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--secondary); text-transform: uppercase;"><i class="fa-solid fa-trophy" style="color: #FFD700; margin-right: 4px;"></i> Ranking do Mês</span>
+                    <a href="../ranking/index.html" style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">Ver Todos <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i></a>
+                  </div>
+                  <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 10px;">
+                    <div>
+                      <span id="profile-points-val" style="font-family: 'DM Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--accent); display: block;">0</span>
+                      <span style="font-size: 0.7rem; color: rgba(242, 244, 243, 0.5); text-transform: uppercase;">Pontos no Mês</span>
+                    </div>
+                    <div style="border-left: 1px solid var(--glass-border); height: 32px; align-self: center;"></div>
+                    <div>
+                      <span id="profile-rank-pos" style="font-family: 'DM Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--light); display: block;">#--</span>
+                      <span style="font-size: 0.7rem; color: rgba(242, 244, 243, 0.5); text-transform: uppercase;">Posição Geral</span>
+                    </div>
+                  </div>
+                  <div id="profile-zone-info" style="font-size: 0.76rem; color: rgba(242, 244, 243, 0.7); text-align: center; border-top: 1px solid rgba(242, 244, 243, 0.05); padding-top: 8px;">
+                    Calculando distância para o Top 5...
+                  </div>
+                </div>
+
                 <div class="user-bio-area">
                   <p class="user-bio-text" id="user-bio-display">
                     Amante da gastronomia, sempre testando novas receitas

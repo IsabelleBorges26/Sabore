@@ -216,6 +216,9 @@ Diretrizes de resposta:
         if (!recipe) {
             throw new Error(lastError ? lastError.message : "Todos os modelos do OpenRouter falharam.");
         }
+        if (typeof req.consumirQuotaIA === "function") {
+            await req.consumirQuotaIA().catch(e => console.error("[IA] Erro ao debitar uso:", e));
+        }
         res.status(200).json(recipe);
     } catch (error) {
         console.error("[Chef IA] Erro ao gerar receita com IA:", error);
@@ -409,6 +412,10 @@ ${jsonSchema}`;
         if (!parsedData.dishName && parsedData.title) parsedData.dishName = `${parsedData.title} Identificado!`;
         if (!Array.isArray(parsedData.detections)) parsedData.detections = [];
 
+        if (typeof req.consumirQuotaIA === "function") {
+            await req.consumirQuotaIA().catch(e => console.error("[IA] Erro ao debitar uso:", e));
+        }
+
         res.status(200).json(parsedData);
     } catch (error) {
         console.error("[IA Vision] Erro ao analisar imagem:", error);
@@ -445,6 +452,9 @@ Exemplo: {"time":40,"servings":2,"difficulty":"Médio","diet":"none","ingredient
         const generatedJson = generatedContent.match(/\{[\s\S]*\}/);
         if (!generatedJson) {
             throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
+        }
+        if (typeof req.consumirQuotaIA === "function") {
+            await req.consumirQuotaIA().catch(e => console.error("[IA] Erro ao debitar uso:", e));
         }
         return res.status(200).json(JSON.parse(generatedJson[0].replace(/,(\s*[\]}])/g, '$1')));
 
