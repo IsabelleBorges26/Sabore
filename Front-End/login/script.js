@@ -48,23 +48,29 @@ if (toggleBtn && passwordInput) {
   });
 }
 
-if (btnLogin) {
-  btnLogin.addEventListener('click', async () => {
-    const email = document.getElementById('email').value.trim();
-    const password = passwordInput.value;
-    if (!email || !password) return alert('Por favor, preencha todos os campos.');
-    if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+const formLogin = document.getElementById('formLogin');
+const handleLoginSubmit = async (e) => {
+  if (e) e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = passwordInput.value;
+  if (!email || !password) return alert('Por favor, preencha todos os campos.');
+  if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
 
-    setLoginButton(true);
-    try {
-      const { data, error } = await authClient.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      await finishAuthentication(data.session);
-    } catch (error) {
-      alert(error.message || 'Não foi possível entrar na conta.');
-      setLoginButton(false);
-    }
-  });
+  setLoginButton(true);
+  try {
+    const { data, error } = await authClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    await finishAuthentication(data.session);
+  } catch (error) {
+    alert(error.message || 'Não foi possível entrar na conta.');
+    setLoginButton(false);
+  }
+};
+
+if (formLogin) {
+  formLogin.addEventListener('submit', handleLoginSubmit);
+} else if (btnLogin) {
+  btnLogin.addEventListener('click', handleLoginSubmit);
 }
 
 if (btnGoogle) {

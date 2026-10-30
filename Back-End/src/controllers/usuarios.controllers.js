@@ -191,26 +191,46 @@ const perfil = async (req, res) => {
         }
         const aiGeneratedCount = usuario.receitas.filter(r => r.criadaPorIA).length;
 
-        // Consulta pontuação do mês e ranking do usuário
-        const { getMesReferencia, obterRankingMensal } = require("../services/engajamento.service");
-        const mesAtual = getMesReferencia();
+        // Consulta pontuação do mês e ranking do usuário de forma segura
+        let engajamentoInfo = {
+            pontosMes: 0,
+            posicaoRanking: 1,
+            totalParticipantes: 1,
+            naZonaPro: false,
+            pontosParaTop5: 0
+        };
 
-        const [pontosAgregados, rankingData] = await Promise.all([
-            prisma.atividadeEngajamento.aggregate({
-                where: { usuarioId, mesReferencia: mesAtual },
-                _sum: { pontos: true }
-            }),
-            obterRankingMensal(mesAtual)
-        ]);
+        try {
+            const { getMesReferencia, obterRankingMensal } = require("../services/engajamento.service");
+            const mesAtual = getMesReferencia();
 
-        const pontosMes = pontosAgregados._sum.pontos || 0;
-        const infoRanking = rankingData.ranking.find(r => r.usuarioId === usuarioId);
-        const posicaoRanking = infoRanking ? infoRanking.posicao : rankingData.totalParticipantes;
-        const top5 = rankingData.ranking.slice(0, 5);
-        const quintoColocado = top5[4] || top5[top5.length - 1];
-        const pontosParaTop5 = quintoColocado && quintoColocado.pontos > pontosMes
-            ? (quintoColocado.pontos - pontosMes) + 1
-            : 0;
+            const [pontosAgregados, rankingData] = await Promise.all([
+                prisma.atividadeEngajamento.aggregate({
+                    where: { usuarioId, mesReferencia: mesAtual },
+                    _sum: { pontos: true }
+                }),
+                obterRankingMensal(mesAtual)
+            ]);
+
+            const pontosMes = pontosAgregados._sum.pontos || 0;
+            const infoRanking = rankingData.ranking.find(r => r.usuarioId === usuarioId);
+            const posicaoRanking = infoRanking ? infoRanking.posicao : rankingData.totalParticipantes;
+            const top5 = rankingData.ranking.slice(0, 5);
+            const quintoColocado = top5[4] || top5[top5.length - 1];
+            const pontosParaTop5 = quintoColocado && quintoColocado.pontos > pontosMes
+                ? (quintoColocado.pontos - pontosMes) + 1
+                : 0;
+
+            engajamentoInfo = {
+                pontosMes,
+                posicaoRanking,
+                totalParticipantes: rankingData.totalParticipantes,
+                naZonaPro: infoRanking ? infoRanking.naZonaPro : false,
+                pontosParaTop5
+            };
+        } catch (engajamentoError) {
+            console.warn("[Perfil] Não foi possível carregar estatísticas de engajamento:", engajamentoError.message);
+        }
 
         res.status(200).json({
             id: usuario.id,
@@ -219,13 +239,7 @@ const perfil = async (req, res) => {
             plano: usuario.plano,
             foto: usuario.foto,
             isAdmin: usuario.isAdmin,
-            engajamento: {
-                pontosMes,
-                posicaoRanking,
-                totalParticipantes: rankingData.totalParticipantes,
-                naZonaPro: infoRanking ? infoRanking.naZonaPro : false,
-                pontosParaTop5
-            },
+            engajamento: engajamentoInfo,
             stats: {
                 saved: usuario._count.favoritos,
                 created: usuario._count.receitas,
@@ -234,6 +248,7 @@ const perfil = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error("[Perfil] Erro ao carregar perfil:", error);
         res.status(500).json({ erro: "Erro ao obter perfil do usuário.", detalhe: error.message });
     }
 };

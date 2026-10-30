@@ -56,33 +56,39 @@ if (passwordInput) {
   });
 }
 
-if (btnCadastro) {
-  btnCadastro.addEventListener('click', async () => {
-    const nome = document.getElementById('nome').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const password = passwordInput.value;
-    if (!nome || !email || !password) return alert('Por favor, preencha todos os campos.');
-    if (!document.getElementById('terms').checked) return alert('Você precisa aceitar os Termos de Uso e Política de Privacidade.');
-    if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+const formCadastro = document.getElementById('formCadastro');
+const handleCadastroSubmit = async (e) => {
+  if (e) e.preventDefault();
+  const nome = document.getElementById('nome').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = passwordInput.value;
+  if (!nome || !email || !password) return alert('Por favor, preencha todos os campos.');
+  if (!document.getElementById('terms').checked) return alert('Você precisa aceitar os Termos de Uso e Política de Privacidade.');
+  if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
 
-    btnCadastro.textContent = 'Criando conta...';
-    btnCadastro.disabled = true;
-    try {
-      const { data, error } = await authClient.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: nome }, emailRedirectTo: getRedirectUrl() }
-      });
-      if (error) throw error;
-      if (data.session) return finishAuthentication(data.session);
-      alert('Conta criada. Verifique seu e-mail para confirmar o cadastro antes de entrar.');
-      window.location.href = '../login/index.html';
-    } catch (error) {
-      alert(error.message || 'Não foi possível criar a conta.');
-      btnCadastro.textContent = 'Criar conta grátis';
-      btnCadastro.disabled = false;
-    }
-  });
+  btnCadastro.textContent = 'Criando conta...';
+  btnCadastro.disabled = true;
+  try {
+    const { data, error } = await authClient.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: nome }, emailRedirectTo: getRedirectUrl() }
+    });
+    if (error) throw error;
+    if (data.session) return finishAuthentication(data.session);
+    alert('Conta criada. Verifique seu e-mail para confirmar o cadastro antes de entrar.');
+    window.location.href = '../login/index.html';
+  } catch (error) {
+    alert(error.message || 'Não foi possível criar a conta.');
+    btnCadastro.textContent = 'Criar conta grátis';
+    btnCadastro.disabled = false;
+  }
+};
+
+if (formCadastro) {
+  formCadastro.addEventListener('submit', handleCadastroSubmit);
+} else if (btnCadastro) {
+  btnCadastro.addEventListener('click', handleCadastroSubmit);
 }
 
 if (btnGoogle) {
