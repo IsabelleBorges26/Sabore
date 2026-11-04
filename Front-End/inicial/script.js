@@ -290,13 +290,4 @@ if (localUser) {
 }
 };
 
-renderGuestNavigation();
-// A landing é pública. Ao sair do dashboard para ela, a sessão não deve
-// permanecer no navegador nem alterar os botões de acesso da página.
-api.clearSession();
-
-if (auth) {
-  auth.auth.getSession().then(({ data }) => {
-    if (data.session) auth.auth.signOut();
-  });
-}
+renderNavigation();

@@ -35,6 +35,7 @@ const bibliotecasRoutes = require("./src/routes/bibliotecas.routes");
 const socialRoutes = require("./src/routes/social.routes");
 const estatisticasRoutes = require("./src/routes/estatisticas.routes");
 const contatoRoutes = require("./src/routes/contato.routes");
+const desafiosRoutes = require("./src/routes/desafios.routes");
 
 app.use("/usuarios", usuariosRoutes);
 app.use("/receitas", receitasRoutes);
@@ -53,6 +54,7 @@ app.use("/bibliotecas", bibliotecasRoutes);
 app.use("/social", socialRoutes);
 app.use("/estatisticas", estatisticasRoutes);
 app.use("/contato", contatoRoutes);
+app.use("/desafios", desafiosRoutes);
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(frontEndPath, "index.html"));

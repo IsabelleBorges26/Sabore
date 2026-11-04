@@ -711,6 +711,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (followingVal) followingVal.textContent = social.seguindo;
       if (recipesVal) recipesVal.textContent = social.receitasPublicas;
 
+      try {
+        const achievements = await api.get('/desafios/conquistas');
+        const achievementsList = document.getElementById('profile-achievements-list');
+        if (achievementsList) {
+          achievementsList.innerHTML = Array.isArray(achievements) && achievements.length
+            ? achievements.map(item => `<span class="profile-achievement-badge" title="Conquista de desafio"><i class="${item.emblema || 'fa-solid fa-trophy'}"></i>${escapeHtml(item.titulo || 'Conquista da comunidade')}</span>`).join('')
+            : '<span class="profile-achievements-empty">Suas conquistas em desafios aparecerÃ£o aqui.</span>';
+        }
+      } catch (achievementError) {
+        console.warn('NÃ£o foi possÃ­vel carregar as conquistas do perfil:', achievementError);
+      }
+
       // Popula dados de engajamento e ranking
       if (profileData.engajamento) {
         const pointsEl = document.getElementById('profile-points-val');
@@ -831,7 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="book-detail-empty" style="padding:30px 16px;text-align:center">
               <i class="fa-solid fa-compass" style="font-size:1.8rem;color:rgba(242,244,243,0.25);margin-bottom:8px;display:block"></i>
               <p style="margin:0;font-size:0.85rem;color:rgba(242,244,243,0.6)">Você ainda não está seguindo ninguém.</p>
-              <span style="font-size:0.75rem;color:rgba(242,244,243,0.4)">Visite a página <strong>Explorar</strong> para descobrir chefs e criações incríveis!</span>
+              <span style="font-size:0.75rem;color:rgba(242,244,243,0.4)">Visite a página <strong>Comunidade</strong> para descobrir chefs e criações incríveis!</span>
             </div>`;
         } else {
           followingList.innerHTML = following.map(item => `

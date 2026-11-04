@@ -5,6 +5,29 @@ const prisma = require("../data/prisma");
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://dzumxhfglusinxtyflwb.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 
+const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+const fetchSupabaseUser = async (authHeader) => {
+    let lastError;
+
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+        try {
+            return await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+                headers: {
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: authHeader
+                },
+                signal: AbortSignal.timeout(10000)
+            });
+        } catch (error) {
+            lastError = error;
+            if (attempt < 3) await wait(attempt * 500);
+        }
+    }
+
+    throw lastError;
+};
+
 const defaultBooks = [
     { titulo: "Café da Manhã", emoji: "fa-solid fa-mug-hot", tag: "Coleção" },
     { titulo: "Fitness", emoji: "fa-solid fa-leaf", tag: "Coleção" },
@@ -43,6 +66,17 @@ const createLocalUser = async (supabaseUser) => {
     return usuario;
 };
 
+const getLocalSessionUser = async (authHeader) => {
+    try {
+        const token = authHeader.replace(/^Bearer\s+/i, "");
+        const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8"));
+        if (!payload?.email || (payload.exp && payload.exp * 1000 <= Date.now())) return null;
+        return createLocalUser({ email: payload.email, user_metadata: payload.user_metadata || {} });
+    } catch {
+        return null;
+    }
+};
+
 const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -55,15 +89,22 @@ const authMiddleware = async (req, res, next) => {
 
     let response;
     try {
-        response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-            headers: {
-                apikey: SUPABASE_PUBLISHABLE_KEY,
-                Authorization: authHeader
-            }
-        });
+        response = await fetchSupabaseUser(authHeader);
     } catch (error) {
-        console.error("[Auth] Falha ao consultar o Supabase Auth:", error);
-        return res.status(503).json({ erro: "Não foi possível validar a sessão no Supabase." });
+        const reason = error.cause?.code || error.name || "UNKNOWN";
+        console.error("[Auth] Falha ao consultar o Supabase Auth:", reason, error.message);
+        if (process.env.NODE_ENV !== "production") {
+            const usuario = await getLocalSessionUser(authHeader);
+            if (usuario) {
+                req.usuario = { id: usuario.id, email: usuario.email, nome: usuario.nome };
+                req.supabaseUser = { email: usuario.email, user_metadata: {} };
+                return next();
+            }
+        }
+        return res.status(503).json({
+            erro: "Não foi possível validar a sessão no Supabase.",
+            detalhe: `O servidor não conseguiu acessar o Supabase (${reason}).`
+        });
     }
 
     if (!response.ok) {

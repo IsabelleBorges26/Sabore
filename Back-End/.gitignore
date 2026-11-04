@@ -3,7 +3,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-prisma/migrations
+prisma/migrations/*
+!prisma/migrations/20261104160000_add_challenge_participants/
+!prisma/migrations/20261104160000_add_challenge_participants/migration.sql
+!prisma/migrations/20261104170000_add_challenge_system/
+!prisma/migrations/20261104170000_add_challenge_system/migration.sql
 .env
 .env.local
 .env.development.local

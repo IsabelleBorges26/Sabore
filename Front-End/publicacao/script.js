@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (api.hasUsableStoredSession()) {
     document.getElementById('community-link').href = '/Dashboard/explorar/index.html';
-    document.getElementById('community-link').textContent = 'Explorar receitas';
+    document.getElementById('community-link').textContent = 'Comunidade';
     document.getElementById('explore-link').href = '/Dashboard/explorar/index.html';
   }
 

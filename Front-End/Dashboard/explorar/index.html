@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SABORÉ — Explorar Receitas</title>
+  <title>SABORÉ — Comunidade</title>
   <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -20,7 +20,7 @@
       <nav class="sidebar-menu">
         <a href="../home/index.html" class="menu-item" data-target="home"><i class="fa-solid fa-house"></i> Home</a>
         <a href="../livros/index.html" class="menu-item" data-target="livros"><i class="fa-solid fa-book"></i> Meus Livros</a>
-        <a href="#" class="menu-item active" data-target="explorar"><i class="fa-solid fa-compass"></i> Explorar Receitas</a>
+        <a href="#" class="menu-item active" data-target="explorar"><i class="fa-solid fa-users"></i> Comunidade</a>
         <a href="../chefIA/index.html" class="menu-item" data-target="ia-receitas"><i class="fa-solid fa-robot"></i> IA de Receitas</a>
         <a href="../iaFotos/index.html" class="menu-item" data-target="ia-foto"><i class="fa-solid fa-camera"></i> IA por Foto</a>
         <a href="../importVideo/index.html" class="menu-item" data-target="importar"><i class="fa-solid fa-video"></i> Importar Vídeo</a>
@@ -45,7 +45,7 @@
         <div class="navbar-left">
           <button class="hamburger-btn" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
           <div class="nav-welcome-text">
-            <h2>Explorar <i class="fa-solid fa-compass" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
+            <h2>Comunidade <i class="fa-solid fa-users" style="color: var(--accent); margin-left: 4px; font-size: 1.1rem;"></i></h2>
             <p>Descubra e inspire-se com a comunidade</p>
           </div>
         </div>
@@ -89,7 +89,10 @@
             </section>
             <section class="card-section">
               <div class="section-title-wrap">
-                <h3><i class="fa-solid fa-tags"></i> Categorias Populares</h3>
+                <div class="title-details">
+                  <h3><i class="fa-solid fa-tags"></i> Explore por categoria</h3>
+                  <p class="section-desc-sub">Escolha um tema para refinar as receitas da comunidade.</p>
+                </div>
               </div>
               <div class="categories-scroll-carousel" id="categories-carousel-list">
               </div>
@@ -97,15 +100,13 @@
             <section class="card-section">
               <div class="section-title-wrap" style="margin-bottom: 8px;">
                 <div class="title-details">
-                  <h3><i class="fa-solid fa-fire"></i> Receitas em Destaque</h3>
+                  <h3><i class="fa-solid fa-users"></i> Feed da Comunidade</h3>
                   <p class="section-desc-sub" style="margin-top: 2px;">O que a comunidade está cozinhando e curtindo ultimamente.</p>
                 </div>
                 <div class="explore-feed-controls">
-                  <button class="feed-filter-btn active" data-feed="all">Tudo</button>
-                  <button class="feed-filter-btn" data-feed="fit">Saudável</button>
-                  <button class="feed-filter-btn" data-feed="vegetariano">Vegetariano</button>
-                  <button class="feed-filter-btn" data-feed="doce">Doces</button>
-                  <button class="feed-filter-btn" data-feed="facil">Fáceis</button>
+                  <button class="feed-filter-btn active" data-feed-mode="for-you">Para você</button>
+                  <button class="feed-filter-btn" data-feed-mode="following">Seguindo</button>
+                  <button class="feed-filter-btn" data-feed-mode="recent">Recentes</button>
                   <button class="feed-filter-btn btn-refresh-feed" id="btn-refresh-feed" title="Atualizar feed com novas publicações" style="display: inline-flex; align-items: center; gap: 5px; border-color: rgba(224, 133, 122, 0.4); color: var(--accent);"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
                 </div>
               </div>
@@ -150,7 +151,15 @@
                   <span id="challenge-recipes-count"><i class="fa-solid fa-utensils"></i> 0 receitas criadas</span>
                 </div>
                 <button type="button" class="btn-challenge-action" id="challenge-join-btn">Participar do Desafio</button>
+                <button type="button" class="btn-challenge-submit" id="challenge-submit-btn" hidden><i class="fa-solid fa-square-plus"></i> Enviar receita para o desafio</button>
+                <div class="challenge-prize-line" id="challenge-prize-line"><i class="fa-solid fa-medal"></i> Concorra ao emblema e à moldura de vencedor</div>
               </div>
+            </section>
+            <section class="widget-card challenge-community-panel" id="challenge-community-panel">
+              <div class="widget-header">
+                <h3><i class="fa-solid fa-trophy"></i> Central do Desafio</h3>
+              </div>
+              <div id="challenge-community-content"></div>
             </section>
             <section class="widget-card">
               <div class="widget-header">

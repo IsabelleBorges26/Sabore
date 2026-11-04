@@ -520,6 +520,8 @@ a {
 .explore-feed-controls {
   display: flex;
   gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .feed-filter-btn {
   background: transparent;
@@ -1080,6 +1082,41 @@ a {
   background: rgba(91, 179, 255, 0.28);
   color: #ffffff;
 }
+.btn-challenge-submit {
+  width: 100%;
+  margin-top: 9px;
+  border: 1px solid rgba(91, 179, 255, 0.38);
+  border-radius: 11px;
+  padding: 10px;
+  color: #8ccaff;
+  background: rgba(91, 179, 255, 0.1);
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-challenge-submit:hover { background: rgba(91, 179, 255, 0.2); }
+.challenge-prize-line { color: rgba(242, 244, 243, 0.62); font-size: 0.72rem; margin-top: 11px; text-align: center; }
+.challenge-prize-line i { color: #f0d5b6; margin-right: 5px; }
+.challenge-community-panel {
+  border-color: rgba(91, 179, 255, 0.22);
+}
+.challenge-status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  color: rgba(242, 244, 243, 0.72);
+  background: rgba(91, 179, 255, 0.08);
+}
+.challenge-status-line i { color: #5bb3ff; }
+.challenge-ranking-list { display: grid; gap: 8px; }
+.challenge-ranking-item { display: flex; align-items: center; gap: 9px; font-size: 0.78rem; }
+.challenge-ranking-position { color: #5bb3ff; font-weight: 800; width: 18px; }
+.challenge-ranking-name { flex: 1; color: var(--light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.challenge-ranking-score { color: rgba(242, 244, 243, 0.5); font-size: 0.7rem; }
+.challenge-ranking-empty { color: rgba(242, 244, 243, 0.5); font-size: 0.76rem; line-height: 1.5; }
 .timeline-activity-list {
   display: flex;
   flex-direction: column;
@@ -1822,3 +1859,6 @@ a {
   color: rgba(242, 244, 243, 0.5);
   font-size: 0.85rem;
 }
+.author-avatar.achievement-profile-frame { outline: 2px solid #f0c66e; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(240, 198, 110, .18), 0 0 14px rgba(240, 198, 110, .35); }
+.challenge-vote-btn { border: 1px solid rgba(232, 131, 119, .5); border-radius: 999px; padding: 5px 10px; color: var(--light); background: rgba(232, 131, 119, .16); cursor: pointer; }
+.challenge-vote-btn:disabled { opacity: .6; cursor: default; }

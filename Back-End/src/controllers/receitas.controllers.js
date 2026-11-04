@@ -42,6 +42,8 @@ const formatRecipe = (recipe) => {
         authorId: recipe.usuarioId,
         author: recipe.usuario ? recipe.usuario.nome : "Chef",
         authorAvatar: recipe.usuario?.foto || null,
+        authorAchievements: recipe.usuario?.conquistas || [],
+        authorHasProfileFrame: Boolean(recipe.usuario?.conquistas?.some(item => item.molduraPerfil)),
         likes: recipe._count?.favoritos || 0,
         hashtags: recipe.hashtags ? recipe.hashtags.map(item => `#${item.hashtag.nome}`) : [],
         publishedAt: recipe.publicadaEm || null,
@@ -237,7 +239,9 @@ const listar = async (req, res) => {
 };
 const listarPublicas = async (req, res) => {
     const includeRecipeRelations = (withHashtags = true) => ({
-        usuario: true,
+        usuario: withHashtags
+            ? { include: { conquistas: { orderBy: { concedidaEm: "desc" }, take: 1, select: { id: true, titulo: true, emblema: true, molduraPerfil: true } } } }
+            : true,
         ingredientes: { include: { ingrediente: true } },
         categorias: { include: { categoria: true } },
         ...(withHashtags ? { hashtags: { include: { hashtag: true } } } : {}),
@@ -272,7 +276,7 @@ const listarPublicas = async (req, res) => {
         res.set("Expires", "0");
         res.status(200).json(filtered.map(formatRecipe));
     } catch (error) {
-        if (error.code === "P2021" || /ReceitaHashtag|Hashtag.*does not exist/i.test(error.message || "")) {
+        if (error.code === "P2021" || /ReceitaHashtag|Hashtag.*does not exist|conquistas|Unknown field.*include|Unknown arg.*include/i.test(error.message || "")) {
             try {
                 const receitas = await prisma.receita.findMany({
                     where: { publica: true, rascunho: false },
@@ -664,6 +668,12 @@ const obterDesafioSemanal = async (req, res) => {
 
         const recipesCount = receitasDoDesafio.length;
         const distinctUsers = new Set(receitasDoDesafio.map(r => r.usuarioId));
+        const desafioChave = `${desafio.id}-${year}-w${weekNumber}`;
+        const inscricoes = await prisma.desafioParticipacao.findMany({
+            where: { desafioChave },
+            select: { usuarioId: true }
+        }).catch(() => []);
+        inscricoes.forEach(inscricao => distinctUsers.add(inscricao.usuarioId));
         const participantsCount = distinctUsers.size;
 
         res.status(200).json({
@@ -673,10 +683,36 @@ const obterDesafioSemanal = async (req, res) => {
             daysRemaining,
             timeRemainingText: daysRemaining === 0 ? "Termina hoje às 23:59!" : `Termina em ${daysRemaining} dia${daysRemaining > 1 ? "s" : ""}`,
             recipesCount,
-            participantsCount
+            participantsCount,
+            isJoined: Boolean(req.usuario && inscricoes.some(inscricao => inscricao.usuarioId === req.usuario.id))
         });
     } catch (error) {
         res.status(500).json({ erro: "Erro ao obter desafio semanal.", detalhe: error.message });
+    }
+};
+
+const participarDesafioSemanal = async (req, res) => {
+    try {
+        const now = new Date();
+        const target = new Date(now.valueOf());
+        const dayNr = (now.getDay() + 6) % 7;
+        target.setDate(target.getDate() - dayNr + 3);
+        const firstThursday = target.valueOf();
+        target.setMonth(0, 1);
+        if (target.getDay() !== 4) target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+        const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
+        const year = now.getFullYear();
+        const index = Math.abs(year * 53 + weekNumber) % DESAFIOS_SEMANAIS.length;
+        const desafioChave = `${DESAFIOS_SEMANAIS[index].id}-${year}-w${weekNumber}`;
+        await prisma.desafioParticipacao.upsert({
+            where: { desafioChave_usuarioId: { desafioChave, usuarioId: req.usuario.id } },
+            update: {},
+            create: { desafioChave, usuarioId: req.usuario.id }
+        });
+        const participantsCount = await prisma.desafioParticipacao.count({ where: { desafioChave } });
+        res.status(200).json({ isJoined: true, participantsCount });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao participar do desafio.", detalhe: error.message });
     }
 };
 
@@ -689,5 +725,6 @@ module.exports = {
     atualizar,
     excluir,
     listarHashtagsEmAlta,
-    obterDesafioSemanal
+    obterDesafioSemanal,
+    participarDesafioSemanal
 };

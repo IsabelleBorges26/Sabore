@@ -8,12 +8,26 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL") // direcionar prisma para database no supabase
+  directUrl = env("DATABASE_URL") // a conexão direta configurada está indisponível nesta rede
 }
 
 enum Plano {
   FREE
   PRO
+}
+
+enum TipoDesafio {
+  HASHTAG
+  CRIATIVIDADE
+  META
+}
+
+enum StatusDesafio {
+  RASCUNHO
+  INSCRICOES
+  ENVIO
+  VOTACAO
+  ENCERRADO
 }
 
 model Usuario {
@@ -38,6 +52,11 @@ model Usuario {
   concessoesPro           ConcessaoPro[]
   usosIA                  UsoIA[]
   fechamentosExecutados   FechamentoMensal[]
+  desafiosParticipacoes  DesafioParticipacao[]
+  desafiosCriados        Desafio[]              @relation("CriadorDesafio")
+  desafiosEntradas       DesafioEntrada[]
+  desafiosVotos          DesafioVoto[]
+  conquistas             ConquistaUsuario[]
 }
 
 model Receita {
@@ -65,6 +84,7 @@ model Receita {
   favoritos         Favorito[]
   avaliacoes        Avaliacao[]
   compartilhamentos Compartilhamento[]
+  desafiosEntradas  DesafioEntrada[]
 }
 
 model Ingrediente {
@@ -185,6 +205,79 @@ model Seguidor {
 
   @@unique([seguidorId, seguidoId])
   @@index([seguidoId])
+}
+
+model DesafioParticipacao {
+  id          Int      @id @default(autoincrement())
+  desafioChave String
+  usuarioId   Int
+  createdAt   DateTime @default(now())
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([desafioChave, usuarioId])
+  @@index([desafioChave])
+}
+
+model Desafio {
+  id             Int                    @id @default(autoincrement())
+  titulo         String
+  descricao      String                  @db.Text
+  hashtag        String                  @unique
+  tipo           TipoDesafio
+  status         StatusDesafio           @default(RASCUNHO)
+  comecaEm       DateTime
+  encerraEm      DateTime
+  votacaoIniciaEm DateTime?
+  votacaoEncerraEm DateTime?
+  premioProMeses Int                    @default(0)
+  emblema        String?
+  molduraPerfil  String?
+  criadoPorId    Int?
+  createdAt      DateTime                @default(now())
+  atualizadoEm   DateTime                @updatedAt
+  criadoPor      Usuario?                @relation("CriadorDesafio", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  entradas       DesafioEntrada[]
+  votos          DesafioVoto[]
+}
+
+model DesafioEntrada {
+  id          Int      @id @default(autoincrement())
+  desafioId   Int
+  usuarioId   Int
+  receitaId   Int      @unique
+  createdAt   DateTime @default(now())
+  desafio     Desafio  @relation(fields: [desafioId], references: [id], onDelete: Cascade)
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  receita     Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+  votos       DesafioVoto[]
+
+  @@unique([desafioId, usuarioId, receitaId])
+}
+
+model DesafioVoto {
+  id          Int            @id @default(autoincrement())
+  desafioId   Int
+  entradaId   Int
+  usuarioId   Int
+  createdAt   DateTime       @default(now())
+  desafio     Desafio        @relation(fields: [desafioId], references: [id], onDelete: Cascade)
+  entrada     DesafioEntrada @relation(fields: [entradaId], references: [id], onDelete: Cascade)
+  usuario     Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([desafioId, usuarioId])
+}
+
+model ConquistaUsuario {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int
+  desafioId   Int?
+  titulo      String
+  emblema     String
+  molduraPerfil String?
+  concedidaEm DateTime @default(now())
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, concedidaEm])
 }
 
 model MensagemContato {

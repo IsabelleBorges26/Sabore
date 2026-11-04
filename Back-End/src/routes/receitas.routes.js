@@ -8,6 +8,7 @@ const {
     buscarPublica,
     listarHashtagsEmAlta,
     obterDesafioSemanal,
+    participarDesafioSemanal,
     buscar,
     atualizar,
     excluir
@@ -18,7 +19,11 @@ router.get("/listar", authMiddleware, listar);
 router.get("/publicas", listarPublicas);
 router.get("/publicas/:id", buscarPublica);
 router.get("/hashtags-em-alta", listarHashtagsEmAlta);
-router.get("/desafio-semanal", obterDesafioSemanal);
+router.get("/desafio-semanal", (req, res, next) => {
+    if (req.headers.authorization) return authMiddleware(req, res, next);
+    next();
+}, obterDesafioSemanal);
+router.post("/desafio-semanal/participar", authMiddleware, participarDesafioSemanal);
 router.get("/buscar/:id", (req, res, next) => {
     if (req.headers.authorization) return authMiddleware(req, res, next);
     next();

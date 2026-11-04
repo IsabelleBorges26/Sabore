@@ -27,7 +27,7 @@ const finishAuthentication = async (session) => {
   api.setToken(session.access_token);
   const user = await api.get('/usuarios/perfil');
   api.setUser(user);
-  window.location.replace('../Dashboard/home/index.html');
+  window.location.replace('/Dashboard/home/index.html');
 };
 
 const getRedirectUrl = () => `${window.location.origin}/login/index.html`;

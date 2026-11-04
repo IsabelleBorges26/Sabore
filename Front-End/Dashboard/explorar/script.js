@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     books: [],
     favorites: [],
     chefs: [],
+    followingIds: new Set(),
     categories: [
       { id: 'all', name: 'Todas', emoji: 'fa-solid fa-utensils' },
       { id: 'massa', name: 'Massas', emoji: 'fa-solid fa-pizza-slice' },
@@ -18,13 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
     trendingTagsData: []
   };
   let activeCategoryFilter = 'all';
-  let activeTabFilter = 'all';
+  let activeFeedMode = 'for-you';
   let activeHashtagFilter = null;
   let currentWeeklyChallengeData = null;
+  let openCommunityComposer = null;
+  let challengePublicationContext = null;
   let feedPageLimit = 12;
   let feedCurrentCount = 12;
   let isInfiniteScrollActive = false;
   let latestFeedLoad = 0;
+  let seenRecipeIds = new Set();
+  let refreshedRecipeIds = new Set();
   const isOwnRecipe = (recipe) => {
     const userId = api.getUser()?.id;
     const authorId = recipe?.authorId ?? recipe?.usuarioId;
@@ -32,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   const showAuthorAvatar = (element, recipe) => {
     if (!element) return;
+    if (recipe.authorHasProfileFrame) element.classList.add('achievement-profile-frame');
     const initial = String(recipe.author || 'S').trim().charAt(0).toUpperCase() || 'S';
     element.textContent = initial;
     if (recipe.authorAvatar) {
@@ -42,8 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
       element.replaceChildren(image);
     }
   };
-  // Seed dinâmico da sessão: muda a cada visita ou refresh da página para trazer variedade e dinamismo ao feed
-  let sessionShuffleSeed = Math.random();
 
   const WEEKLY_CHALLENGES = [
     {
@@ -275,10 +279,18 @@ document.addEventListener('DOMContentLoaded', () => {
         select.appendChild(option);
       });
     };
+    openCommunityComposer = async (challenge = null) => {
+      await loadBookRecipes();
+      challengePublicationContext = challenge;
+      const hashtagsInput = document.getElementById('post-hashtags');
+      if (challenge?.hashtag && hashtagsInput && !hashtagsInput.value.includes(challenge.hashtag)) {
+        hashtagsInput.value = `${hashtagsInput.value.trim()} ${challenge.hashtag}`.trim();
+      }
+      openModal('create-post-modal');
+    };
     button.addEventListener('click', async () => {
       try {
-        await loadBookRecipes();
-        openModal('create-post-modal');
+        await openCommunityComposer();
       } catch (error) {
         alert(`Não foi possível carregar suas receitas salvas: ${error.message}`);
       }
@@ -302,12 +314,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const steps = value('post-steps').split('\n').map(item => item.trim()).filter(Boolean);
       const hashtags = value('post-hashtags').split(/\s+/).map(item => item.replace(/^#/, '').trim()).filter(Boolean);
       try {
-        await api.post('/receitas/cadastrar', {
+        const createdRecipe = await api.post('/receitas/cadastrar', {
           titulo: value('post-title'), descricao: value('post-description'), tempoPreparo: Number(value('post-time')),
           dificuldade: value('post-difficulty'), categorias: [value('post-category')], hashtags, imagem: value('post-image') || null,
           ingredientes: ingredients, modoPreparo: steps.join('\n'), criadaPorIA: false, publica: true
         });
+        if (challengePublicationContext?.databaseId && challengePublicationContext.hashtag && hashtags.some(tag => normalizeHashtag(tag) === normalizeHashtag(challengePublicationContext.hashtag))) {
+          await api.post('/desafios/entrada', { receitaId: createdRecipe.id });
+        }
         closeModal('create-post-modal');
+        challengePublicationContext = null;
         alert('Publicação criada. Ela já está visível para a comunidade.');
         event.target.reset();
       } catch (error) {
@@ -427,12 +443,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     updateCursorHoverListeners();
   }
-  const tabBtns = document.querySelectorAll('.feed-filter-btn:not(#btn-refresh-feed)');
+  const tabBtns = document.querySelectorAll('[data-feed-mode]');
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       tabBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      activeTabFilter = btn.dataset.feed || 'all';
+      activeFeedMode = btn.dataset.feedMode || 'for-you';
       renderRecipes();
     });
   });
@@ -453,21 +469,13 @@ document.addEventListener('DOMContentLoaded', () => {
           rec.category.toLowerCase().includes(queryVal) ||
           rec.diet.toLowerCase().includes(queryVal);
       }
-      let matchesTab = true;
-      if (activeTabFilter === 'fit') {
-        matchesTab = rec.diet.toLowerCase().includes('fit') || rec.diet.toLowerCase().includes('sem glúten');
-      } else if (activeTabFilter === 'vegetariano') {
-        matchesTab = rec.diet.toLowerCase().includes('vegano') || rec.diet.toLowerCase().includes('vegetariano');
-      } else if (activeTabFilter === 'doce') {
-        matchesTab = rec.diet.toLowerCase().includes('doce') || rec.category.toLowerCase().includes('sobremesa');
-      } else if (activeTabFilter === 'facil') {
-        matchesTab = rec.difficulty === 'Fácil';
-      }
+      const matchesFeedMode = activeFeedMode !== 'following'
+        || userState.followingIds.has(String(rec.authorId));
       let matchesHashtag = true;
       if (activeHashtagFilter) {
         matchesHashtag = Array.isArray(rec.tags) && rec.tags.some(t => t.toLowerCase() === activeHashtagFilter.toLowerCase());
       }
-      return matchesSearch && matchesCategory && matchesTab && matchesHashtag;
+      return matchesSearch && matchesCategory && matchesFeedMode && matchesHashtag;
     });
     // ALGORITMO SOCIAL DO FEED SABORÉ (ESTILO REDE SOCIAL)
     // Ranqueamento inteligente: Likes (peso 4) + Avaliações/Comentários (peso 5) + Interesses + Seguidos
@@ -478,6 +486,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // ALGORITMO SOCIAL DO FEED SABORÉ DINÂMICO
     // Ponderação: Engajamento (Likes x4, Avaliações x5, Interesses) + Variação Dinâmica Real por Visita/Atualização
     filtered.sort((first, second) => {
+      const firstIsFresh = refreshedRecipeIds.has(String(first.id));
+      const secondIsFresh = refreshedRecipeIds.has(String(second.id));
+      if (firstIsFresh !== secondIsFresh) return firstIsFresh ? -1 : 1;
+      if (activeFeedMode === 'recent') {
+        return new Date(second.publishedAt || 0).getTime() - new Date(first.publishedAt || 0).getTime();
+      }
       const calculateSocialScore = (recipe) => {
         const likesScore = (Number(recipe.likes) || 0) * 4;
         const reviewsScore = (Number(recipe.avaliacoes) || 0) * 5;
@@ -493,26 +507,24 @@ document.addEventListener('DOMContentLoaded', () => {
             + (text.includes(interest) ? 1 : 0), 0);
         }
 
-        const chef = userState.chefs.find(c => c.id === recipe.authorId);
-        const followingBonus = (chef && chef.followed) ? 12 : 0;
-
-        // Variação dinâmica pseudo-aleatória a cada visita/refresh (peso 20 para alternar a ordem das receitas no feed)
-        const visitJitter = ((Math.sin((Number(recipe.id) * 37) + (sessionShuffleSeed * 10000)) + 1) / 2) * 20;
+        const followingBonus = userState.followingIds.has(String(recipe.authorId)) ? 12 : 0;
 
         const publishedAt = new Date(recipe.publishedAt || 0).getTime();
         const ageInHours = publishedAt ? Math.max(0, (Date.now() - publishedAt) / 3600000) : Infinity;
         const recencyScore = Math.max(0, 60 - ageInHours);
-        return likesScore + reviewsScore + interestScore + followingBonus + recencyScore + visitJitter;
+        return likesScore + reviewsScore + interestScore + followingBonus + recencyScore;
       };
 
       return calculateSocialScore(second) - calculateSocialScore(first);
     });
     if (filtered.length === 0) {
+      const emptyTitle = userState.recipes.length ? 'Nenhuma publicação corresponde aos filtros' : 'Ainda não há publicações disponíveis';
+      const emptyText = userState.recipes.length ? 'Mude a categoria, a hashtag ou o modo do feed para ver outras publicações.' : 'Quando alguém da comunidade publicar uma receita pública, ela aparecerá aqui.';
       recipesContainer.innerHTML = `
         <div class="book-detail-empty" style="grid-column: 1 / -1; padding: 60px 20px;">
           <div class="empty-icon-glow"><i class="fa-solid fa-face-rolling-eyes"></i></div>
-          <h3>Nenhuma receita em destaque encontrada</h3>
-          <p>Tente redefinir seus filtros ou pesquisar por outro termo.</p>
+          <h3>${emptyTitle}</h3>
+          <p>${emptyText}</p>
         </div>
       `;
       return;
@@ -521,6 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const visibleRecipes = filtered.slice(0, feedCurrentCount);
 
     visibleRecipes.forEach(rec => {
+      seenRecipeIds.add(String(rec.id));
       const card = document.createElement('article');
       card.className = 'explore-recipe-card';
       let diffClass = 'easy';
@@ -650,6 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const following = !chef?.followed;
             await (following ? api.post(`/social/seguir/${rec.authorId}`, {}) : api.delete(`/social/seguir/${rec.authorId}`));
             if (chef) chef.followed = following;
+            if (following) userState.followingIds.add(String(rec.authorId));
+            else userState.followingIds.delete(String(rec.authorId));
             updateFollowButton(following);
           } catch (error) {
             alert(`Não foi possível atualizar o seguimento: ${error.message}`);
@@ -777,6 +792,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const following = !chef.followed;
           await (following ? api.post(`/social/seguir/${chef.id}`, {}) : api.delete(`/social/seguir/${chef.id}`));
           chef.followed = following;
+          if (following) userState.followingIds.add(String(chef.id));
+          else userState.followingIds.delete(String(chef.id));
           renderChefs();
           renderRecipes();
         } catch (error) {
@@ -799,6 +816,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chef = userState.chefs.find(item => item.id === event.detail?.userId);
     if (!chef) return;
     chef.followed = Boolean(event.detail.following);
+    if (chef.followed) userState.followingIds.add(String(chef.id));
+    else userState.followingIds.delete(String(chef.id));
     renderChefs();
     renderRecipes();
   });
@@ -823,9 +842,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantsEl = document.getElementById('challenge-participants');
     const countEl = document.getElementById('challenge-recipes-count');
     const joinBtn = document.getElementById('challenge-join-btn');
+    const submitBtn = document.getElementById('challenge-submit-btn');
 
-    if (titleEl) titleEl.textContent = challenge.title;
-    if (descEl) descEl.textContent = challenge.description;
+    if (titleEl) titleEl.textContent = challenge.title || challenge.titulo;
+    if (descEl) descEl.textContent = challenge.description || challenge.descricao;
     if (badgeTextEl) badgeTextEl.textContent = `DESAFIO DA SEMANA • SEMANA ${challenge.weekNumber}`;
     if (hashtagEl) {
       hashtagEl.textContent = challenge.hashtag;
@@ -846,9 +866,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const tags = rec.tags || [];
       return tags.some(t => t.toLowerCase() === challenge.hashtag.toLowerCase());
     });
-    const distinctLocalAuthors = new Set(matchingRecipes.map(r => r.authorId || r.author).filter(Boolean));
-    const recipesCount = typeof challenge.recipesCount === 'number' ? challenge.recipesCount : matchingRecipes.length;
-    const participants = typeof challenge.participantsCount === 'number' ? challenge.participantsCount : distinctLocalAuthors.size;
+    const user = api.getUser();
+    const storageKey = `sabore_challenge_joined_${challenge.databaseId || challenge.id}_${challenge.year}_w${challenge.weekNumber}_${user?.id || 'guest'}`;
+    let isJoined = Boolean(challenge.inscrito || challenge.isJoined)
+      || (!challenge.databaseId && localStorage.getItem(storageKey) === 'true');
+    const recipesCount = Number(challenge.entradas?.length ?? challenge.recipesCount ?? matchingRecipes.length);
+    const hasOwnEntry = matchingRecipes.some(recipe => String(recipe.authorId) === String(user?.id));
+    const serverParticipants = Number(challenge.participantes ?? challenge.participantsCount ?? 0);
+    const participants = challenge.databaseId ? serverParticipants : Math.max(serverParticipants, new Set(matchingRecipes.map(r => r.authorId || r.author).filter(Boolean)).size);
 
     if (countEl) {
       countEl.innerHTML = `<i class="fa-solid fa-utensils"></i> ${recipesCount} ${recipesCount === 1 ? 'receita criada' : 'receitas criadas'}`;
@@ -858,10 +883,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (joinBtn) {
-      const user = api.getUser();
-      const storageKey = `sabore_challenge_joined_${challenge.id}_${challenge.year}_w${challenge.weekNumber}_${user?.id || 'guest'}`;
-      let isJoined = localStorage.getItem(storageKey) === 'true';
-
       const updateJoinBtnUI = () => {
         if (isJoined) {
           joinBtn.classList.add('joined');
@@ -872,12 +893,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       };
       updateJoinBtnUI();
+      joinBtn.disabled = isJoined;
 
       joinBtn.onclick = () => {
-        isJoined = !isJoined;
+        if (isJoined) return;
+        isJoined = true;
+        joinBtn.disabled = true;
         if (isJoined) {
           localStorage.setItem(storageKey, 'true');
+          const joinRequest = challenge.databaseId
+            ? api.post('/desafios/participar', {})
+            : api.post('/receitas/desafio-semanal/participar', {});
+          joinRequest.then((result) => {
+            challenge.inscrito = true;
+            challenge.isJoined = true;
+            challenge.participantes = result.participantes ?? result.participantsCount;
+            challenge.participantsCount = result.participantsCount ?? result.participantes;
+            renderWeeklyChallenge();
+            if (window.SaboreNotify) window.SaboreNotify(`InscriÃ§Ã£o confirmada no ${challenge.title || challenge.titulo}!`, 'success');
+          }).catch((error) => {
+            isJoined = false;
+            localStorage.removeItem(storageKey);
+            joinBtn.disabled = false;
+            updateJoinBtnUI();
+            alert(`Não foi possível confirmar sua inscrição: ${error.message}`);
+          });
           updateJoinBtnUI();
+          if (participantsEl) {
+            const optimisticCount = serverParticipants + 1;
+            participantsEl.innerHTML = `<i class="fa-solid fa-user-group"></i> ${optimisticCount} ${optimisticCount === 1 ? 'participante' : 'participantes'}`;
+          }
           const hashtagsInput = document.getElementById('post-hashtags');
           if (hashtagsInput) {
             if (!hashtagsInput.value.includes(challenge.hashtag)) {
@@ -892,13 +937,78 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           localStorage.removeItem(storageKey);
           updateJoinBtnUI();
+          renderWeeklyChallenge();
           if (window.SaboreNotify) {
             window.SaboreNotify(`Inscrição no desafio ${challenge.title} cancelada.`, 'info');
           }
         }
       };
     }
+    if (submitBtn) {
+      submitBtn.hidden = !isJoined;
+      submitBtn.onclick = () => openCommunityComposer?.(challenge).catch(error => alert(`Não foi possível abrir a publicação: ${error.message}`));
+    }
+    renderChallengeCommunityPanel();
     updateCursorHoverListeners();
+  }
+
+  function renderChallengeCommunityPanel() {
+    const content = document.getElementById('challenge-community-content');
+    const challenge = currentWeeklyChallengeData;
+    if (!content || !challenge) return;
+
+    const user = api.getUser();
+    const storageKey = `sabore_challenge_joined_${challenge.id}_${challenge.year}_w${challenge.weekNumber}_${user?.id || 'guest'}`;
+    const joined = Boolean(challenge.inscrito || challenge.isJoined)
+      || (!challenge.databaseId && localStorage.getItem(storageKey) === 'true');
+    const entries = Array.isArray(challenge.entradas) && challenge.entradas.length
+      ? challenge.entradas.map(entry => ({
+          challengeEntryId: entry.id,
+          title: entry.receita?.titulo || entry.receita?.title || 'Receita do desafio',
+          author: entry.autor?.nome || 'Membro da comunidade',
+          authorId: entry.autor?.id,
+          votes: Number(entry.votos) || 0,
+          voted: Boolean(entry.meuVoto)
+        }))
+      : userState.recipes
+        .filter(recipe => (recipe.tags || []).some(tag => tag.toLowerCase() === challenge.hashtag.toLowerCase()))
+        .map(recipe => ({ ...recipe, votes: (recipe.likes || 0) + (recipe.avaliacoes || 0) }))
+        .sort((first, second) => second.votes - first.votes);
+
+    const isVoting = (challenge.fase || challenge.status) === 'VOTACAO';
+    const status = isVoting
+      ? '<i class="fa-solid fa-check-to-slot"></i> VotaÃ§Ã£o aberta: participantes inscritos podem votar em outra receita.'
+      : joined
+      ? '<i class="fa-solid fa-circle-check"></i> Você está inscrito. Publique com a hashtag oficial para entrar no ranking.'
+      : '<i class="fa-solid fa-compass"></i> Inscreva-se para acompanhar e participar deste desafio.';
+    const ranking = entries.slice(0, 10).map((recipe, index) => `
+      <div class="challenge-ranking-item">
+        <span class="challenge-ranking-position">${index + 1}º</span>
+        <span class="challenge-ranking-name">${recipe.author || 'Membro da comunidade'}${recipe.title ? ` - ${recipe.title}` : ''}</span>
+        <span class="challenge-ranking-score">${recipe.votes} ${isVoting ? 'votos' : 'pts'}</span>
+        ${isVoting && joined && String(recipe.authorId) !== String(user?.id) && recipe.challengeEntryId ? `<button type="button" class="challenge-vote-btn" data-entry-id="${recipe.challengeEntryId}" ${recipe.voted ? 'disabled' : ''}>${recipe.voted ? 'Seu voto' : 'Votar'}</button>` : ''}
+      </div>
+    `).join('');
+
+    content.innerHTML = `
+      <div class="challenge-status-line">${status}</div>
+      <div class="challenge-ranking-list">
+        ${ranking || '<p class="challenge-ranking-empty">O ranking começa quando a comunidade publicar receitas com a hashtag do desafio.</p>'}
+      </div>
+    `;
+    content.querySelectorAll('.challenge-vote-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+        try {
+          await api.post('/desafios/votar', { entradaId: Number(button.dataset.entryId) });
+          currentWeeklyChallengeData = await api.get('/desafios/ativo?_t=' + Date.now());
+          renderWeeklyChallenge();
+        } catch (error) {
+          button.disabled = false;
+          alert(`NÃ£o foi possÃ­vel registrar seu voto: ${error.message}`);
+        }
+      });
+    });
   }
 
   function updateTrendingHashtags() {
@@ -918,9 +1028,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Exibir APENAS as hashtags que realmente estão em alta com base nas interações dos usuários (> 0)
+    const officialChallengeTag = normalizeHashtag(currentWeeklyChallengeData?.hashtag);
+    if (officialChallengeTag && !map.has(officialChallengeTag.toLowerCase())) {
+      map.set(officialChallengeTag.toLowerCase(), { name: officialChallengeTag.toLowerCase(), interactions: 0, count: 0, official: true });
+    }
+
     userState.trendingTagsData = Array.from(map.values())
-      .filter(item => item.interactions > 0)
-      .sort((a, b) => b.interactions - a.interactions || b.count - a.count);
+      .filter(item => item.interactions > 0 || item.name === officialChallengeTag.toLowerCase())
+      .sort((a, b) => Number(Boolean(b.official)) - Number(Boolean(a.official)) || b.interactions - a.interactions || b.count - a.count);
 
     renderTags();
   }
@@ -1072,7 +1187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     updateCursorHoverListeners();
   }
-  async function loadInitialData() {
+  async function loadInitialData(options = {}) {
     const user = api.getUser();
     if (!user) {
       window.location.href = "../../login/index.html";
@@ -1107,11 +1222,37 @@ document.addEventListener('DOMContentLoaded', () => {
       const favorites = favoritesResult.status === 'fulfilled' ? favoritesResult.value : [];
       userState.favorites = favorites.map(f => f.id);
       if (recipesResult.status !== 'fulfilled') throw recipesResult.reason;
-      const publicRecipes = recipesResult.value.filter(rec => {
+      let publicRecipes = recipesResult.value.filter(rec => {
         const title = String(rec.title || rec.titulo || '').trim().toLowerCase();
         if (title === 'teste' || title === 'teste 123') return false;
         return Boolean(title) && !isOwnRecipe(rec);
       });
+      let newPostsCount = 0;
+      if (options.onlyNew) refreshedRecipeIds = new Set();
+      if (options.onlyNew && seenRecipeIds.size > 0) {
+        const freshRecipes = publicRecipes.filter(recipe => !seenRecipeIds.has(String(recipe.id)));
+        const relevantFreshRecipes = activeFeedMode === 'following'
+          ? freshRecipes.filter(recipe => userState.followingIds.has(String(recipe.authorId ?? recipe.usuarioId)))
+          : freshRecipes;
+        if (relevantFreshRecipes.length) {
+          newPostsCount = relevantFreshRecipes.length;
+          refreshedRecipeIds = new Set(relevantFreshRecipes.map(recipe => String(recipe.id)));
+          const freshIds = new Set(relevantFreshRecipes.map(recipe => String(recipe.id)));
+          publicRecipes = [...relevantFreshRecipes, ...userState.recipes.filter(recipe => !freshIds.has(String(recipe.id)))];
+        } else if (userState.recipes.length) {
+          // Uma atualização sem posts novos mantém o feed visível; não transforma
+          // uma resposta válida da API em um estado vazio.
+          publicRecipes = userState.recipes.map(recipe => ({
+            id: recipe.id, title: recipe.title, description: recipe.description,
+            time: recipe.time, difficulty: recipe.difficulty, category: recipe.category,
+            likes: recipe.likes, avaliacoes: recipe.avaliacoes, image: recipe.image,
+            authorId: recipe.authorId, author: recipe.author, authorAvatar: recipe.authorAvatar,
+            authorHasProfileFrame: recipe.authorHasProfileFrame, authorAchievements: recipe.authorAchievements,
+            publishedAt: recipe.publishedAt, ingredients: recipe.ingredients, steps: recipe.steps,
+            categories: recipe.categories, hashtags: recipe.hashtags
+          }));
+        }
+      }
       userState.recipes = publicRecipes.map(rec => {
         const categoriesList = rec.categories || [];
         const hashtags = Array.isArray(rec.hashtags) ? rec.hashtags : [];
@@ -1129,6 +1270,8 @@ document.addEventListener('DOMContentLoaded', () => {
           authorId: rec.authorId,
           author: rec.author,
           authorAvatar: rec.authorAvatar,
+          authorHasProfileFrame: rec.authorHasProfileFrame,
+          authorAchievements: rec.authorAchievements,
           diet: rec.category,
           tags,
           hashtags,
@@ -1151,15 +1294,24 @@ document.addEventListener('DOMContentLoaded', () => {
       renderRecipes();
       updateTrendingHashtags();
       try {
-        const desafioData = await api.get("/receitas/desafio-semanal");
+        const desafioData = await api.get("/desafios/ativo");
         currentWeeklyChallengeData = desafioData;
       } catch (err) {
-        currentWeeklyChallengeData = getWeeklyChallenge();
+        try {
+          currentWeeklyChallengeData = await api.get("/receitas/desafio-semanal");
+        } catch {
+          currentWeeklyChallengeData = getWeeklyChallenge();
+        }
       }
       renderWeeklyChallenge();
+      updateTrendingHashtags();
       try {
         const currentUser = api.getUser();
-        const usuarios = await api.get("/social/perfis");
+        const [usuarios, seguindo] = await Promise.all([
+          api.get("/social/perfis"),
+          api.get("/social/meus-seguindo")
+        ]);
+        userState.followingIds = new Set((seguindo || []).map(item => String(item.id)));
         userState.chefs = usuarios
           .filter(u => u.id !== currentUser.id) // Exclui o próprio usuário logado
           .map(u => ({
@@ -1169,7 +1321,7 @@ document.addEventListener('DOMContentLoaded', () => {
             avatar: u.foto || null,
             followed: false,
             recipes: u.receitasPublicas || 0,
-            followed: Boolean(u.seguindoVoce)
+            followed: userState.followingIds.has(String(u.id))
           }));
       } catch (err) {
       }
@@ -1179,7 +1331,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Renderize novamente para refletir corretamente quem o usuário já segue.
       renderRecipes();
       renderTags();
+      return { ok: true, newPostsCount };
     } catch (err) {
+      console.error('NÃ£o foi possÃ­vel atualizar o feed da comunidade:', err);
+      return { ok: false, newPostsCount: 0, error: err };
     }
   }
   let selectedRating = 5;
@@ -1333,15 +1488,18 @@ document.addEventListener('DOMContentLoaded', () => {
       refreshBtn.disabled = true;
     }
 
-    sessionShuffleSeed = Math.random();
     feedCurrentCount = feedPageLimit;
 
     try {
-      await loadInitialData();
+      const result = await loadInitialData({ onlyNew: showFeedback });
+      if (refreshBtn && showFeedback) {
+        refreshBtn.innerHTML = result?.ok
+          ? (result.newPostsCount > 0 ? `<i class="fa-solid fa-check"></i> ${result.newPostsCount} nova(s)` : '<i class="fa-solid fa-arrows-rotate"></i> Sem novidades')
+          : '<i class="fa-solid fa-triangle-exclamation"></i> Falha ao atualizar';
+      }
     } finally {
       if (refreshBtn && showFeedback) {
         refreshBtn.disabled = false;
-        refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizado!';
         setTimeout(() => {
           refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar';
         }, 1500);
@@ -1361,7 +1519,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Recarregar feed sempre que o usuário retornar à página (pageshow sem restrição persisted)
   window.addEventListener('pageshow', (event) => {
-    sessionShuffleSeed = Math.random();
     if (event.persisted) {
       refreshExploreFeed(false);
     }

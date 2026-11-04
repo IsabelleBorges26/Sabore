@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <i class="fa-regular fa-folder-open" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px; display: block;"></i>
             <h3>Sua lista de favoritas está vazia</h3>
             <p style="font-size: 0.85rem; margin-top: 5px;">Explore receitas e clique no ícone de coração para salvá-las aqui!</p>
-            <a href="../explorar/index.html" class="filter-tab-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Explorar Receitas</a>
+            <a href="../explorar/index.html" class="filter-tab-btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Comunidade</a>
           </div>
         `;
         const countLabel = document.getElementById('favorites-count-label');

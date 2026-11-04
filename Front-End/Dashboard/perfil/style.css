@@ -1695,3 +1695,10 @@ a {
   color: #ff5f56;
 }
 
+.profile-achievements { width: 100%; margin: 14px 0 8px; padding: 13px 15px; border: 1px solid var(--glass-border); border-radius: 14px; background: rgba(18, 31, 28, .6); text-align: left; }
+.profile-achievements h3 { margin: 0 0 10px; font-size: .82rem; color: var(--secondary); }
+.profile-achievements h3 i { color: #f0c66e; margin-right: 6px; }
+.profile-achievements-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.profile-achievement-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border: 1px solid rgba(240, 198, 110, .35); border-radius: 999px; color: #f0d5a0; background: rgba(240, 198, 110, .08); font-size: .72rem; }
+.profile-achievement-badge i { color: #f0c66e; }
+.profile-achievements-empty { color: rgba(242, 244, 243, .55); font-size: .75rem; }
