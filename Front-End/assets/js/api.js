@@ -48,11 +48,12 @@ function applySaboreNeonGlow(enabled) {
                 .no-neon-glow .glow,
                 .no-neon-glow .fireworks-canvas,
                 .no-neon-glow .food-bowl-container::before {
-                    display: none !important;
                     opacity: 0 !important;
+                    pointer-events: none !important;
                     filter: none !important;
                     box-shadow: none !important;
                     animation: none !important;
+                    text-shadow: none !important;
                 }
                 .no-neon-glow * {
                     text-shadow: none !important;
