@@ -314,8 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
 
-    const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
-
     if (userState.isPro) {
 
       if (navbarPlanTag) {
@@ -326,16 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       }
 
-      if (sidebarUpgradeBtn) {
-
-        sidebarUpgradeBtn.textContent = 'Menu PRO';
-
-        sidebarUpgradeBtn.style.background = 'var(--accent-light)';
-
-        sidebarUpgradeBtn.style.color = 'var(--accent)';
-
-      }
-
     } else {
 
       if (navbarPlanTag) {
@@ -343,16 +331,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navbarPlanTag.textContent = 'Gratuito';
 
         navbarPlanTag.className = 'user-plan-tag free';
-
-      }
-
-      if (sidebarUpgradeBtn) {
-
-        sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-rocket" aria-hidden="true"></i> Virar PRO';
-
-        sidebarUpgradeBtn.style.background = 'var(--secondary)';
-
-        sidebarUpgradeBtn.style.color = 'var(--dark-deep)';
 
       }
 
@@ -525,9 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     { btn: 'close-save-modal', modal: 'save-to-book-modal' },
 
-    { btn: 'close-notif-modal', modal: 'notifications-modal' },
-
-    { btn: 'close-celebration-btn', modal: 'celebration-modal' }
+    { btn: 'close-notif-modal', modal: 'notifications-modal' }
 
   ];
 
@@ -583,20 +559,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   }
 
-  const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
-
   const proMenuLink = document.querySelector('[data-target="pro"]');
-
-  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];
-
-  upgradeTriggers.forEach(trigger => {
-    if (trigger) {
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = '../ranking/index.html';
-      });
-    }
-  });
+  if (proMenuLink) {
+    proMenuLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '../ranking/index.html';
+    });
+  }
 
   const urlForm = document.getElementById('video-url-form');
 

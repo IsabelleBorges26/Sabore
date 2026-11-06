@@ -146,18 +146,10 @@ window.SaboreSyncPlanUI = async function() {
             navbarTag.className = `user-plan-tag ${isPro ? "pro" : "free"}`;
         }
 
-        // Atualiza botão lateral ou banner PRO
-        const sidebarUpgradeBtn = document.getElementById("sidebar-upgrade-btn");
-        if (sidebarUpgradeBtn) {
-            if (isPro) {
-                sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-gem"></i> Saboré PRO';
-                sidebarUpgradeBtn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
-                sidebarUpgradeBtn.style.color = "#121F1C";
-                sidebarUpgradeBtn.onclick = () => { window.location.href = "../ranking/index.html"; };
-            } else {
-                sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-trophy"></i> Conquistar PRO';
-                sidebarUpgradeBtn.onclick = () => { window.location.href = "../ranking/index.html"; };
-            }
+        // Remove qualquer card lateral duplicado de upgrade PRO (mantendo apenas a aba Ranking PRO no menu lateral)
+        const sidebarPromo = document.querySelector(".sidebar-footer-promo");
+        if (sidebarPromo && !window.location.pathname.includes("/admin/")) {
+            sidebarPromo.remove();
         }
 
         // Atualiza links do menu PRO

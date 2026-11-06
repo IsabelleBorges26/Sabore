@@ -32,26 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
-    const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
     if (userState.isPro) {
       if (navbarPlanTag) {
         navbarPlanTag.textContent = 'PRO';
         navbarPlanTag.className = 'user-plan-tag pro';
       }
-      if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.textContent = 'Menu PRO';
-        sidebarUpgradeBtn.style.background = 'var(--accent-light)';
-        sidebarUpgradeBtn.style.color = 'var(--accent)';
-      }
     } else {
       if (navbarPlanTag) {
         navbarPlanTag.textContent = 'Gratuito';
         navbarPlanTag.className = 'user-plan-tag free';
-      }
-      if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-rocket" aria-hidden="true"></i> Virar PRO';
-        sidebarUpgradeBtn.style.background = 'var(--secondary)';
-        sidebarUpgradeBtn.style.color = 'var(--dark-deep)';
       }
     }
   }
@@ -110,8 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { btn: 'close-recipe-modal', modal: 'add-recipe-modal' },
     { btn: 'close-details-modal', modal: 'recipe-details-modal' },
     { btn: 'recipe-detail-close-btn', modal: 'recipe-details-modal' },
-    { btn: 'close-notif-modal', modal: 'notifications-modal' },
-    { btn: 'close-celebration-btn', modal: 'celebration-modal' }
+    { btn: 'close-notif-modal', modal: 'notifications-modal' }
   ];
   closeTriggers.forEach(trigger => {
     const btn = document.getElementById(trigger.btn);
@@ -139,25 +127,13 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '../perfil/index.html';
     });
   }
-  const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
-  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];
-  upgradeTriggers.forEach(trigger => {
-    if (trigger) {
-      trigger.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try {
-          await api.put("/planos/atualizar", { plano: "PRO" });
-          userState.isPro = true;
-          updatePlanUI();
-          renderBooks();
-          openModal('celebration-modal');
-        } catch (err) {
-          alert("Erro ao atualizar plano: " + err.message);
-        }
-      });
-    }
-  });
+  if (proMenuLink) {
+    proMenuLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '../ranking/index.html';
+    });
+  }
   const booksContainer = document.getElementById('books-grid-container');
   function renderBooks() {
     if (!booksContainer) return;
@@ -213,17 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       card.addEventListener('click', () => {
         if (book.requiresPlan === true) {
-          const upgradeNow = confirm('A coleção "' + book.title + '" é um recurso PRO.\n\nDeseja atualizar sua conta para PRO agora para liberar este livro de receitas?');
-          if (upgradeNow) {
-            api.put("/planos/atualizar", { plano: "PRO" }).then(() => {
-              userState.isPro = true;
-              updatePlanUI();
-              userState.selectedBookId = book.id;
-              renderBooks();
-              showBookDetail(book.id);
-              openModal('celebration-modal');
-            }).catch(err => alert("Erro ao assinar PRO: " + err.message));
-          }
+          window.location.href = '../ranking/index.html';
           return;
         }
         userState.selectedBookId = book.id;

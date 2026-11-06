@@ -137,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
     const profilePlanBadge = document.getElementById('profile-plan-badge');
-    const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
     if (userState.isPro) {
       if (navbarPlanTag) {
         navbarPlanTag.textContent = 'PRO';
@@ -147,11 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
         profilePlanBadge.textContent = 'Saboré PRO';
         profilePlanBadge.className = 'plan-badge-large pro';
       }
-      if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.textContent = 'Menu PRO';
-        sidebarUpgradeBtn.style.background = 'var(--accent-light)';
-        sidebarUpgradeBtn.style.color = 'var(--accent)';
-      }
     } else {
       if (navbarPlanTag) {
         navbarPlanTag.textContent = 'Gratuito';
@@ -160,11 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (profilePlanBadge) {
         profilePlanBadge.textContent = 'Membro Grátis';
         profilePlanBadge.className = 'plan-badge-large free';
-      }
-      if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-rocket" aria-hidden="true"></i> Virar PRO';
-        sidebarUpgradeBtn.style.background = 'var(--secondary)';
-        sidebarUpgradeBtn.style.color = 'var(--dark-deep)';
       }
     }
   }
@@ -200,8 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   const closeTriggers = [
-    { btn: 'close-notif-modal', modal: 'notifications-modal' },
-    { btn: 'close-celebration-btn', modal: 'celebration-modal' }
+    { btn: 'close-notif-modal', modal: 'notifications-modal' }
   ];
   closeTriggers.forEach(trigger => {
     const btn = document.getElementById(trigger.btn);
@@ -239,19 +227,13 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '../configuracoes/index.html';
     });
   }
-  const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
-  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];
-  upgradeTriggers.forEach(trigger => {
-    if (trigger) {
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        userState.isPro = true;
-        updatePlanUI();
-        openModal('celebration-modal');
-      });
-    }
-  });
+  if (proMenuLink) {
+    proMenuLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '../ranking/index.html';
+    });
+  }
   const btnEditBio = document.getElementById('btn-edit-bio');
   const bioDisplay = document.getElementById('user-bio-display');
   const editBlock = document.getElementById('bio-edit-block');

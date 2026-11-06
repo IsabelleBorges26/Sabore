@@ -74,26 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
-    const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
     if (userState.isPro) {
       if (navbarPlanTag) {
         navbarPlanTag.textContent = 'PRO';
         navbarPlanTag.className = 'user-plan-tag pro';
       }
-      if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.textContent = 'Menu PRO';
-        sidebarUpgradeBtn.style.background = 'var(--accent-light)';
-        sidebarUpgradeBtn.style.color = 'var(--accent)';
-      }
     } else {
       if (navbarPlanTag) {
         navbarPlanTag.textContent = 'Gratuito';
         navbarPlanTag.className = 'user-plan-tag free';
-      }
-      if (sidebarUpgradeBtn) {
-        sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-rocket" aria-hidden="true"></i> Virar PRO';
-        sidebarUpgradeBtn.style.background = 'var(--secondary)';
-        sidebarUpgradeBtn.style.color = 'var(--dark-deep)';
       }
     }
   }
@@ -129,8 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   const closeTriggers = [
-    { btn: 'close-notif-modal', modal: 'notifications-modal' },
-    { btn: 'close-celebration-btn', modal: 'celebration-modal' }
+    { btn: 'close-notif-modal', modal: 'notifications-modal' }
   ];
   closeTriggers.forEach(trigger => {
     const btn = document.getElementById(trigger.btn);
@@ -146,19 +134,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (badge) badge.style.display = 'none';
     });
   }
-  const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
-  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];
-  upgradeTriggers.forEach(trigger => {
-    if (trigger) {
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        userState.isPro = true;
-        updatePlanUI();
-        openModal('celebration-modal');
-      });
-    }
-  });
+  if (proMenuLink) {
+    proMenuLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '../ranking/index.html';
+    });
+  }
   function showToast(message) {
     const container = document.getElementById('toast-container');
     if (!container) return;
