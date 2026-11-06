@@ -827,13 +827,102 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return num + ' seguidores';
   }
+  // Desafio da Semana (sistema culinário com participação, pontos e histórico)
+  function escapeDesafioHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  }
+
+  function formatDesafioTimeLeft(fimEm) {
+    const diff = new Date(fimEm).getTime() - Date.now();
+    if (!Number.isFinite(diff) || diff <= 0) return 'Desafio encerrado';
+    const dias = Math.floor(diff / 86400000);
+    const horas = Math.floor((diff % 86400000) / 3600000);
+    return dias > 0 ? `Termina em ${dias}d ${horas}h` : `Termina em ${horas}h`;
+  }
+
+  function readDesafioPhoto(file) {
+    return new Promise((resolve) => {
+      if (!file) return resolve(null);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const max = 640;
+          const ratio = Math.min(1, max / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * ratio);
+          canvas.height = Math.round(img.height * ratio);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.onerror = () => resolve(null);
+        img.src = reader.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderDesafioModal(data) {
+    const desafio = data.desafio;
+    const participou = data.participacaoUsuario;
+    const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    setText('desafio-modal-title', desafio.titulo);
+    setText('desafio-modal-theme', `Tema: ${desafio.tema} • +${desafio.pontosRecompensa} pontos`);
+    setText('desafio-modal-desc', desafio.descricao);
+    setText('desafio-modal-guide', desafio.orientacoes);
+
+    const done = document.getElementById('desafio-modal-done');
+    const form = document.getElementById('desafio-form');
+    if (done && form) {
+      if (participou) {
+        done.style.display = 'block';
+        done.textContent = `Você já participou com "${participou.nomeReceita}" e ganhou ${participou.pontosConcedidos} pontos.`;
+        form.style.display = 'none';
+      } else if (!desafio.ativo || new Date(desafio.fimEm).getTime() < Date.now()) {
+        done.style.display = 'block';
+        done.textContent = 'Este desafio já foi encerrado.';
+        form.style.display = 'none';
+      } else {
+        done.style.display = 'none';
+        form.style.display = 'flex';
+      }
+    }
+
+    const list = document.getElementById('desafio-participations');
+    if (list) {
+      const itens = desafio.participacoes || [];
+      list.innerHTML = itens.length ? itens.map((p) => `
+        <div style="display:flex;gap:10px;align-items:center;background:rgba(242,244,243,0.04);border-radius:10px;padding:8px 10px;">
+          ${p.foto ? `<img src="${escapeDesafioHtml(p.foto)}" alt="" style="width:42px;height:42px;border-radius:8px;object-fit:cover;">` : '<i class="fa-solid fa-utensils" style="width:42px;text-align:center;opacity:.6;"></i>'}
+          <div style="min-width:0;">
+            <strong style="font-size:0.82rem;">${escapeDesafioHtml(p.nomeReceita)}</strong>
+            <div style="font-size:0.72rem;opacity:.6;">por ${escapeDesafioHtml(p.usuario?.nome || 'Cozinheiro')}</div>
+          </div>
+        </div>`).join('') : '<p style="font-size:0.78rem;opacity:.55;">Seja o primeiro a participar!</p>';
+    }
+  }
+
+  async function loadDesafioHistory() {
+    const box = document.getElementById('desafio-history');
+    if (!box) return;
+    try {
+      const historico = await api.get('/desafios/historico');
+      box.innerHTML = (historico || []).length ? historico.map((d) => `
+        <div style="display:flex;justify-content:space-between;gap:8px;">
+          <span>${escapeDesafioHtml(d.titulo)}</span>
+          <span style="opacity:.6;">${d._count?.participacoes ?? 0} participações</span>
+        </div>`).join('') : '<p style="opacity:.55;">Ainda não há desafios anteriores.</p>';
+    } catch (err) {
+      box.innerHTML = '<p style="opacity:.55;">Histórico indisponível no momento.</p>';
+    }
+  }
+
   function renderWeeklyChallenge() {
     const card = document.getElementById('weekly-challenge-card');
     if (!card) return;
 
-    const challenge = currentWeeklyChallengeData || getWeeklyChallenge();
-    currentWeeklyChallengeData = challenge;
-
+    const data = currentWeeklyChallengeData;
     const titleEl = document.getElementById('challenge-title');
     const descEl = document.getElementById('challenge-description');
     const badgeTextEl = document.getElementById('challenge-badge-text');
@@ -843,112 +932,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const countEl = document.getElementById('challenge-recipes-count');
     const joinBtn = document.getElementById('challenge-join-btn');
     const submitBtn = document.getElementById('challenge-submit-btn');
+    if (submitBtn) submitBtn.hidden = true;
+    const communityPanel = document.getElementById('challenge-community-panel');
+    if (communityPanel) communityPanel.style.display = 'none';
 
-    if (titleEl) titleEl.textContent = challenge.title || challenge.titulo;
-    if (descEl) descEl.textContent = challenge.description || challenge.descricao;
-    if (badgeTextEl) badgeTextEl.textContent = `DESAFIO DA SEMANA • SEMANA ${challenge.weekNumber}`;
-    if (hashtagEl) {
-      hashtagEl.textContent = challenge.hashtag;
-      hashtagEl.onclick = () => {
-        const norm = challenge.hashtag.toLowerCase();
-        activeHashtagFilter = (activeHashtagFilter === norm) ? null : norm;
-        renderTags();
-        renderRecipes();
-        const grid = document.getElementById('explore-recipes-container');
-        if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      };
-    }
-    if (timeLeftEl) {
-      timeLeftEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${challenge.timeRemainingText}`;
+    if (!data || !data.desafio) {
+      if (titleEl) titleEl.textContent = 'Desafio indisponível';
+      if (descEl) descEl.textContent = 'Não foi possível carregar o desafio desta semana. Tente novamente em instantes.';
+      if (joinBtn) joinBtn.style.display = 'none';
+      return;
     }
 
-    const matchingRecipes = userState.recipes.filter(rec => {
-      const tags = rec.tags || [];
-      return tags.some(t => t.toLowerCase() === challenge.hashtag.toLowerCase());
-    });
-    const user = api.getUser();
-    const storageKey = `sabore_challenge_joined_${challenge.databaseId || challenge.id}_${challenge.year}_w${challenge.weekNumber}_${user?.id || 'guest'}`;
-    let isJoined = Boolean(challenge.inscrito || challenge.isJoined)
-      || (!challenge.databaseId && localStorage.getItem(storageKey) === 'true');
-    const recipesCount = Number(challenge.entradas?.length ?? challenge.recipesCount ?? matchingRecipes.length);
-    const hasOwnEntry = matchingRecipes.some(recipe => String(recipe.authorId) === String(user?.id));
-    const serverParticipants = Number(challenge.participantes ?? challenge.participantsCount ?? 0);
-    const participants = challenge.databaseId ? serverParticipants : Math.max(serverParticipants, new Set(matchingRecipes.map(r => r.authorId || r.author).filter(Boolean)).size);
+    const desafio = data.desafio;
+    const participou = Boolean(data.participacaoUsuario);
 
-    if (countEl) {
-      countEl.innerHTML = `<i class="fa-solid fa-utensils"></i> ${recipesCount} ${recipesCount === 1 ? 'receita criada' : 'receitas criadas'}`;
-    }
+    if (titleEl) titleEl.textContent = desafio.titulo;
+    if (descEl) descEl.textContent = desafio.descricao;
+    if (badgeTextEl) badgeTextEl.textContent = `DESAFIO DA SEMANA • ${desafio.tema.toUpperCase()}`;
+    if (hashtagEl) hashtagEl.textContent = `+${desafio.pontosRecompensa} pts`;
+    if (timeLeftEl) timeLeftEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${formatDesafioTimeLeft(desafio.fimEm)}`;
+    if (countEl) countEl.innerHTML = `<i class="fa-solid fa-star"></i> +${desafio.pontosRecompensa} pontos no ranking`;
     if (participantsEl) {
-      participantsEl.innerHTML = `<i class="fa-solid fa-user-group"></i> ${participants} ${participants === 1 ? 'participante' : 'participantes'}`;
+      const total = desafio.totalParticipacoes || 0;
+      participantsEl.innerHTML = `<i class="fa-solid fa-user-group"></i> ${total} ${total === 1 ? 'participante' : 'participantes'}`;
     }
 
     if (joinBtn) {
-      const updateJoinBtnUI = () => {
-        if (isJoined) {
-          joinBtn.classList.add('joined');
-          joinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Inscrito no Desafio! ✓';
-        } else {
-          joinBtn.classList.remove('joined');
-          joinBtn.innerHTML = '<i class="fa-solid fa-trophy"></i> Participar do Desafio';
-        }
-      };
-      updateJoinBtnUI();
-      joinBtn.disabled = isJoined;
-
+      joinBtn.style.display = '';
+      joinBtn.classList.toggle('joined', participou);
+      joinBtn.innerHTML = participou
+        ? '<i class="fa-solid fa-circle-check"></i> Participação enviada ✓'
+        : '<i class="fa-solid fa-trophy"></i> Participar do Desafio';
       joinBtn.onclick = () => {
-        if (isJoined) return;
-        isJoined = true;
-        joinBtn.disabled = true;
-        if (isJoined) {
-          localStorage.setItem(storageKey, 'true');
-          const joinRequest = challenge.databaseId
-            ? api.post('/desafios/participar', {})
-            : api.post('/receitas/desafio-semanal/participar', {});
-          joinRequest.then((result) => {
-            challenge.inscrito = true;
-            challenge.isJoined = true;
-            challenge.participantes = result.participantes ?? result.participantsCount;
-            challenge.participantsCount = result.participantsCount ?? result.participantes;
-            renderWeeklyChallenge();
-            if (window.SaboreNotify) window.SaboreNotify(`InscriÃ§Ã£o confirmada no ${challenge.title || challenge.titulo}!`, 'success');
-          }).catch((error) => {
-            isJoined = false;
-            localStorage.removeItem(storageKey);
-            joinBtn.disabled = false;
-            updateJoinBtnUI();
-            alert(`Não foi possível confirmar sua inscrição: ${error.message}`);
-          });
-          updateJoinBtnUI();
-          if (participantsEl) {
-            const optimisticCount = serverParticipants + 1;
-            participantsEl.innerHTML = `<i class="fa-solid fa-user-group"></i> ${optimisticCount} ${optimisticCount === 1 ? 'participante' : 'participantes'}`;
-          }
-          const hashtagsInput = document.getElementById('post-hashtags');
-          if (hashtagsInput) {
-            if (!hashtagsInput.value.includes(challenge.hashtag)) {
-              hashtagsInput.value = hashtagsInput.value ? `${hashtagsInput.value.trim()} ${challenge.hashtag}` : challenge.hashtag;
-            }
-          }
-          if (window.SaboreNotify) {
-            window.SaboreNotify(`Inscrição confirmada no ${challenge.title}! Crie suas receitas com a hashtag ${challenge.hashtag}.`, 'success');
-          } else {
-            alert(`Inscrição confirmada no ${challenge.title}! Compartilhe sua receita com a hashtag ${challenge.hashtag}.`);
-          }
-        } else {
-          localStorage.removeItem(storageKey);
-          updateJoinBtnUI();
-          renderWeeklyChallenge();
-          if (window.SaboreNotify) {
-            window.SaboreNotify(`Inscrição no desafio ${challenge.title} cancelada.`, 'info');
-          }
-        }
+        renderDesafioModal(currentWeeklyChallengeData);
+        loadDesafioHistory();
+        const modal = document.getElementById('desafio-modal');
+        if (modal) modal.classList.add('open');
       };
     }
-    if (submitBtn) {
-      submitBtn.hidden = !isJoined;
-      submitBtn.onclick = () => openCommunityComposer?.(challenge).catch(error => alert(`Não foi possível abrir a publicação: ${error.message}`));
+
+    const modal = document.getElementById('desafio-modal');
+    const closeBtn = document.getElementById('close-desafio-modal');
+    if (modal && !modal.dataset.bound) {
+      modal.dataset.bound = 'true';
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+      if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+
+      const form = document.getElementById('desafio-form');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const submitBtn = document.getElementById('desafio-submit-btn');
+          const nomeReceita = document.getElementById('desafio-recipe-name').value.trim();
+          const descricaoPreparacao = document.getElementById('desafio-recipe-desc').value.trim();
+          const fileInput = document.getElementById('desafio-recipe-photo');
+          if (!nomeReceita || !descricaoPreparacao) return;
+          if (submitBtn) submitBtn.disabled = true;
+          try {
+            const foto = await readDesafioPhoto(fileInput && fileInput.files[0]);
+            const resultado = await api.post('/desafios/publicar', {
+              desafioId: currentWeeklyChallengeData.desafio.id,
+              nomeReceita,
+              descricaoPreparacao,
+              foto
+            });
+            if (window.SaboreNotify) window.SaboreNotify(resultado.mensagem || 'Participação publicada!', 'success');
+            const atualizado = await api.get('/desafios/atual');
+            currentWeeklyChallengeData = atualizado;
+            renderWeeklyChallenge();
+            renderDesafioModal(atualizado);
+          } catch (err) {
+            const msg = err.message || 'Não foi possível publicar sua participação.';
+            if (window.SaboreNotify) window.SaboreNotify(msg, 'error'); else alert(msg);
+          } finally {
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        });
+      }
     }
-    renderChallengeCommunityPanel();
     updateCursorHoverListeners();
   }
 
@@ -1294,14 +1355,9 @@ document.addEventListener('DOMContentLoaded', () => {
       renderRecipes();
       updateTrendingHashtags();
       try {
-        const desafioData = await api.get("/desafios/ativo");
-        currentWeeklyChallengeData = desafioData;
+        currentWeeklyChallengeData = await api.get("/desafios/atual");
       } catch (err) {
-        try {
-          currentWeeklyChallengeData = await api.get("/receitas/desafio-semanal");
-        } catch {
-          currentWeeklyChallengeData = getWeeklyChallenge();
-        }
+        currentWeeklyChallengeData = null;
       }
       renderWeeklyChallenge();
       updateTrendingHashtags();
@@ -1476,7 +1532,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   renderCategories();
-  renderWeeklyChallenge();
   initRatingSystem();
   loadInitialData();
 

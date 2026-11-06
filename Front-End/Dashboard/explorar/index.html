@@ -143,12 +143,12 @@
                 <h3 id="challenge-title">Carregando desafio...</h3>
                 <p id="challenge-description">Carregando o desafio culinário desta semana...</p>
                 <div class="challenge-meta-row">
-                  <button type="button" class="challenge-tag-pill" id="challenge-hashtag" title="Filtrar receitas deste desafio">#Desafio</button>
+                  <span class="challenge-tag-pill" id="challenge-hashtag" title="Pontos de recompensa">+30 pts</span>
                   <span class="challenge-time-tag" id="challenge-time-left"><i class="fa-regular fa-clock"></i> Calculando...</span>
                 </div>
                 <div class="challenge-stats">
                   <span id="challenge-participants"><i class="fa-solid fa-user-group"></i> 0 participantes</span>
-                  <span id="challenge-recipes-count"><i class="fa-solid fa-utensils"></i> 0 receitas criadas</span>
+                  <span id="challenge-recipes-count"><i class="fa-solid fa-star"></i> +30 pontos no ranking</span>
                 </div>
                 <button type="button" class="btn-challenge-action" id="challenge-join-btn">Participar do Desafio</button>
                 <button type="button" class="btn-challenge-submit" id="challenge-submit-btn" hidden><i class="fa-solid fa-square-plus"></i> Enviar receita para o desafio</button>
@@ -254,6 +254,30 @@
       </div>
       <div class="book-selection-list" id="save-book-options-container">
       </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="desafio-modal">
+    <div class="modal-card" style="max-width: 560px; max-height: 88vh; overflow-y: auto;">
+      <button class="modal-close-btn" id="close-desafio-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header-simple">
+        <h3 id="desafio-modal-title">Desafio da Semana</h3>
+        <p id="desafio-modal-theme"></p>
+      </div>
+      <p id="desafio-modal-desc" style="font-size: 0.85rem; line-height: 1.5; color: rgba(242, 244, 243, 0.8); margin-bottom: 12px;"></p>
+      <div id="desafio-modal-guide" style="white-space: pre-line; font-size: 0.8rem; line-height: 1.55; color: rgba(242, 244, 243, 0.65); background: rgba(242, 244, 243, 0.04); border: 1px solid rgba(242, 244, 243, 0.08); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;"></div>
+      <div id="desafio-modal-done" style="display: none; text-align: center; padding: 14px; border-radius: 12px; background: rgba(39, 201, 63, 0.1); border: 1px solid rgba(39, 201, 63, 0.3); color: #27C93F; font-size: 0.85rem; margin-bottom: 16px;"></div>
+      <form id="desafio-form" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+        <input type="text" id="desafio-recipe-name" maxlength="120" placeholder="Nome do prato" required style="padding: 11px 14px; border-radius: 10px; border: 1px solid rgba(242, 244, 243, 0.12); background: rgba(242, 244, 243, 0.04); color: inherit; font: inherit;">
+        <textarea id="desafio-recipe-desc" rows="4" maxlength="1500" placeholder="Conte como foi o preparo, ingredientes e dicas" required style="padding: 11px 14px; border-radius: 10px; border: 1px solid rgba(242, 244, 243, 0.12); background: rgba(242, 244, 243, 0.04); color: inherit; font: inherit; resize: vertical;"></textarea>
+        <label style="font-size: 0.78rem; color: rgba(242, 244, 243, 0.6);">Foto do prato (opcional)
+          <input type="file" id="desafio-recipe-photo" accept="image/*" style="display: block; margin-top: 6px; font-size: 0.78rem;">
+        </label>
+        <button type="submit" class="btn-challenge-action" id="desafio-submit-btn"><i class="fa-solid fa-trophy"></i> Publicar participação</button>
+      </form>
+      <h4 style="font-size: 0.85rem; margin-bottom: 8px;"><i class="fa-solid fa-users"></i> Participações desta semana</h4>
+      <div id="desafio-participations" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;"></div>
+      <h4 style="font-size: 0.85rem; margin-bottom: 8px;"><i class="fa-solid fa-clock-rotate-left"></i> Desafios anteriores</h4>
+      <div id="desafio-history" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: rgba(242, 244, 243, 0.7);"></div>
     </div>
   </div>
   <div class="modal-overlay" id="notifications-modal">

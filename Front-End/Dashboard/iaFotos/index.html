@@ -70,14 +70,21 @@
         </div>
       </header>
       <div class="dashboard-body">
-        <!-- Bloqueio PRO para usuários FREE -->
+        <!-- Saldo de créditos de IA por Foto -->
+        <div id="credit-banner" style="display: none; align-items: center; gap: 12px; flex-wrap: wrap; background: rgba(240, 213, 182, 0.08); border: 1px solid rgba(240, 213, 182, 0.25); border-radius: 14px; padding: 12px 18px; margin-bottom: 18px; font-size: 0.88rem; color: rgba(242, 244, 243, 0.9);">
+          <i id="credit-banner-icon" class="fa-solid fa-camera" style="color: var(--secondary);"></i>
+          <span id="credit-banner-text"></span>
+        </div>
+
+        <!-- Bloqueio quando os créditos gratuitos de foto acabam -->
+
         <div id="pro-gate-overlay" class="hidden" style="background: linear-gradient(135deg, rgba(27, 43, 39, 0.98), rgba(18, 31, 28, 0.98)); border: 1.5px solid rgba(255, 215, 0, 0.3); border-radius: 20px; padding: 40px; text-align: center; max-width: 680px; margin: 40px auto; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);">
           <div style="width: 68px; height: 68px; border-radius: 50%; background: rgba(255, 215, 0, 0.15); color: #FFD700; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;">
             <i class="fa-solid fa-lock"></i>
           </div>
           <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--light); margin-bottom: 12px;">Recurso Exclusivo do Saboré PRO</h2>
           <p style="color: rgba(242, 244, 243, 0.75); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
-            O escaneamento e reconhecimento de receitas a partir de fotografias faz parte dos benefícios exclusivos do <strong>Plano PRO</strong>. Os usuários FREE têm acesso ao Chat de IA (até 5 mensagens por mês).
+            Você usou seus <strong>2 créditos gratuitos de IA por Foto</strong> deste mês. Eles voltam no 1º dia do próximo mês. Com o <strong>Plano PRO</strong> o uso é ilimitado, e você ainda pode continuar usando o Chat de IA (até 5 mensagens por mês).
           </p>
           <div style="background: rgba(18, 31, 28, 0.6); border: 1px solid var(--glass-border); border-radius: 14px; padding: 18px; margin-bottom: 26px; text-align: left;">
             <h4 style="font-size: 0.95rem; color: var(--secondary); margin-bottom: 6px;"><i class="fa-solid fa-crown" style="color: #FFD700; margin-right: 6px;"></i> Como conquistar o Saboré PRO gratuitamente?</h4>

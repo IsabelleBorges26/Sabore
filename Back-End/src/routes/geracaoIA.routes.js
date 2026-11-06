@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middlewares/auth");
-const { verificarLimiteIA } = require("../middlewares/iaGate");
+const { verificarLimiteIA, verificarContinuacaoFoto } = require("../middlewares/iaGate");
 const { gerar, analisarFoto, gerarReceitaFoto } = require("../controllers/geracaoIA.controllers");
 const { obterConsumoUsuario } = require("../services/iaUsage.service");
 
@@ -18,8 +18,8 @@ router.get("/consumo", authMiddleware, async (req, res) => {
 // Chat: permitido para FREE (5/mês) e PRO (10/semana compartilhado)
 router.post("/gerar", authMiddleware, verificarLimiteIA("CHAT"), gerar);
 
-// Imagem: exclusivo PRO (compartilha limite de 10/semana)
+// Imagem: FREE tem 2 créditos/mês (1 crédito por foto analisada); PRO compartilha o limite de 10/semana
 router.post("/analisar-foto", authMiddleware, verificarLimiteIA("IMAGEM"), analisarFoto);
-router.post("/gerar-receita-foto", authMiddleware, verificarLimiteIA("IMAGEM"), gerarReceitaFoto);
+router.post("/gerar-receita-foto", authMiddleware, verificarContinuacaoFoto(), gerarReceitaFoto);
 
 module.exports = router;

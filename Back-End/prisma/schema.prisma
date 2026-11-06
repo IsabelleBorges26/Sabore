@@ -57,6 +57,7 @@ model Usuario {
   desafiosEntradas       DesafioEntrada[]
   desafiosVotos          DesafioVoto[]
   conquistas             ConquistaUsuario[]
+  participacoesDesafio    ParticipacaoDesafio[]
 }
 
 model Receita {
@@ -299,6 +300,7 @@ enum TipoEngajamento {
   AVALIACAO_RECEBIDA
   PERFIL_COMPLETO
   SEGUIR_USUARIO
+  DESAFIO_SEMANA
 }
 
 model AtividadeEngajamento {
@@ -366,3 +368,37 @@ model UsoIA {
   @@index([usuarioId, semanaChave])
 }
 
+
+model DesafioSemana {
+  id               Int                   @id @default(autoincrement())
+  semanaChave      String                @unique // Ex: "2026-W45"
+  titulo           String
+  descricao        String
+  tema             String
+  orientacoes      String
+  pontosRecompensa Int                   @default(30)
+  ativo            Boolean               @default(true)
+  inicioEm         DateTime
+  fimEm            DateTime
+  createdAt        DateTime              @default(now())
+  participacoes    ParticipacaoDesafio[]
+
+  @@index([inicioEm])
+}
+
+model ParticipacaoDesafio {
+  id                  Int           @id @default(autoincrement())
+  usuarioId           Int
+  desafioId           Int
+  nomeReceita         String
+  descricaoPreparacao String
+  foto                String?
+  pontosConcedidos    Int           @default(0)
+  pontosRegistradosEm DateTime?
+  createdAt           DateTime      @default(now())
+  usuario             Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  desafio             DesafioSemana @relation(fields: [desafioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, desafioId])
+  @@index([desafioId, createdAt])
+}

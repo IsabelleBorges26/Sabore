@@ -258,6 +258,48 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   userState.isPro = false; 
   updatePlanUI();
+  async function carregarCreditosIA() {
+    const banner = document.getElementById('credit-banner');
+    const bannerText = document.getElementById('credit-banner-text');
+    const bannerIcon = document.getElementById('credit-banner-icon');
+    const gate = document.getElementById('pro-gate-overlay');
+    const mainGrid = document.getElementById('ia-fotos-main-grid');
+    try {
+      const consumo = await api.get('/ia/consumo');
+      if (!consumo) return;
+      const isPro = consumo.plano === 'PRO';
+      userState.isPro = isPro;
+      updatePlanUI();
+      if (!banner || !bannerText) return;
+      banner.style.display = 'flex';
+      if (isPro) {
+        bannerIcon.className = 'fa-solid fa-crown';
+        bannerIcon.style.color = '#FFD700';
+        bannerText.innerHTML = '<strong>Plano PRO:</strong> uso de IA por Foto ilimitado. Aproveite!';
+        if (gate) gate.classList.add('hidden');
+        if (mainGrid) mainGrid.style.display = '';
+        return;
+      }
+      const restantes = Number(consumo.restantesImagem ?? 0);
+      const limite = Number(consumo.limiteMensalImagem ?? 2);
+      if (restantes > 0) {
+        bannerIcon.className = 'fa-solid fa-camera';
+        bannerIcon.style.color = 'var(--secondary)';
+        bannerText.innerHTML = `Você tem <strong>${restantes} de ${limite} créditos gratuitos</strong> de IA por Foto neste mês. Eles renovam ${consumo.proximaRenovacao?.texto || 'no 1º dia do próximo mês'}.`;
+        if (gate) gate.classList.add('hidden');
+        if (mainGrid) mainGrid.style.display = '';
+      } else {
+        bannerIcon.className = 'fa-solid fa-lock';
+        bannerIcon.style.color = '#FFBD2E';
+        bannerText.innerHTML = `Seus <strong>${limite} créditos gratuitos</strong> de IA por Foto acabaram. Renovam ${consumo.proximaRenovacao?.texto || 'no 1º dia do próximo mês'}, ou conquiste o PRO no ranking mensal.`;
+        if (gate) gate.classList.remove('hidden');
+        if (mainGrid) mainGrid.style.display = 'none';
+      }
+    } catch (err) {
+      // Sem saldo disponível: mantém a tela utilizável; o servidor continua validando o limite.
+    }
+  }
+  carregarCreditosIA();
   const mobileToggle = document.getElementById('mobile-toggle');
   const sidebar = document.querySelector('.sidebar');
   if (mobileToggle && sidebar) {
@@ -325,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (trigger) {
       trigger.addEventListener('click', (e) => {
         e.preventDefault();
+        if (!userState.isPro) { window.location.href = '../ranking/index.html'; return; }
         userState.isPro = true;
         updatePlanUI();
         openModal('celebration-modal');
@@ -453,6 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (!parsedData) throw lastError || new Error("Não foi possível analisar a imagem.");
       onSuccess(parsedData);
+      carregarCreditosIA();
     } catch (error) {
       onError(error);
     }
@@ -486,6 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (!parsedData) throw lastError || new Error("Não foi possível gerar a receita.");
       onSuccess(parsedData);
+      carregarCreditosIA();
     } catch (error) {
       onError(error);
     }

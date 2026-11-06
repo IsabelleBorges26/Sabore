@@ -15,7 +15,7 @@ const listarPlanos = async (req, res) => {
             tipo: "Gratuito",
             descricao: "Plano padrão disponível para todos os usuários cadastrados.",
             limitesIA: {
-                modalidade: "Somente Chat",
+                modalidade: "Chat (5/mês) e IA por Foto (2 créditos/mês)",
                 quantidade: LIMITES_IA.FREE.limiteMensalChat,
                 periodo: "mensal"
             },
