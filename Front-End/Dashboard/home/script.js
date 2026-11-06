@@ -50,14 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   function updatePlanUI() {
     const navbarPlanTag = document.getElementById('navbar-plan-tag');
-    const upgradeWidget = document.getElementById('upgrade-pro-section');
     const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
     if (userState.isPro) {
       if (navbarPlanTag) {
         navbarPlanTag.textContent = 'PRO';
         navbarPlanTag.className = 'user-plan-tag pro';
       }
-      if (upgradeWidget) upgradeWidget.style.display = 'none';
       if (sidebarUpgradeBtn) {
         sidebarUpgradeBtn.textContent = 'Menu PRO';
         sidebarUpgradeBtn.style.background = 'var(--accent-light)';
@@ -68,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navbarPlanTag.textContent = 'Gratuito';
         navbarPlanTag.className = 'user-plan-tag free';
       }
-      if (upgradeWidget) upgradeWidget.style.display = 'block';
       if (sidebarUpgradeBtn) {
         sidebarUpgradeBtn.innerHTML = '<i class="fa-solid fa-rocket" aria-hidden="true"></i> Virar PRO';
         sidebarUpgradeBtn.style.background = 'var(--secondary)';
@@ -190,14 +187,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   const upgradeBtnCompact = document.getElementById('sidebar-upgrade-btn');
-  const upgradeBtnWidget = document.getElementById('dashboard-upgrade-action-btn');
   const proMenuLink = document.querySelector('[data-target="pro"]');
-  const upgradeTriggers = [upgradeBtnCompact, upgradeBtnWidget, proMenuLink];
+  const upgradeTriggers = [upgradeBtnCompact, proMenuLink];
   upgradeTriggers.forEach(trigger => {
     if (trigger) {
       trigger.addEventListener('click', (e) => {
         e.preventDefault();
-        alert('O plano Saboré PRO ainda está em fase de testes. Em breve você poderá assinar.');
+        window.location.href = '../ranking/index.html';
       });
     }
   });

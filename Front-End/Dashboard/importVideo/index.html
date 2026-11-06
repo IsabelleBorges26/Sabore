@@ -70,24 +70,30 @@
         </div>
       </header>
       <div class="dashboard-body">
-        <!-- Bloqueio PRO para usuários FREE -->
+        <!-- Saldo de créditos de Importação de Vídeo -->
+        <div id="video-credit-banner" style="display: none; align-items: center; gap: 12px; flex-wrap: wrap; background: rgba(240, 213, 182, 0.08); border: 1px solid rgba(240, 213, 182, 0.25); border-radius: 14px; padding: 12px 18px; margin-bottom: 18px; font-size: 0.88rem; color: rgba(242, 244, 243, 0.9);">
+          <i id="video-credit-banner-icon" class="fa-solid fa-video" style="color: var(--secondary);"></i>
+          <span id="video-credit-banner-text"></span>
+        </div>
+
+        <!-- Bloqueio quando os 2 créditos gratuitos de importação de vídeo acabam -->
         <div id="pro-gate-overlay" class="hidden" style="background: linear-gradient(135deg, rgba(27, 43, 39, 0.98), rgba(18, 31, 28, 0.98)); border: 1.5px solid rgba(255, 215, 0, 0.3); border-radius: 20px; padding: 40px; text-align: center; max-width: 680px; margin: 40px auto; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);">
           <div style="width: 68px; height: 68px; border-radius: 50%; background: rgba(255, 215, 0, 0.15); color: #FFD700; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;">
-            <i class="fa-solid fa-video-slash"></i>
+            <i class="fa-solid fa-lock"></i>
           </div>
-          <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--light); margin-bottom: 12px;">Importação de Vídeo por IA — Recurso PRO</h2>
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--light); margin-bottom: 12px;">Seus Créditos Gratuitos de Vídeo Acabaram</h2>
           <p style="color: rgba(242, 244, 243, 0.75); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
-            A extração e transcrição de receitas diretamente de vídeos do YouTube é exclusiva do <strong>Plano PRO</strong>. Os usuários FREE podem utilizar o chat de IA (até 5 mensagens por mês).
+            Você já utilizou seus <strong>2 créditos gratuitos de Importação de Vídeos</strong> deste mês. Seus créditos renovam automaticamente no 1º dia do próximo mês, ou você pode conquistar o <strong>Plano Saboré PRO</strong> gratuitamente para ter importações ilimitadas!
           </p>
           <div style="background: rgba(18, 31, 28, 0.6); border: 1px solid var(--glass-border); border-radius: 14px; padding: 18px; margin-bottom: 26px; text-align: left;">
             <h4 style="font-size: 0.95rem; color: var(--secondary); margin-bottom: 6px;"><i class="fa-solid fa-trophy" style="color: #FFD700; margin-right: 6px;"></i> Conquiste o PRO no Ranking de Engajamento!</h4>
             <p style="font-size: 0.85rem; color: rgba(242, 244, 243, 0.65); line-height: 1.45;">
-              Publicando receitas, completando seu perfil e recebendo favoritos você ganha pontos. Os cinco melhores colocados a cada mês ganham o plano PRO gratuitamente!
+              Participe dos desafios semanais (+30 pts), publique receitas e interaja na comunidade. Os 5 primeiros colocados do ranking mensal ganham o plano PRO com IA de Fotos e Importação de Vídeos ilimitadas!
             </p>
           </div>
           <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
             <a href="../ranking/index.html" class="btn-primary-action-full" style="width: auto; padding: 12px 28px; background: var(--accent); color: var(--light); border-radius: 12px; font-weight: 600; text-decoration: none;">
-              <i class="fa-solid fa-trophy"></i> Ver Ranking de Engajamento
+              <i class="fa-solid fa-trophy"></i> Ver Ranking PRO
             </a>
             <a href="../chefIA/index.html" class="btn-secondary-action-full" style="width: auto; padding: 12px 24px; border-radius: 12px; text-decoration: none;">
               <i class="fa-solid fa-robot"></i> Abrir Chat do Chef IA

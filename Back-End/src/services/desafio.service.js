@@ -232,6 +232,18 @@ async function publicarParticipacao(usuarioId, desafioId, { nomeReceita, descric
     throw new Error("Dados obrigatórios: nomeReceita e descricaoPreparacao são necessários.");
   }
 
+  if (foto) {
+    const fotoStr = String(foto).trim();
+    const isDataUrl = /^data:image\/(jpeg|jpg|png|webp|gif);base64,/i.test(fotoStr);
+    const isHttpUrl = /^https?:\/\//i.test(fotoStr);
+    if (!isDataUrl && !isHttpUrl) {
+      throw new Error("Formato de imagem inválido. Envie uma imagem válida (JPG, PNG, WEBP ou GIF).");
+    }
+    if (fotoStr.length > 8 * 1024 * 1024) {
+      throw new Error("A imagem enviada é muito grande. Selecione uma imagem de até 10 MB.");
+    }
+  }
+
   await garantirEsquemaDesafio();
 
   // Verifica se o desafio existe e está ativo

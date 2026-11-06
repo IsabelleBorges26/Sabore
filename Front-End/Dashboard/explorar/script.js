@@ -828,6 +828,9 @@ document.addEventListener('DOMContentLoaded', () => {
     return num + ' seguidores';
   }
   // Desafio da Semana (sistema culinário com participação, pontos e histórico)
+  let selectedDesafioPhotoDataUrl = null;
+  let desafioPhotoProcessing = false;
+
   function escapeDesafioHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   }
@@ -840,27 +843,97 @@ document.addEventListener('DOMContentLoaded', () => {
     return dias > 0 ? `Termina em ${dias}d ${horas}h` : `Termina em ${horas}h`;
   }
 
+  function validateDesafioPhotoFile(file) {
+    if (!file) return { valid: true };
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const validExt = /\.(jpe?g|png|webp|gif)$/i.test(file.name || '');
+    if (!validTypes.includes(String(file.type || '').toLowerCase()) && !validExt) {
+      return {
+        valid: false,
+        error: 'Formato de arquivo inválido. Selecione uma imagem JPG, PNG, WEBP ou GIF.'
+      };
+    }
+    if (file.size <= 0) {
+      return {
+        valid: false,
+        error: 'O arquivo selecionado está vazio. Escolha outra imagem.'
+      };
+    }
+    const maxBytes = 10 * 1024 * 1024; // 10 MB
+    if (file.size > maxBytes) {
+      return {
+        valid: false,
+        error: 'A imagem selecionada excede 10 MB. Escolha uma foto menor.'
+      };
+    }
+    return { valid: true };
+  }
+
   function readDesafioPhoto(file) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       if (!file) return resolve(null);
+      const validation = validateDesafioPhotoFile(file);
+      if (!validation.valid) {
+        return reject(new Error(validation.error));
+      }
       const reader = new FileReader();
       reader.onload = () => {
+        const rawDataUrl = typeof reader.result === 'string' ? reader.result : null;
+        if (!rawDataUrl) {
+          return reject(new Error('Não foi possível ler o arquivo de imagem selecionado.'));
+        }
         const img = new Image();
         img.onload = () => {
-          const max = 640;
-          const ratio = Math.min(1, max / Math.max(img.width, img.height));
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.round(img.width * ratio);
-          canvas.height = Math.round(img.height * ratio);
-          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/jpeg', 0.7));
+          try {
+            const max = 900;
+            const ratio = Math.min(1, max / Math.max(img.width || 1, img.height || 1));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(img.width * ratio));
+            canvas.height = Math.max(1, Math.round(img.height * ratio));
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          } catch (canvasErr) {
+            resolve(rawDataUrl);
+          }
         };
-        img.onerror = () => resolve(null);
-        img.src = reader.result;
+        img.onerror = () => {
+          reject(new Error('O arquivo selecionado não pôde ser carregado como uma imagem válida.'));
+        };
+        img.src = rawDataUrl;
       };
-      reader.onerror = () => resolve(null);
+      reader.onerror = () => reject(new Error('Falha ao ler a imagem do seu dispositivo. Tente novamente.'));
       reader.readAsDataURL(file);
     });
+  }
+
+  function resetDesafioPhotoSelection() {
+    selectedDesafioPhotoDataUrl = null;
+    desafioPhotoProcessing = false;
+    const fileInput = document.getElementById('desafio-recipe-photo');
+    const fileNameEl = document.getElementById('desafio-file-name');
+    const previewWrap = document.getElementById('desafio-photo-preview-wrap');
+    const previewImg = document.getElementById('desafio-photo-preview');
+    const errorEl = document.getElementById('desafio-photo-error');
+    if (fileInput) fileInput.value = '';
+    if (fileNameEl) {
+      fileNameEl.textContent = 'Nenhum arquivo selecionado';
+      fileNameEl.style.color = 'rgba(242, 244, 243, 0.65)';
+    }
+    if (previewImg) previewImg.src = '';
+    if (previewWrap) previewWrap.style.display = 'none';
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
+  }
+
+  function showDesafioPhotoError(msg) {
+    const errorEl = document.getElementById('desafio-photo-error');
+    if (errorEl) {
+      errorEl.textContent = msg;
+      errorEl.style.display = msg ? 'block' : 'none';
+    }
   }
 
   function renderDesafioModal(data) {
@@ -877,7 +950,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (done && form) {
       if (participou) {
         done.style.display = 'block';
-        done.textContent = `Você já participou com "${participou.nomeReceita}" e ganhou ${participou.pontosConcedidos} pontos.`;
+        done.innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div><i class="fa-solid fa-circle-check"></i> Você já participou com <strong>"${escapeDesafioHtml(participou.nomeReceita)}"</strong> e ganhou <strong>+${participou.pontosConcedidos} pontos</strong>!</div>
+            ${participou.foto ? `<img src="${escapeDesafioHtml(participou.foto)}" alt="Foto enviada" style="width:100%;max-width:260px;max-height:170px;object-fit:cover;border-radius:10px;border:1px solid rgba(39,201,63,0.35);">` : ''}
+          </div>
+        `;
         form.style.display = 'none';
       } else if (!desafio.ativo || new Date(desafio.fimEm).getTime() < Date.now()) {
         done.style.display = 'block';
@@ -893,11 +971,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (list) {
       const itens = desafio.participacoes || [];
       list.innerHTML = itens.length ? itens.map((p) => `
-        <div style="display:flex;gap:10px;align-items:center;background:rgba(242,244,243,0.04);border-radius:10px;padding:8px 10px;">
-          ${p.foto ? `<img src="${escapeDesafioHtml(p.foto)}" alt="" style="width:42px;height:42px;border-radius:8px;object-fit:cover;">` : '<i class="fa-solid fa-utensils" style="width:42px;text-align:center;opacity:.6;"></i>'}
-          <div style="min-width:0;">
-            <strong style="font-size:0.82rem;">${escapeDesafioHtml(p.nomeReceita)}</strong>
-            <div style="font-size:0.72rem;opacity:.6;">por ${escapeDesafioHtml(p.usuario?.nome || 'Cozinheiro')}</div>
+        <div style="display:flex;gap:12px;align-items:center;background:rgba(242,244,243,0.04);border:1px solid rgba(242,244,243,0.06);border-radius:10px;padding:10px 12px;">
+          ${p.foto ? `<img src="${escapeDesafioHtml(p.foto)}" alt="Foto de ${escapeDesafioHtml(p.nomeReceita)}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;">` : '<div style="width:52px;height:52px;border-radius:8px;background:rgba(240,213,182,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-utensils" style="opacity:.65;color:var(--secondary);"></i></div>'}
+          <div style="min-width:0;flex:1;">
+            <strong style="font-size:0.84rem;display:block;">${escapeDesafioHtml(p.nomeReceita)}</strong>
+            <div style="font-size:0.74rem;opacity:.65;">por ${escapeDesafioHtml(p.usuario?.nome || 'Cozinheiro')} • +${p.pontosConcedidos || 30} pts</div>
           </div>
         </div>`).join('') : '<p style="font-size:0.78rem;opacity:.55;">Seja o primeiro a participar!</p>';
     }
@@ -971,6 +1049,11 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
+    bindDesafioModalEvents();
+    updateCursorHoverListeners();
+  }
+
+  function bindDesafioModalEvents() {
     const modal = document.getElementById('desafio-modal');
     const closeBtn = document.getElementById('close-desafio-modal');
     if (modal && !modal.dataset.bound) {
@@ -978,40 +1061,126 @@ document.addEventListener('DOMContentLoaded', () => {
       modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
       if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('open'));
 
+      const fileInput = document.getElementById('desafio-recipe-photo');
+      const chooseFileBtn = document.getElementById('desafio-choose-file-btn');
+      const removePhotoBtn = document.getElementById('desafio-remove-photo-btn');
+      const fileNameEl = document.getElementById('desafio-file-name');
+      const previewWrap = document.getElementById('desafio-photo-preview-wrap');
+      const previewImg = document.getElementById('desafio-photo-preview');
+
+      if (chooseFileBtn && fileInput) {
+        chooseFileBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          fileInput.click();
+        });
+      }
+
+      if (removePhotoBtn) {
+        removePhotoBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          resetDesafioPhotoSelection();
+        });
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener('change', async () => {
+          showDesafioPhotoError('');
+          const file = fileInput.files && fileInput.files[0];
+          if (!file) {
+            resetDesafioPhotoSelection();
+            return;
+          }
+          const sizeKB = Math.max(1, Math.round(file.size / 1024));
+          const sizeText = sizeKB >= 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB} KB`;
+          if (fileNameEl) {
+            fileNameEl.textContent = `Carregando "${file.name}" (${sizeText})...`;
+            fileNameEl.style.color = 'var(--secondary)';
+          }
+          desafioPhotoProcessing = true;
+          try {
+            const dataUrl = await readDesafioPhoto(file);
+            selectedDesafioPhotoDataUrl = dataUrl;
+            if (fileNameEl) {
+              fileNameEl.textContent = `${file.name} (${sizeText})`;
+              fileNameEl.style.color = '#27C93F';
+            }
+            if (previewImg && dataUrl) {
+              previewImg.src = dataUrl;
+            }
+            if (previewWrap && dataUrl) {
+              previewWrap.style.display = 'flex';
+            }
+          } catch (err) {
+            selectedDesafioPhotoDataUrl = null;
+            fileInput.value = '';
+            if (fileNameEl) {
+              fileNameEl.textContent = 'Nenhum arquivo selecionado';
+              fileNameEl.style.color = 'rgba(242, 244, 243, 0.65)';
+            }
+            if (previewWrap) previewWrap.style.display = 'none';
+            showDesafioPhotoError(err.message || 'Erro ao processar a imagem selecionada.');
+            if (window.SaboreNotify) window.SaboreNotify(err.message || 'Erro ao carregar a imagem.', 'error');
+          } finally {
+            desafioPhotoProcessing = false;
+          }
+        });
+      }
+
       const form = document.getElementById('desafio-form');
       if (form) {
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
-          const submitBtn = document.getElementById('desafio-submit-btn');
+          showDesafioPhotoError('');
+          const submitBtnEl = document.getElementById('desafio-submit-btn');
           const nomeReceita = document.getElementById('desafio-recipe-name').value.trim();
           const descricaoPreparacao = document.getElementById('desafio-recipe-desc').value.trim();
-          const fileInput = document.getElementById('desafio-recipe-photo');
-          if (!nomeReceita || !descricaoPreparacao) return;
-          if (submitBtn) submitBtn.disabled = true;
+          if (!nomeReceita || !descricaoPreparacao) {
+            showDesafioPhotoError('Preencha o nome do prato e a descrição do preparo.');
+            return;
+          }
+          if (desafioPhotoProcessing) {
+            showDesafioPhotoError('Aguarde o carregamento da foto terminar antes de publicar.');
+            return;
+          }
+          const originalBtnHtml = submitBtnEl ? submitBtnEl.innerHTML : '';
+          if (submitBtnEl) {
+            submitBtnEl.disabled = true;
+            submitBtnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publicando...';
+          }
           try {
-            const foto = await readDesafioPhoto(fileInput && fileInput.files[0]);
+            let foto = selectedDesafioPhotoDataUrl;
+            if (!foto && fileInput && fileInput.files && fileInput.files[0]) {
+              foto = await readDesafioPhoto(fileInput.files[0]);
+            }
             const resultado = await api.post('/desafios/publicar', {
               desafioId: currentWeeklyChallengeData.desafio.id,
               nomeReceita,
               descricaoPreparacao,
               foto
             });
-            if (window.SaboreNotify) window.SaboreNotify(resultado.mensagem || 'Participação publicada!', 'success');
+            if (window.SaboreNotify) window.SaboreNotify(resultado.mensagem || 'Participação publicada com sucesso!', 'success');
+            form.reset();
+            resetDesafioPhotoSelection();
             const atualizado = await api.get('/desafios/atual');
             currentWeeklyChallengeData = atualizado;
             renderWeeklyChallenge();
             renderDesafioModal(atualizado);
           } catch (err) {
-            const msg = err.message || 'Não foi possível publicar sua participação.';
+            const msg = err.message || 'Não foi possível publicar sua participação. Verifique sua conexão e tente novamente.';
+            showDesafioPhotoError(msg);
             if (window.SaboreNotify) window.SaboreNotify(msg, 'error'); else alert(msg);
           } finally {
-            if (submitBtn) submitBtn.disabled = false;
+            if (submitBtnEl) {
+              submitBtnEl.disabled = false;
+              submitBtnEl.innerHTML = originalBtnHtml || '<i class="fa-solid fa-trophy"></i> Publicar participação';
+            }
           }
         });
       }
     }
-    updateCursorHoverListeners();
   }
+  bindDesafioModalEvents();
 
   function renderChallengeCommunityPanel() {
     const content = document.getElementById('challenge-community-content');

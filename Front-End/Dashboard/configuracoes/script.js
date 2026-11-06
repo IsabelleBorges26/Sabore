@@ -9,22 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const userAvatars = document.querySelectorAll('.user-avatar, .large-user-avatar');
     userAvatars.forEach(img => img.src = savedAvatar);
   }
-  const savedTheme = localStorage.getItem('sabore_theme') || 'obsidian';
-  if (window.applySaboreTheme) {
-    window.applySaboreTheme(savedTheme);
-  }
-  const themeSelector = document.getElementById('theme-selector');
-  if (themeSelector) {
-    themeSelector.value = savedTheme;
-    themeSelector.addEventListener('change', (e) => {
-      const selected = e.target.value;
-      if (window.applySaboreTheme) {
-        window.applySaboreTheme(selected);
-      }
-      localStorage.setItem('sabore_theme', selected);
-      window.dispatchEvent(new StorageEvent('storage', { key: 'sabore_theme', newValue: selected }));
-    });
-  }
   let userState = {
     isPro: false
   };
@@ -54,22 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
-  const savedNeonGlow = localStorage.getItem('sabore_neon_glow') !== 'false';
-  const neonGlowToggle = document.getElementById('neon-glow-toggle');
-  if (neonGlowToggle) {
-    neonGlowToggle.checked = savedNeonGlow;
-    if (window.applySaboreNeonGlow) {
-      window.applySaboreNeonGlow(savedNeonGlow);
-    }
-    neonGlowToggle.addEventListener('change', (e) => {
-      const isChecked = e.target.checked;
-      if (window.applySaboreNeonGlow) {
-        window.applySaboreNeonGlow(isChecked);
-      }
-      localStorage.setItem('sabore_neon_glow', isChecked ? 'true' : 'false');
-      window.dispatchEvent(new StorageEvent('storage', { key: 'sabore_neon_glow', newValue: isChecked ? 'true' : 'false' }));
-    });
-  }
   const savedNotifDaily = localStorage.getItem('sabore_notif_daily') !== 'false';
   const notifDailyToggle = document.getElementById('notif-daily');
   if (notifDailyToggle) {
@@ -228,15 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const cb = document.getElementById(`diet-${diet}`);
           if (cb) localStorage.setItem(`sabore_diet_${diet}`, cb.checked ? 'true' : 'false');
         });
-        if (themeSelector) {
-          localStorage.setItem('sabore_theme', themeSelector.value);
-          if (window.applySaboreTheme) window.applySaboreTheme(themeSelector.value);
-        }
-        if (neonGlowToggle) {
-          const isGlow = neonGlowToggle.checked;
-          localStorage.setItem('sabore_neon_glow', isGlow ? 'true' : 'false');
-          if (window.applySaboreNeonGlow) window.applySaboreNeonGlow(isGlow);
-        }
         if (notifDailyToggle) localStorage.setItem('sabore_notif_daily', notifDailyToggle.checked ? 'true' : 'false');
         if (notifWeeklyToggle) localStorage.setItem('sabore_notif_weekly', notifWeeklyToggle.checked ? 'true' : 'false');
         showToast('Perfil atualizado no banco de dados.');
@@ -252,8 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (confirmReset) {
         localStorage.removeItem('sabore_user_name');
         localStorage.removeItem('sabore_user_email');
-        localStorage.removeItem('sabore_theme');
-        localStorage.removeItem('sabore_neon_glow');
         localStorage.removeItem('sabore_ai_difficulty');
         localStorage.removeItem('sabore_ai_servings');
         dietCheckboxes.forEach(diet => localStorage.removeItem(`sabore_diet_${diet}`));

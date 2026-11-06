@@ -1,108 +1,28 @@
-const SABORE_THEMES = {
-    obsidian: {
-        '--dark': '#1B2B27',
-        '--dark-deep': '#121F1C',
-        '--accent': '#E0857A',
-        '--accent-light': 'rgba(224, 133, 122, 0.15)',
-        '--secondary': '#F0D5B6',
-        '--secondary-light': 'rgba(240, 213, 182, 0.15)'
-    },
-    emerald: {
-        '--dark': '#15362C',
-        '--dark-deep': '#0A1C16',
-        '--accent': '#6AE0A6',
-        '--accent-light': 'rgba(106, 224, 166, 0.15)',
-        '--secondary': '#C4F0D7',
-        '--secondary-light': 'rgba(196, 240, 215, 0.15)'
-    },
-    rosegold: {
-        '--dark': '#3D2229',
-        '--dark-deep': '#241015',
-        '--accent': '#E07AA4',
-        '--accent-light': 'rgba(224, 122, 164, 0.15)',
-        '--secondary': '#F0B6CD',
-        '--secondary-light': 'rgba(240, 182, 205, 0.15)'
-    }
-};
-
-function applySaboreTheme(themeName) {
-    const theme = SABORE_THEMES[themeName] || SABORE_THEMES.obsidian;
-    Object.keys(theme).forEach((prop) => {
-        document.documentElement.style.setProperty(prop, theme[prop]);
-    });
-    document.documentElement.setAttribute('data-theme', themeName || 'obsidian');
-}
-
-function applySaboreNeonGlow(enabled) {
-    const isEnabled = enabled !== false && enabled !== 'false';
-    let styleEl = document.getElementById('sabore-neon-glow-style');
-    if (!isEnabled) {
-        document.documentElement.classList.add('no-neon-glow');
-        if (document.body) document.body.classList.add('no-neon-glow');
-        if (!styleEl) {
-            styleEl = document.createElement('style');
-            styleEl.id = 'sabore-neon-glow-style';
-            styleEl.textContent = `
-                .no-neon-glow [class*="-glow"],
-                .no-neon-glow [class*="glow-"],
-                .no-neon-glow .glow,
-                .no-neon-glow .fireworks-canvas,
-                .no-neon-glow .food-bowl-container::before {
-                    opacity: 0 !important;
-                    pointer-events: none !important;
-                    filter: none !important;
-                    box-shadow: none !important;
-                    animation: none !important;
-                    text-shadow: none !important;
-                }
-                .no-neon-glow * {
-                    text-shadow: none !important;
-                }
-                .no-neon-glow .custom-cursor.hover {
-                    filter: none !important;
-                }
-                .no-neon-glow .feature-card:hover,
-                .no-neon-glow .btn-primary:hover,
-                .no-neon-glow .btn-submit:hover,
-                .no-neon-glow .plan-btn-filled:hover {
-                    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
-                }
-            `;
-            (document.head || document.documentElement).appendChild(styleEl);
-        }
-    } else {
+// Limpeza automática de classes/estados legados de tema e brilho para garantir integridade visual
+(() => {
+    try {
         document.documentElement.classList.remove('no-neon-glow');
-        if (document.body) document.body.classList.remove('no-neon-glow');
-        if (styleEl) {
-            styleEl.remove();
+        document.documentElement.removeAttribute('data-theme');
+        ['--dark', '--dark-deep', '--accent', '--accent-light', '--secondary', '--secondary-light'].forEach((prop) => {
+            document.documentElement.style.removeProperty(prop);
+        });
+        const oldStyle = document.getElementById('sabore-neon-glow-style');
+        if (oldStyle) oldStyle.remove();
+        localStorage.removeItem('sabore_theme');
+        localStorage.removeItem('sabore_neon_glow');
+        const cleanBody = () => {
+            if (document.body) document.body.classList.remove('no-neon-glow');
+        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', cleanBody);
+        } else {
+            cleanBody();
         }
-    }
-}
-
-function initSaboreTheme() {
-    const savedTheme = localStorage.getItem('sabore_theme') || 'obsidian';
-    const savedGlow = localStorage.getItem('sabore_neon_glow');
-    applySaboreTheme(savedTheme);
-    applySaboreNeonGlow(savedGlow !== 'false');
-}
-
-initSaboreTheme();
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSaboreTheme);
-}
-
-window.addEventListener('storage', (e) => {
-    if (e.key === 'sabore_theme') {
-        applySaboreTheme(e.newValue);
-    } else if (e.key === 'sabore_neon_glow') {
-        applySaboreNeonGlow(e.newValue !== 'false');
-    }
-});
-
-window.SABORE_THEMES = SABORE_THEMES;
-window.applySaboreTheme = applySaboreTheme;
-window.applySaboreNeonGlow = applySaboreNeonGlow;
-window.initSaboreTheme = initSaboreTheme;
+    } catch (e) {}
+})();
+window.applySaboreTheme = () => {};
+window.applySaboreNeonGlow = () => {};
+window.initSaboreTheme = () => {};
 
 // URL base da API do Back-End. Localmente aponta para localhost:3000.
 // Na Vercel (mesmo domínio), usa automaticamente window.location.origin.
@@ -264,25 +184,31 @@ window.SaboreSyncPlanUI = async function() {
         const pillText = document.getElementById("ia-usage-counter-text");
         if (pillText && consumo) {
             if (isPro) {
-                pillText.innerHTML = `<strong>${consumo.restantes}</strong> de ${consumo.limiteTotal} usos esta semana`;
+                pillText.innerHTML = `<strong>Ilimitado</strong> no Plano PRO`;
             } else {
-                pillText.innerHTML = `<strong>${consumo.restantes}</strong> de ${consumo.limiteTotal} msgs este mês`;
+                const restChat = consumo.restantesChat ?? consumo.restantes ?? 0;
+                const limChat = consumo.limiteMensalChat ?? consumo.limiteTotal ?? 5;
+                pillText.innerHTML = `<strong>${restChat}</strong> de ${limChat} msgs este mês`;
             }
         }
 
-        // Bloqueio de tela para abas exclusivas do PRO (iaFotos e importVideo)
+        // Controle de tela para IA de Fotos (2 créditos FREE) e Importação de Vídeos (2 créditos FREE)
         const proGate = document.getElementById("pro-gate-overlay");
         const mainGridFotos = document.getElementById("ia-fotos-main-grid");
         const mainGridVideo = document.getElementById("import-video-main-grid");
 
-        if (!isPro) {
-            if (proGate) proGate.classList.remove("hidden");
-            if (mainGridFotos) mainGridFotos.style.display = "none";
-            if (mainGridVideo) mainGridVideo.style.display = "none";
-        } else {
-            if (proGate) proGate.classList.add("hidden");
-            if (mainGridFotos) mainGridFotos.style.display = "";
-            if (mainGridVideo) mainGridVideo.style.display = "";
+        if (mainGridFotos) {
+            const restantesImagem = Number(consumo?.restantesImagem ?? 2);
+            const bloquearFotos = !isPro && restantesImagem <= 0;
+            if (proGate) proGate.classList.toggle("hidden", !bloquearFotos);
+            mainGridFotos.style.display = bloquearFotos ? "none" : "";
+        }
+
+        if (mainGridVideo) {
+            const restantesVideo = Number(consumo?.restantesVideo ?? 2);
+            const bloquearVideo = !isPro && restantesVideo <= 0;
+            if (proGate) proGate.classList.toggle("hidden", !bloquearVideo);
+            mainGridVideo.style.display = bloquearVideo ? "none" : "";
         }
 
         return info;

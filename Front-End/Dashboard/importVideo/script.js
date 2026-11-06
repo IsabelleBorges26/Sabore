@@ -408,7 +408,56 @@ document.addEventListener('DOMContentLoaded', () => {
     if (name) name.textContent = user.nome?.split(' ')[0] || 'Você';
   }
 
+  let videoCreditsRemaining = 2;
+
+  async function carregarCreditosVideo(preserveActiveRecipe = false) {
+    const banner = document.getElementById('video-credit-banner');
+    const bannerText = document.getElementById('video-credit-banner-text');
+    const bannerIcon = document.getElementById('video-credit-banner-icon');
+    const gate = document.getElementById('pro-gate-overlay');
+    const mainGrid = document.getElementById('import-video-main-grid');
+    try {
+      const consumo = await api.get('/ia/consumo');
+      if (!consumo) return;
+      const isPro = consumo.plano === 'PRO';
+      userState.isPro = isPro;
+      updatePlanUI();
+      if (!banner || !bannerText) return;
+      banner.style.display = 'flex';
+      if (isPro) {
+        videoCreditsRemaining = 999;
+        bannerIcon.className = 'fa-solid fa-crown';
+        bannerIcon.style.color = '#FFD700';
+        bannerText.innerHTML = '<strong>Plano PRO:</strong> importação de vídeos por IA ilimitada. Aproveite!';
+        if (gate) gate.classList.add('hidden');
+        if (mainGrid) mainGrid.style.display = '';
+        return;
+      }
+      const restantes = Number(consumo.restantesVideo ?? 2);
+      const limite = Number(consumo.limiteMensalVideo ?? 2);
+      videoCreditsRemaining = restantes;
+      if (restantes > 0) {
+        bannerIcon.className = 'fa-solid fa-video';
+        bannerIcon.style.color = 'var(--secondary)';
+        bannerText.innerHTML = `Você tem <strong>${restantes} de ${limite} créditos gratuitos</strong> de importação de vídeo neste mês. Eles renovam ${consumo.proximaRenovacao?.texto || 'no 1º dia do próximo mês'}.`;
+        if (gate) gate.classList.add('hidden');
+        if (mainGrid) mainGrid.style.display = '';
+      } else {
+        bannerIcon.className = 'fa-solid fa-lock';
+        bannerIcon.style.color = '#FFBD2E';
+        bannerText.innerHTML = `Seus <strong>${limite} créditos gratuitos</strong> de importação de vídeo deste mês acabaram. Renovam ${consumo.proximaRenovacao?.texto || 'no 1º dia do próximo mês'}, ou conquiste o PRO no ranking mensal.`;
+        if (!preserveActiveRecipe) {
+          if (gate) gate.classList.remove('hidden');
+          if (mainGrid) mainGrid.style.display = 'none';
+        }
+      }
+    } catch (err) {
+      // O servidor valida o limite na requisição caso a consulta falhe
+    }
+  }
+
   updatePlanUI();
+  carregarCreditosVideo(false);
   renderPersonalNotifications();
   loadBooks().catch(() => {
     userState.books = [];
@@ -541,23 +590,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const upgradeTriggers = [upgradeBtnCompact, proMenuLink];
 
   upgradeTriggers.forEach(trigger => {
-
     if (trigger) {
-
       trigger.addEventListener('click', (e) => {
-
         e.preventDefault();
-
-        userState.isPro = true;
-
-        updatePlanUI();
-
-        openModal('celebration-modal');
-
+        window.location.href = '../ranking/index.html';
       });
-
     }
-
   });
 
   const urlForm = document.getElementById('video-url-form');
@@ -663,6 +701,14 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('No momento, a importação aceita apenas links do YouTube.');
         return;
       }
+      if (!userState.isPro && videoCreditsRemaining <= 0) {
+        const gate = document.getElementById('pro-gate-overlay');
+        const mainGrid = document.getElementById('import-video-main-grid');
+        if (gate) gate.classList.remove('hidden');
+        if (mainGrid) mainGrid.style.display = 'none';
+        alert('Você já utilizou seus 2 créditos gratuitos de importação de vídeos deste mês. Conquiste o plano PRO no ranking mensal para ter acesso ilimitado!');
+        return;
+      }
       triggerMediaProcessing(pageState.platform, rawUrl);
     });
 
@@ -737,6 +783,7 @@ document.addEventListener('DOMContentLoaded', () => {
     enableEmbeddedVideo(data);
     document.getElementById('state-converting').classList.add('hidden');
     showRecipeOutput(data);
+    carregarCreditosVideo(true);
   }
   function failMediaProcessing(error) {
     pageState.isProcessing = false;
@@ -747,6 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
     playerActive.classList.add('hidden');
     playerIdle.classList.remove('hidden');
     document.getElementById('state-idle').classList.remove('hidden');
+    carregarCreditosVideo(false);
     alert(`Não foi possível importar o vídeo: ${error.message || 'erro desconhecido.'}`);
   }
   function showRecipeOutput(mediaData) {

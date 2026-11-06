@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   userState.isPro = false; 
   updatePlanUI();
-  async function carregarCreditosIA() {
+  async function carregarCreditosIA(preserveActiveScan = false) {
     const banner = document.getElementById('credit-banner');
     const bannerText = document.getElementById('credit-banner-text');
     const bannerIcon = document.getElementById('credit-banner-icon');
@@ -292,8 +292,10 @@ document.addEventListener('DOMContentLoaded', () => {
         bannerIcon.className = 'fa-solid fa-lock';
         bannerIcon.style.color = '#FFBD2E';
         bannerText.innerHTML = `Seus <strong>${limite} créditos gratuitos</strong> de IA por Foto acabaram. Renovam ${consumo.proximaRenovacao?.texto || 'no 1º dia do próximo mês'}, ou conquiste o PRO no ranking mensal.`;
-        if (gate) gate.classList.remove('hidden');
-        if (mainGrid) mainGrid.style.display = 'none';
+        if (!preserveActiveScan) {
+          if (gate) gate.classList.remove('hidden');
+          if (mainGrid) mainGrid.style.display = 'none';
+        }
       }
     } catch (err) {
       // Sem saldo disponível: mantém a tela utilizável; o servidor continua validando o limite.
@@ -496,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (!parsedData) throw lastError || new Error("Não foi possível analisar a imagem.");
       onSuccess(parsedData);
-      carregarCreditosIA();
+      carregarCreditosIA(true);
     } catch (error) {
       onError(error);
     }
@@ -530,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (!parsedData) throw lastError || new Error("Não foi possível gerar a receita.");
       onSuccess(parsedData);
-      carregarCreditosIA();
+      carregarCreditosIA(true);
     } catch (error) {
       onError(error);
     }

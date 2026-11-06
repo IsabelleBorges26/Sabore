@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const rulesTriggers = [
-    document.getElementById('btn-open-rules'),
+    document.getElementById('btn-open-rules-plans'),
     document.getElementById('btn-show-rules-nav'),
     document.getElementById('btn-quick-rules')
   ];
@@ -141,6 +141,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navPlan) {
       navPlan.textContent = isPro ? 'PRO' : 'FREE';
       navPlan.className = `user-plan-tag ${isPro ? 'pro' : 'free'}`;
+    }
+    const freeTag = document.getElementById('free-current-tag');
+    const proTag = document.getElementById('pro-current-tag');
+    if (freeTag && proTag) {
+      if (isPro) {
+        proTag.innerHTML = '<i class="fa-solid fa-circle-check"></i> Seu Plano Atual';
+        proTag.classList.add('active-user-plan');
+        freeTag.textContent = 'Plano de Entrada';
+        freeTag.classList.remove('active-user-plan');
+      } else {
+        freeTag.innerHTML = '<i class="fa-solid fa-circle-check"></i> Seu Plano Atual';
+        freeTag.classList.add('active-user-plan');
+        proTag.innerHTML = '<i class="fa-solid fa-medal"></i> Top 5 do Ranking Mensal';
+        proTag.classList.remove('active-user-plan');
+      }
     }
 
     if (usuarioLogado.naZonaPro) {

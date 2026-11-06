@@ -30,16 +30,6 @@
         <a href="#" class="menu-item active" data-target="ranking"><i class="fa-solid fa-trophy"></i> Ranking PRO</a>
         <a href="../configuracoes/index.html" class="menu-item" data-target="config"><i class="fa-solid fa-gear"></i> Configurações</a>
       </nav>
-      <div class="sidebar-footer-promo">
-        <div class="promo-card-compact">
-          <div class="promo-icon"><i class="fa-solid fa-trophy"></i></div>
-          <div class="promo-info">
-            <h4>Conquiste o PRO!</h4>
-            <p>Os 5 mais engajados ganham PRO</p>
-            <button class="btn-promo-action" id="btn-open-rules"><i class="fa-solid fa-circle-info"></i> Ver Regras</button>
-          </div>
-        </div>
-      </div>
     </aside>
 
     <main class="main-content">
@@ -127,6 +117,124 @@
               <span class="strip-stat-val points-highlight" id="strip-user-points">0</span>
               <span class="strip-stat-lbl">Seus Pontos</span>
             </div>
+          </div>
+        </section>
+
+        <!-- Apresentação Completa dos Planos FREE e PRO -->
+        <section class="plans-showcase-section" id="plans-showcase-section">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title"><i class="fa-solid fa-layer-group" style="color: var(--secondary);"></i> Conheça os Planos Saboré: FREE & PRO</h2>
+              <p class="section-desc">Compare os recursos disponíveis em cada plano e veja como conquistar o Saboré PRO gratuitamente pelo ranking mensal</p>
+            </div>
+            <button class="btn-rules-small" id="btn-open-rules-plans"><i class="fa-solid fa-circle-info"></i> Regras de Pontuação</button>
+          </div>
+
+          <div class="plans-comparison-grid">
+            <!-- Card Plano FREE -->
+            <article class="plan-comparison-card free-plan-card" id="plan-card-free">
+              <div class="plan-card-top">
+                <div class="plan-card-badge-row">
+                  <span class="plan-tier-badge free-tier"><i class="fa-solid fa-seedling"></i> PLANO FREE</span>
+                  <span class="plan-current-indicator" id="free-current-tag">Plano de Entrada</span>
+                </div>
+                <h3 class="plan-card-heading">Cozinheiro da Comunidade</h3>
+                <p class="plan-card-summary">Disponível gratuitamente para todos os membros cadastrados na plataforma Saboré, com créditos mensais renováveis de IA.</p>
+              </div>
+              <ul class="plan-benefits-list">
+                <li>
+                  <span class="benefit-icon free-check"><i class="fa-solid fa-camera"></i></span>
+                  <div>
+                    <strong>2 créditos gratuitos para IA de fotos</strong>
+                    <span>Identifique ingredientes e gere receitas a partir de fotos de pratos todos os meses.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="benefit-icon free-check"><i class="fa-solid fa-video"></i></span>
+                  <div>
+                    <strong>2 créditos gratuitos para importação de vídeos</strong>
+                    <span>Extraia receitas completas diretamente de vídeos culinários do YouTube (2 usos/mês).</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="benefit-icon free-check"><i class="fa-solid fa-robot"></i></span>
+                  <div>
+                    <strong>Acesso às funcionalidades básicas da plataforma</strong>
+                    <span>5 mensagens mensais no Chat com Chef IA, livros de receitas, favoritos, despensa e comunidade.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="benefit-icon free-check"><i class="fa-solid fa-fire"></i></span>
+                  <div>
+                    <strong>Participação nos desafios semanais</strong>
+                    <span>Participe do Desafio da Semana preparando pratos temáticos e ganhe +30 pontos por participação.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="benefit-icon free-check"><i class="fa-solid fa-trophy"></i></span>
+                  <div>
+                    <strong>Possibilidade de acumular pontos e conquistar o PRO pelo ranking mensal</strong>
+                    <span>Toda interação na comunidade soma pontos para levar você ao Top 5 do mês.</span>
+                  </div>
+                </li>
+              </ul>
+              <div class="plan-card-footer">
+                <span class="plan-footer-pill"><i class="fa-solid fa-rotate"></i> Créditos renovados todo dia 1º do mês</span>
+              </div>
+            </article>
+
+            <!-- Card Plano PRO -->
+            <article class="plan-comparison-card pro-plan-card" id="plan-card-pro">
+              <div class="plan-pro-glow"></div>
+              <div class="plan-card-top">
+                <div class="plan-card-badge-row">
+                  <span class="plan-tier-badge pro-tier"><i class="fa-solid fa-crown"></i> PLANO PRO</span>
+                  <span class="plan-current-indicator pro-indicator" id="pro-current-tag"><i class="fa-solid fa-medal"></i> Top 5 do Ranking Mensal</span>
+                </div>
+                <h3 class="plan-card-heading">Chef Sem Limites Saboré PRO</h3>
+                <p class="plan-card-summary">Recompensa exclusiva concedida automaticamente aos 5 cozinheiros mais engajados de cada mês na comunidade.</p>
+              </div>
+              <ul class="plan-benefits-list">
+                <li>
+                  <span class="benefit-icon pro-check"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                  <div>
+                    <strong>Acesso ilimitado às funcionalidades de IA de fotos</strong>
+                    <span>Escaneie pratos e gere receitas por imagem quantas vezes quiser, sem descontar créditos.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="benefit-icon pro-check"><i class="fa-solid fa-film"></i></span>
+                  <div>
+                    <strong>Importação de vídeos ilimitada</strong>
+                    <span>Transforme vídeos do YouTube em receitas estruturadas com IA sem nenhum limite mensal.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="benefit-icon pro-check"><i class="fa-solid fa-bolt"></i></span>
+                  <div>
+                    <strong>Benefícios exclusivos do PRO</strong>
+                    <span>Chat com Chef IA ilimitado para criar receitas personalizadas, tirar dúvidas e acessar estatísticas culinárias.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="benefit-icon pro-check"><i class="fa-solid fa-certificate"></i></span>
+                  <div>
+                    <strong>Selo visual de usuário PRO</strong>
+                    <span>Destaque oficial PRO no seu perfil, na barra de navegação e na tabela de classificação da comunidade.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="benefit-icon pro-check"><i class="fa-solid fa-ranking-star"></i></span>
+                  <div>
+                    <strong>Conquistado pelos 5 primeiros colocados do ranking mensal</strong>
+                    <span>100% gratuito por mérito: fique no Top 5 ao final do mês e receba o PRO automaticamente!</span>
+                  </div>
+                </li>
+              </ul>
+              <div class="plan-card-footer pro-footer">
+                <a href="../explorar/index.html" class="btn-plan-pro-cta"><i class="fa-solid fa-fire"></i> Participar da Comunidade e Subir no Ranking</a>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -249,7 +357,7 @@
         </div>
       </div>
       <div class="rules-footer-note">
-        <p><i class="fa-solid fa-gift"></i> <strong>Premiação mensal:</strong> no fechamento do mês, os 5 primeiros colocados recebem o Saboré PRO automaticamente para o mês seguinte. Usuários FREE têm 2 créditos de IA por Foto e 5 mensagens de Chat por mês; o PRO tem uso ampliado.</p>
+        <p><i class="fa-solid fa-gift"></i> <strong>Premiação mensal:</strong> no fechamento do mês, os 5 primeiros colocados recebem o Saboré PRO automaticamente para o mês seguinte. Usuários FREE contam com 2 créditos de IA de Fotos, 2 créditos de Importação de Vídeos e 5 mensagens no Chat IA por mês; usuários PRO têm acesso ilimitado!</p>
       </div>
       <div class="rules-footer-note">
         <p><i class="fa-solid fa-shield-halved"></i> <strong>Critérios de Desempate:</strong> Caso dois usuários empatem em pontos, ganha quem publicou mais receitas válidas no mês. Persistindo o empate, ganha quem alcançou a pontuação primeiro.</p>

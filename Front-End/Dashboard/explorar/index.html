@@ -269,9 +269,27 @@
       <form id="desafio-form" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
         <input type="text" id="desafio-recipe-name" maxlength="120" placeholder="Nome do prato" required style="padding: 11px 14px; border-radius: 10px; border: 1px solid rgba(242, 244, 243, 0.12); background: rgba(242, 244, 243, 0.04); color: inherit; font: inherit;">
         <textarea id="desafio-recipe-desc" rows="4" maxlength="1500" placeholder="Conte como foi o preparo, ingredientes e dicas" required style="padding: 11px 14px; border-radius: 10px; border: 1px solid rgba(242, 244, 243, 0.12); background: rgba(242, 244, 243, 0.04); color: inherit; font: inherit; resize: vertical;"></textarea>
-        <label style="font-size: 0.78rem; color: rgba(242, 244, 243, 0.6);">Foto do prato (opcional)
-          <input type="file" id="desafio-recipe-photo" accept="image/*" style="display: block; margin-top: 6px; font-size: 0.78rem;">
-        </label>
+        <div class="desafio-upload-field" style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; border: 1px dashed rgba(240, 213, 182, 0.28); background: rgba(242, 244, 243, 0.03);">
+          <span style="font-size: 0.8rem; font-weight: 600; color: rgba(242, 244, 243, 0.85);"><i class="fa-solid fa-camera" style="color: var(--secondary); margin-right: 6px;"></i> Foto da receita preparada</span>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <input type="file" id="desafio-recipe-photo" accept="image/jpeg,image/png,image/webp,image/gif" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;">
+            <button type="button" id="desafio-choose-file-btn" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(240, 213, 182, 0.35); background: rgba(240, 213, 182, 0.12); color: var(--secondary); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+              <i class="fa-solid fa-folder-open"></i> Escolher arquivo
+            </button>
+            <span id="desafio-file-name" style="font-size: 0.78rem; color: rgba(242, 244, 243, 0.65); word-break: break-all;">Nenhum arquivo selecionado</span>
+          </div>
+          <span style="font-size: 0.72rem; color: rgba(242, 244, 243, 0.45);">Formatos aceitos: JPG, PNG, WEBP ou GIF (máx. 10 MB)</span>
+          <div id="desafio-photo-error" style="display: none; padding: 8px 10px; border-radius: 8px; background: rgba(255, 95, 86, 0.12); border: 1px solid rgba(255, 95, 86, 0.35); color: #FF5F56; font-size: 0.78rem;"></div>
+          <div id="desafio-photo-preview-wrap" style="display: none; flex-direction: column; gap: 8px; margin-top: 4px; padding: 10px; border-radius: 10px; background: rgba(18, 31, 28, 0.6); border: 1px solid rgba(242, 244, 243, 0.1);">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 0.76rem; color: var(--secondary); font-weight: 600;"><i class="fa-solid fa-eye"></i> Pré-visualização da imagem</span>
+              <button type="button" id="desafio-remove-photo-btn" style="padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255, 95, 86, 0.35); background: rgba(255, 95, 86, 0.12); color: #FF5F56; font-size: 0.74rem; font-weight: 600; cursor: pointer;">
+                <i class="fa-solid fa-trash-can"></i> Remover
+              </button>
+            </div>
+            <img id="desafio-photo-preview" src="" alt="Pré-visualização da foto da receita" style="width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px; display: block;">
+          </div>
+        </div>
         <button type="submit" class="btn-challenge-action" id="desafio-submit-btn"><i class="fa-solid fa-trophy"></i> Publicar participação</button>
       </form>
       <h4 style="font-size: 0.85rem; margin-bottom: 8px;"><i class="fa-solid fa-users"></i> Participações desta semana</h4>

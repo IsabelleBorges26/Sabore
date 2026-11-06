@@ -15,22 +15,38 @@ const listarPlanos = async (req, res) => {
             tipo: "Gratuito",
             descricao: "Plano padrão disponível para todos os usuários cadastrados.",
             limitesIA: {
-                modalidade: "Chat (5/mês) e IA por Foto (2 créditos/mês)",
-                quantidade: LIMITES_IA.FREE.limiteMensalChat,
+                modalidade: "IA de Fotos (2 créditos/mês), Importação de Vídeos (2 créditos/mês) e Chat IA (5 mensagens/mês)",
+                creditosFoto: LIMITES_IA.FREE.limiteMensalImagem,
+                creditosVideo: LIMITES_IA.FREE.limiteMensalVideo,
+                mensagensChat: LIMITES_IA.FREE.limiteMensalChat,
                 periodo: "mensal"
             },
-            comoConquistar: "Padrão de entrada no Saboré."
+            beneficios: [
+                "2 créditos gratuitos por mês para IA de Fotos",
+                "2 créditos gratuitos por mês para Importação de Vídeos",
+                "5 mensagens por mês no Chat com Chef IA",
+                "Participação nos desafios gastronômicos semanais (+30 pts)",
+                "Possibilidade de acumular pontos e conquistar o PRO pelo ranking mensal"
+            ],
+            comoConquistar: "Padrão de entrada gratuito no Saboré."
         },
         {
             nome: "PRO",
-            tipo: "Conquista Comunitária",
-            descricao: "Plano especial concedido mensalmente aos 5 usuários mais engajados da comunidade.",
+            tipo: "Conquista Comunitária (Top 5 do Mês)",
+            descricao: "Plano especial concedido gratuitamente aos 5 usuários mais engajados da comunidade a cada mês.",
             limitesIA: {
-                modalidade: "Chat, Imagem e Vídeo",
-                quantidade: LIMITES_IA.PRO.limiteSemanalTotal,
-                periodo: "semanal (compartilhado entre as modalidades)"
+                modalidade: "IA de Fotos, Importação de Vídeos e Chat com Chef IA ilimitados",
+                ilimitado: true,
+                periodo: "ilimitado durante a vigência mensal"
             },
-            comoConquistar: "Participe da comunidade publicando receitas, avaliando e interagindo para ficar entre os 5 primeiros do ranking mensal."
+            beneficios: [
+                "Acesso ilimitado às funcionalidades de IA de Fotos",
+                "Importação de Vídeos ilimitada por IA",
+                "Chat com Chef IA ilimitado",
+                "Selo visual oficial de Usuário PRO no perfil e na comunidade",
+                "Destaque especial no ranking e nas receitas da comunidade"
+            ],
+            comoConquistar: "Participe da comunidade publicando receitas, cumprindo desafios semanais, avaliando e interagindo para ficar entre os 5 primeiros do ranking mensal."
         }
     ];
     res.status(200).json(planos);
