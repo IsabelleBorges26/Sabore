@@ -673,9 +673,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const profileData = await api.get("/usuarios/perfil");
       userState.isPro = profileData.plano === "PRO";
       updatePlanUI();
-      const profileName = document.querySelector('.perfil-user-card h2');
+      const profileName = document.querySelector('.perfil-user-card h2') || document.getElementById('profile-name-display');
       if (profileName && user.nome) {
-        profileName.textContent = user.nome;
+        const proTag = profileData.plano === 'PRO'
+          ? `<span class="sabore-pro-badge" title="Membro Saboré PRO" style="margin-left:6px;"><img src="../../assets/Emblemas/selo-pro.png" class="pro-icon-img" alt="PRO" onerror="this.style.display='none';"><span class="pro-text">PRO</span></span>`
+          : '';
+        profileName.innerHTML = user.nome + proTag;
       }
       const navUserName = document.querySelector('.user-name');
       if (navUserName && user.nome) {
@@ -694,35 +697,92 @@ document.addEventListener('DOMContentLoaded', () => {
       if (recipesVal) recipesVal.textContent = social.receitasPublicas;
 
       try {
-        const achievements = await api.get('/desafios/conquistas');
+        const achievements = await api.get('/usuarios/conquistas');
         const achievementsList = document.getElementById('profile-achievements-list');
         if (achievementsList) {
-          achievementsList.innerHTML = Array.isArray(achievements) && achievements.length
-            ? achievements.map(item => `<span class="profile-achievement-badge" title="Conquista de desafio"><i class="${item.emblema || 'fa-solid fa-trophy'}"></i>${escapeHtml(item.titulo || 'Conquista da comunidade')}</span>`).join('')
-            : '<span class="profile-achievements-empty">Suas conquistas em desafios aparecerÃ£o aqui.</span>';
-        }
-      } catch (achievementError) {
-        console.warn('NÃ£o foi possÃ­vel carregar as conquistas do perfil:', achievementError);
-      }
-
-      // Popula dados de engajamento e ranking
-      if (profileData.engajamento) {
-        const pointsEl = document.getElementById('profile-points-val');
-        const rankPosEl = document.getElementById('profile-rank-pos');
-        const zoneInfoEl = document.getElementById('profile-zone-info');
-
-        if (pointsEl) pointsEl.textContent = `${profileData.engajamento.pontosMes} pts`;
-        if (rankPosEl) rankPosEl.textContent = `#${profileData.engajamento.posicaoRanking}`;
-
-        if (zoneInfoEl) {
-          if (profileData.engajamento.naZonaPro) {
-            zoneInfoEl.innerHTML = '<span style="color: #27C93F; font-weight: 700;"><i class="fa-solid fa-crown" style="color: #FFD700;"></i> Você está na Zona PRO (G-5)!</span>';
-          } else if (profileData.engajamento.pontosParaTop5 > 0) {
-            zoneInfoEl.textContent = `Faltam ${profileData.engajamento.pontosParaTop5} pontos para você entrar no G-5 do PRO!`;
+          if (Array.isArray(achievements) && achievements.length) {
+            achievementsList.innerHTML = achievements.map(item => {
+              const nome = item.nome || item.titulo || 'Conquista';
+              let imgSrc = item.emblema || '';
+              if (imgSrc.startsWith('/assets/')) {
+                imgSrc = `../..${imgSrc}`;
+              } else if (!imgSrc) {
+                const slug = (item.emblemaId || item.id || item.titulo || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                imgSrc = `../../assets/Emblemas/${slug}.png`;
+              }
+              const data = item.concedidaEm || item.conquiridoEm ? new Date(item.concedidaEm || item.conquiridoEm).toLocaleDateString('pt-BR') : '';
+              return `<div class="achievement-badge-card" title="${nome}">
+                <img class="achievement-badge-img" src="${imgSrc}" alt="${nome}"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display:none;width:52px;height:52px;border-radius:50%;background:rgba(240,213,182,0.15);align-items:center;justify-content:center;margin-bottom:8px;">
+                  <i class="fa-solid fa-medal" style="font-size:1.5rem;color:#F0D5B6;"></i>
+                </div>
+                <span class="achievement-badge-name">${nome}</span>
+                ${data ? `<span class="achievement-badge-date">${data}</span>` : ''}
+              </div>`;
+            }).join('');
           } else {
-            zoneInfoEl.textContent = 'Publique receitas e interaja para subir no ranking!';
+            achievementsList.innerHTML = '<span class="profile-achievements-empty" style="font-size:0.82rem;color:rgba(242,244,243,0.5);grid-column:1/-1;">Suas conquistas em eventos especiais aparecerão aqui.</span>';
           }
         }
+        // Load frames
+        try {
+          const moldurasResp = await api.get('/usuarios/molduras');
+          const framesSection = document.getElementById('profile-frames-section');
+          const framesList = document.getElementById('profile-frames-list');
+          const listaMolduras = Array.isArray(moldurasResp) ? moldurasResp : (moldurasResp?.molduras || []);
+          const molduraAtiva = moldurasResp?.molduraAtiva || profileData.molduraAtiva || null;
+
+          // Atualiza moldura ativa no avatar do perfil
+          const avatarContainer = document.querySelector('.avatar-container');
+          if (avatarContainer) {
+            avatarContainer.classList.remove('has-frame', 'moldura-natal-2026', 'moldura-reveillon-2027');
+            if (molduraAtiva) {
+              avatarContainer.classList.add('has-frame', molduraAtiva);
+            }
+          }
+          const navAvatarWrap = document.querySelector('.user-avatar-wrap');
+          if (navAvatarWrap) {
+            navAvatarWrap.classList.remove('has-frame', 'moldura-natal-2026', 'moldura-reveillon-2027');
+            if (molduraAtiva) {
+              navAvatarWrap.classList.add('has-frame', molduraAtiva);
+            }
+          }
+
+          if (framesSection && framesList && listaMolduras.length > 0) {
+            framesSection.style.display = '';
+            framesList.innerHTML = listaMolduras.map(m => {
+              const frameId = m.id || m.molduraId;
+              const isEquipped = frameId === molduraAtiva;
+              const frameNome = m.nome || frameId;
+              return `<div class="frame-option-card ${isEquipped ? 'equipped' : ''}" data-frame-id="${frameId}">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="avatar-frame-wrap ${isEquipped ? 'has-frame ' + frameId : ''}" style="width:40px;height:40px;border-radius:50%;background:rgba(240,213,182,0.15);display:flex;align-items:center;justify-content:center;font-weight:700;color:#F0D5B6;">${user?.nome?.charAt(0)?.toUpperCase() || 'U'}</div>
+                  <div><strong style="font-size:0.85rem;color:#fff;">${frameNome}</strong>
+                  ${isEquipped ? '<span style="font-size:0.7rem;color:#27C93F;display:block;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Equipada</span>' : ''}</div>
+                </div>
+                <button type="button" class="btn-frame-toggle ${isEquipped ? 'active' : ''}" data-frame-id="${frameId}">${isEquipped ? 'Remover' : 'Equipar'}</button>
+              </div>`;
+            }).join('');
+            framesList.querySelectorAll('.btn-frame-toggle').forEach(btn => {
+              btn.addEventListener('click', async () => {
+                const frameId = btn.dataset.frameId;
+                const currentlyEquipped = btn.classList.contains('active');
+                btn.disabled = true;
+                try {
+                  await api.put('/usuarios/moldura', { moldura: currentlyEquipped ? null : frameId });
+                  loadProfileData();
+                } catch (err) {
+                  if (window.SaboreNotify) window.SaboreNotify('Não foi possível atualizar a moldura.', 'error');
+                  else alert(err.message || 'Não foi possível atualizar a moldura.');
+                  btn.disabled = false;
+                }
+              });
+            });
+          }
+        } catch (frameErr) { console.warn('Não foi possível carregar molduras:', frameErr); }
+      } catch (achievementError) {
+        console.warn('Não foi possível carregar as conquistas do perfil:', achievementError);
       }
     } catch (err) {
       console.error("Erro ao carregar dados do perfil:", err);

@@ -39,6 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const renderSaboreProBadge = (plano) => {
+    if (String(plano || '').toUpperCase() !== 'PRO') return '';
+    return `<span class="sabore-pro-badge" title="Membro Saboré PRO" aria-label="PRO" style="margin-left: 5px;"><img src="../../assets/Emblemas/selo-pro.png" class="pro-icon-img" alt="PRO" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><svg class="pro-icon-svg" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M12 2l2.4 7.4h7.6l-6.1 4.5 2.3 7.1-6.2-4.5-6.2 4.5 2.3-7.1-6.1-4.5h7.6z"/></svg><span class="pro-text">PRO</span></span>`;
+  };
+
   // Modais
   function openModal(id) {
     const el = document.getElementById(id);
@@ -186,14 +191,15 @@ document.addEventListener('DOMContentLoaded', () => {
       card.className = `podium-card rank-${idx + 1}`;
       const defaultAvatar = '../../assets/LOGO SABORÉ.png';
       const avatarSrc = item.foto || defaultAvatar;
+      const frameClass = item.molduraAtiva ? `has-frame ${item.molduraAtiva}` : '';
 
       card.innerHTML = `
         <div class="podium-rank-badge">${item.posicao}º</div>
-        <div class="podium-avatar-wrap">
+        <div class="podium-avatar-wrap ${frameClass}">
           <img src="${avatarSrc}" alt="${item.nome}" class="podium-avatar">
           ${item.posicao === 1 ? '<i class="fa-solid fa-crown podium-crown-icon"></i>' : ''}
         </div>
-        <h4 class="podium-user-name" title="${item.nome}">${item.nome}</h4>
+        <h4 class="podium-user-name" title="${item.nome}">${item.nome}${renderSaboreProBadge(item.plano)}</h4>
         <div class="podium-points-tag">${item.pontos} pts</div>
         <div class="podium-recipe-count"><i class="fa-solid fa-utensils"></i> ${item.receitasValidas} receitas no mês</div>
         <span class="podium-pro-target"><i class="fa-solid fa-gem"></i> Zona PRO</span>
@@ -225,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const avatarSrc = r.foto || '../../assets/LOGO SABORÉ.png';
       const crownIcon = r.posicao <= 5 ? '<i class="fa-solid fa-star" style="color: #FFD700; font-size: 0.8rem; margin-left: 4px;" title="Zona PRO"></i>' : '';
+      const frameClass = r.molduraAtiva ? `has-frame ${r.molduraAtiva}` : '';
 
       tr.innerHTML = `
         <td>
@@ -235,8 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
         </td>
         <td>
           <div class="user-cell">
-            <img src="${avatarSrc}" alt="${r.nome}" class="user-cell-avatar">
-            <span class="user-cell-name">${r.nome}</span>
+            <div class="avatar-frame-wrap ${frameClass}" style="width: 32px; height: 32px; display: inline-flex;">
+              <img src="${avatarSrc}" alt="${r.nome}" class="user-cell-avatar">
+            </div>
+            <span class="user-cell-name">${r.nome}${renderSaboreProBadge(r.plano)}</span>
             ${isMe ? '<span class="user-cell-me-tag">Você</span>' : ''}
           </div>
         </td>

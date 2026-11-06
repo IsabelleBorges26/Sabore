@@ -7,6 +7,7 @@
   <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../assets/css/sabore-features.css">
 </head>
 <body>
   <div class="dashboard-container">
@@ -67,53 +68,193 @@
         </div>
       </header>
       <div class="dashboard-body">
+        <!-- Abas de Navegação Principal da Comunidade -->
+        <div class="community-tabs-nav" role="tablist">
+          <button class="comm-tab-btn active" id="btn-tab-feed" type="button"><i class="fa-solid fa-compass"></i> Feed & Desafio da Semana</button>
+          <button class="comm-tab-btn" id="btn-tab-eventos" type="button"><i class="fa-solid fa-trophy"></i> Eventos Especiais <span class="badge-competicao">Competições</span></button>
+        </div>
+
         <div class="dashboard-grid">
           <div class="main-column">
-            <section class="explore-hero-card">
-              <div class="explore-hero-glow"></div>
-              <div class="explore-hero-content">
-                <span class="explore-hero-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> Tendências Culinárias</span>
-                <h2>Descubra seu próximo prato favorito</h2>
-                <p>Navegue pelas melhores receitas criadas e compartilhadas por cozinheiros profissionais e amadores da comunidade Saboré.</p>
+            <!-- VISTA 1: FEED REGULAR E CATEGORIAS -->
+            <div id="view-comunidade-feed">
+              <section class="explore-hero-card">
+                <div class="explore-hero-glow"></div>
+                <div class="explore-hero-content">
+                  <span class="explore-hero-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> Tendências Culinárias</span>
+                  <h2>Descubra seu próximo prato favorito</h2>
+                  <p>Navegue pelas melhores receitas criadas e compartilhadas por cozinheiros profissionais e amadores da comunidade Saboré.</p>
+                </div>
+              </section>
+              <section class="card-section">
+                <div class="section-title-wrap">
+                  <div class="title-details">
+                    <h3><i class="fa-solid fa-tags"></i> Explore por categoria</h3>
+                    <p class="section-desc-sub">Escolha um tema para refinar as receitas da comunidade.</p>
+                  </div>
+                </div>
+                <div class="categories-scroll-carousel" id="categories-carousel-list">
+                </div>
+              </section>
+              <section class="card-section">
+                <div class="section-title-wrap" style="margin-bottom: 8px;">
+                  <div class="title-details">
+                    <h3><i class="fa-solid fa-users"></i> Feed da Comunidade</h3>
+                    <p class="section-desc-sub" style="margin-top: 2px;">O que a comunidade está cozinhando e curtindo ultimamente.</p>
+                  </div>
+                  <div class="explore-feed-controls">
+                    <button class="feed-filter-btn active" data-feed-mode="for-you">Para você</button>
+                    <button class="feed-filter-btn" data-feed-mode="following">Seguindo</button>
+                    <button class="feed-filter-btn" data-feed-mode="recent">Recentes</button>
+                    <button class="feed-filter-btn btn-refresh-feed" id="btn-refresh-feed" title="Atualizar feed com novas publicações" style="display: inline-flex; align-items: center; gap: 5px; border-color: rgba(224, 133, 122, 0.4); color: var(--accent);"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
+                  </div>
+                </div>
+                <div class="explore-recipes-grid" id="explore-recipes-container">
+                </div>
+              </section>
+              <section class="card-section">
+                <div class="section-title-wrap">
+                  <div class="title-details">
+                    <h3><i class="fa-solid fa-award"></i> Chefs em Destaque</h3>
+                    <p class="section-desc-sub" style="margin-top: 2px;">Cozinheiros talentosos que você precisa seguir e acompanhar.</p>
+                  </div>
+                </div>
+                <div class="chefs-scroll-row" id="chefs-spotlight-container">
+                </div>
+              </section>
+            </div>
+
+            <!-- VISTA 2: EVENTOS ESPECIAIS (COMPETIÇÕES COMEMORATIVAS) -->
+            <div id="view-comunidade-eventos" class="special-events-view" style="display: none;">
+              <!-- Seletor de Eventos Especiais -->
+              <div class="event-selector-bar" id="event-selector-bar">
+                <button type="button" class="event-tab-pill active" data-event-id="1"><i class="fa-solid fa-gift"></i> Natal Saboré 2026</button>
+                <button type="button" class="event-tab-pill" data-event-id="2"><i class="fa-solid fa-champagne-glasses"></i> Réveillon Saboré 2027</button>
               </div>
-            </section>
-            <section class="card-section">
-              <div class="section-title-wrap">
-                <div class="title-details">
-                  <h3><i class="fa-solid fa-tags"></i> Explore por categoria</h3>
-                  <p class="section-desc-sub">Escolha um tema para refinar as receitas da comunidade.</p>
+
+              <!-- Banner Temático do Evento -->
+              <div class="event-banner-card" id="event-banner-card">
+                <div class="event-banner-overlay"></div>
+                <div class="event-banner-content">
+                  <div class="event-status-pill" id="event-status-pill">Carregando...</div>
+                  <h2 id="event-banner-title">Natal Saboré 2026</h2>
+                  <p id="event-banner-desc">O grande concurso gastronômico comemorativo do Saboré!</p>
+                  <div class="event-meta-tags">
+                    <span class="event-meta-item"><i class="fa-solid fa-hashtag"></i> <strong id="event-hashtag-badge">#NatalSabore2026</strong></span>
+                    <span class="event-meta-item"><i class="fa-regular fa-calendar"></i> <span id="event-period-text">01 a 25/12/2026</span></span>
+                    <span class="event-meta-item"><i class="fa-solid fa-users"></i> <span id="event-participants-count">0 participantes</span></span>
+                    <span class="event-meta-item"><i class="fa-solid fa-check-to-slot"></i> <span id="event-votes-count">0 votos computados</span></span>
+                  </div>
                 </div>
               </div>
-              <div class="categories-scroll-carousel" id="categories-carousel-list">
-              </div>
-            </section>
-            <section class="card-section">
-              <div class="section-title-wrap" style="margin-bottom: 8px;">
-                <div class="title-details">
-                  <h3><i class="fa-solid fa-users"></i> Feed da Comunidade</h3>
-                  <p class="section-desc-sub" style="margin-top: 2px;">O que a comunidade está cozinhando e curtindo ultimamente.</p>
+
+              <!-- Cronograma com Fuso America/Sao_Paulo -->
+              <div class="event-timeline-strip">
+                <div class="timeline-step" id="step-inscricoes">
+                  <div class="step-num">1</div>
+                  <div class="step-info">
+                    <strong>Inscrições Oficiais</strong>
+                    <span id="step-inscricoes-dates">01 a 22/12</span>
+                  </div>
                 </div>
-                <div class="explore-feed-controls">
-                  <button class="feed-filter-btn active" data-feed-mode="for-you">Para você</button>
-                  <button class="feed-filter-btn" data-feed-mode="following">Seguindo</button>
-                  <button class="feed-filter-btn" data-feed-mode="recent">Recentes</button>
-                  <button class="feed-filter-btn btn-refresh-feed" id="btn-refresh-feed" title="Atualizar feed com novas publicações" style="display: inline-flex; align-items: center; gap: 5px; border-color: rgba(224, 133, 122, 0.4); color: var(--accent);"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
+                <div class="timeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="timeline-step" id="step-votacao">
+                  <div class="step-num">2</div>
+                  <div class="step-info">
+                    <strong>Votação Comunitária</strong>
+                    <span id="step-votacao-dates">23 a 25/12</span>
+                  </div>
+                </div>
+                <div class="timeline-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="timeline-step" id="step-resultado">
+                  <div class="step-num">3</div>
+                  <div class="step-info">
+                    <strong>Resultado & Premiação</strong>
+                    <span id="step-resultado-dates">26/12</span>
+                  </div>
                 </div>
               </div>
-              <div class="explore-recipes-grid" id="explore-recipes-container">
-              </div>
-            </section>
-            <section class="card-section">
-              <div class="section-title-wrap">
-                <div class="title-details">
-                  <h3><i class="fa-solid fa-award"></i> Chefs em Destaque</h3>
-                  <p class="section-desc-sub" style="margin-top: 2px;">Cozinheiros talentosos que você precisa seguir e acompanhar.</p>
+
+              <!-- Informações de Regras e Premiação Exclusiva -->
+              <div class="event-details-grid">
+                <div class="event-detail-box">
+                  <div class="detail-box-header">
+                    <i class="fa-solid fa-scroll"></i>
+                    <h3>Regras Resumidas</h3>
+                  </div>
+                  <div class="detail-box-body" id="event-rules-content">
+                    <p>• 1 única inscrição oficial por participante (Modelo B).<br>• Inscrições substituíveis enquanto o prazo estiver aberto.<br>• Durante a votação, edições são bloqueadas.<br>• 1 voto por usuário. Proibido votar na própria receita.<br>• Desempate: inscrição oficial aprovada mais antiga.</p>
+                  </div>
+                </div>
+                <div class="event-detail-box event-prize-box">
+                  <div class="detail-box-header">
+                    <i class="fa-solid fa-gem" style="color: #FFD700;"></i>
+                    <h3>Premiação Exclusiva do Vencedor</h3>
+                  </div>
+                  <div class="detail-box-body">
+                    <div class="prize-item">
+                      <div class="prize-badge-icon"><i class="fa-solid fa-medal"></i></div>
+                      <div>
+                        <strong id="event-prize-badge-name">Espírito Natalino 2026</strong>
+                        <p>Emblema de conquista permanente na coleção do perfil.</p>
+                      </div>
+                    </div>
+                    <div class="prize-item">
+                      <div class="prize-badge-icon" style="color: #F0D5B6;"><i class="fa-solid fa-circle-user"></i></div>
+                      <div>
+                        <strong id="event-prize-frame-name">Moldura Natal 2026</strong>
+                        <p>Moldura temática exclusiva ao redor do avatar.</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="chefs-scroll-row" id="chefs-spotlight-container">
+
+              <!-- Banner de Ação de Inscrição Oficial -->
+              <div class="event-user-action-card" id="event-user-action-card">
+                <div class="action-card-left" id="event-user-action-info">
+                  <h3>Participe desta Competição Oficial</h3>
+                  <p>Inscreva sua melhor receita na galeria oficial para disputar os votos da comunidade e o emblema exclusivo.</p>
+                </div>
+                <div class="action-card-right">
+                  <button type="button" class="btn-event-participate" id="btn-open-event-entry-modal">
+                    <i class="fa-solid fa-plus-circle"></i> Participar do Evento
+                  </button>
+                </div>
               </div>
-            </section>
+
+              <!-- Banner do Vencedor (se evento encerrado) -->
+              <div class="event-winner-card" id="event-winner-card" style="display: none;">
+                <div class="winner-trophy"><i class="fa-solid fa-trophy"></i></div>
+                <div class="winner-info">
+                  <span class="winner-label">Vencedor Oficial da Competição</span>
+                  <h3 id="event-winner-recipe-title">Receita Campeã</h3>
+                  <p id="event-winner-author-line">Criada por <strong id="event-winner-author">Nome do Autor</strong> com <span id="event-winner-votes">0</span> votos válidos</p>
+                  <div class="winner-rewards-awarded">
+                    <span class="awarded-pill"><i class="fa-solid fa-medal"></i> Emblema Desbloqueado</span>
+                    <span class="awarded-pill"><i class="fa-solid fa-circle-user"></i> Moldura Exclusiva Conquistada</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Galeria Oficial de Votação -->
+              <section class="card-section event-gallery-section">
+                <div class="section-title-wrap">
+                  <div class="title-details">
+                    <h3><i class="fa-solid fa-check-to-slot"></i> Galeria de Receitas Inscritas</h3>
+                    <p class="section-desc-sub" id="event-gallery-subtitle">Apenas inscrições oficiais aprovadas aparecem na votação.</p>
+                  </div>
+                  <div class="event-voting-indicator-pill" id="event-voting-indicator">
+                    <i class="fa-regular fa-clock"></i> Aguardando abertura de votos
+                  </div>
+                </div>
+                <div class="event-gallery-grid" id="event-gallery-grid">
+                  <div class="empty-gallery-msg">Carregando galeria do evento...</div>
+                </div>
+              </section>
+            </div>
           </div>
+
           <div class="side-column">
             <section class="widget-card">
               <div class="widget-header">
@@ -122,34 +263,32 @@
               <div class="tag-cloud-container" id="popular-tags-cloud">
               </div>
             </section>
-            <!-- DESAFIO DA SEMANA -->
+            <!-- DESAFIO DA SEMANA (SIMPLIFICADO: NÃO É COMPETIÇÃO, SEM VOTAÇÃO/MOLDURAS, +30 PONTOS) -->
             <section class="weekly-challenge-card" id="weekly-challenge-card">
-              <div class="challenge-glow"></div>
-              <div class="challenge-content">
+              <div class="challenge-cover-container" id="challenge-cover-container">
+                <img id="challenge-cover-img" src="" alt="Imagem do Desafio" class="challenge-cover-img" style="display:none;">
                 <div class="challenge-badge">
-                  <i class="fa-solid fa-trophy"></i>
+                  <i class="fa-solid fa-calendar-check"></i>
                   <span id="challenge-badge-text">DESAFIO DA SEMANA</span>
                 </div>
+              </div>
+              <div class="challenge-content">
                 <h3 id="challenge-title">Carregando desafio...</h3>
                 <p id="challenge-description">Carregando o desafio culinário desta semana...</p>
                 <div class="challenge-meta-row">
-                  <span class="challenge-tag-pill" id="challenge-hashtag" title="Pontos de recompensa">+30 pts</span>
+                  <button type="button" class="challenge-tag-pill clickable-tag" id="challenge-hashtag" title="Clique para filtrar o feed por esta hashtag">#IngredientesQueTenhoEmCasa</button>
                   <span class="challenge-time-tag" id="challenge-time-left"><i class="fa-regular fa-clock"></i> Calculando...</span>
                 </div>
                 <div class="challenge-stats">
                   <span id="challenge-participants"><i class="fa-solid fa-user-group"></i> 0 participantes</span>
-                  <span id="challenge-recipes-count"><i class="fa-solid fa-star"></i> +30 pontos no ranking</span>
+                  <span id="challenge-points-badge"><i class="fa-solid fa-star" style="color: #FFD700;"></i> +30 pontos no Ranking Mensal</span>
                 </div>
-                <button type="button" class="btn-challenge-action" id="challenge-join-btn">Participar do Desafio</button>
-                <button type="button" class="btn-challenge-submit" id="challenge-submit-btn" hidden><i class="fa-solid fa-square-plus"></i> Enviar receita para o desafio</button>
-                <div class="challenge-prize-line" id="challenge-prize-line"><i class="fa-solid fa-medal"></i> Concorra ao emblema e à moldura de vencedor</div>
+                <div id="challenge-completed-banner" class="challenge-completed-box" style="display: none;">
+                  <div class="completed-header"><i class="fa-solid fa-circle-check"></i> Desafio concluído</div>
+                  <div class="completed-points"><i class="fa-solid fa-bolt"></i> +30 pontos conquistados</div>
+                </div>
+                <button type="button" class="btn-challenge-action" id="challenge-join-btn"><i class="fa-solid fa-square-plus"></i> Participar do Desafio</button>
               </div>
-            </section>
-            <section class="widget-card challenge-community-panel" id="challenge-community-panel">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-trophy"></i> Central do Desafio</h3>
-              </div>
-              <div id="challenge-community-content"></div>
             </section>
             <section class="widget-card">
               <div class="widget-header">
@@ -288,6 +427,66 @@
       <div id="desafio-history" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: rgba(242, 244, 243, 0.7);"></div>
     </div>
   </div>
+  <!-- MODAL DE INSCRIÇÃO OFICIAL EM EVENTO ESPECIAL (MODELO B) -->
+  <div class="modal-overlay" id="event-entry-modal">
+    <div class="modal-card" style="max-width: 580px; max-height: 88vh; overflow-y: auto;">
+      <button class="modal-close-btn" id="close-event-entry-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header-simple">
+        <h3 id="event-entry-modal-title">Inscrição Oficial no Evento</h3>
+        <p id="event-entry-modal-subtitle">Modelo B: Apenas 1 receita será sua inscrição oficial na competição.</p>
+      </div>
+      <div class="entry-modal-alert" id="event-entry-modal-alert" style="display:none; padding: 10px 14px; border-radius: 10px; background: rgba(224, 133, 122, 0.15); border: 1px solid rgba(224, 133, 122, 0.35); color: #F0D5B6; font-size: 0.82rem; margin-bottom: 14px;"></div>
+      
+      <div class="entry-choice-tabs">
+        <button type="button" class="entry-choice-btn active" id="btn-choice-existing"><i class="fa-solid fa-book-bookmark"></i> Minhas Receitas Públicas</button>
+        <button type="button" class="entry-choice-btn" id="btn-choice-create"><i class="fa-solid fa-pen-nib"></i> Criar Nova Publicação</button>
+      </div>
+
+      <!-- Opção 1: Escolher entre receitas públicas do próprio usuário -->
+      <div id="entry-panel-existing" class="choice-panel active" style="margin-top: 14px;">
+        <p style="font-size: 0.82rem; color: rgba(242, 244, 243, 0.7); margin-bottom: 12px;">Selecione qual das suas receitas públicas será sua representante oficial na votação popular:</p>
+        <div id="entry-existing-recipes-list" class="user-recipes-select-list">
+          <!-- Carregado via JS -->
+        </div>
+      </div>
+
+      <!-- Opção 2: Criar nova receita para o evento -->
+      <div id="entry-panel-create" class="choice-panel" style="display:none; margin-top: 14px;">
+        <p style="font-size: 0.82rem; color: rgba(242, 244, 243, 0.7); margin-bottom: 14px;">Abra o publicador da comunidade. A hashtag oficial do evento será vinculada automaticamente à sua receita.</p>
+        <button type="button" class="btn-confirm-entry" id="btn-open-create-for-event" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--secondary); color: var(--dark-deep); font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <i class="fa-solid fa-square-plus"></i> Abrir Publicador com a Hashtag Oficial
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE DETALHES DA RECEITA NA GALERIA DE VOTAÇÃO -->
+  <div class="modal-overlay" id="event-recipe-detail-modal">
+    <div class="modal-card" style="max-width: 640px; max-height: 90vh; overflow-y: auto;">
+      <button class="modal-close-btn" id="close-event-recipe-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
+      <div class="event-recipe-modal-content" id="event-recipe-modal-content">
+        <!-- Renderizado dinamicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO DE VOTO -->
+  <div class="modal-overlay" id="event-vote-confirm-modal">
+    <div class="modal-card small-modal" style="max-width: 440px; text-align: center;">
+      <div style="font-size: 2.2rem; color: var(--accent); margin-bottom: 10px;"><i class="fa-solid fa-check-to-slot"></i></div>
+      <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 8px;">Confirmar seu Voto?</h3>
+      <p id="vote-confirm-message" style="font-size: 0.86rem; color: rgba(242, 244, 243, 0.75); line-height: 1.5; margin-bottom: 20px;">
+        Deseja confirmar seu voto nesta receita? Cada usuário tem direito a 1 voto único por evento especial, que não poderá ser alterado após confirmação.
+      </p>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" class="btn-bio-cancel" id="btn-cancel-vote" style="padding: 10px 18px; border-radius: 10px;">Cancelar</button>
+        <button type="button" class="btn-confirm-entry" id="btn-execute-vote" style="padding: 10px 22px; border-radius: 10px; background: var(--accent); color: var(--dark-deep); font-weight: 700; border: none; cursor: pointer;">
+          <i class="fa-solid fa-check"></i> Sim, Confirmar Voto
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>

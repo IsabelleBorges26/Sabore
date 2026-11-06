@@ -1,0 +1,1331 @@
+/**
+ * SABORÉ — Melhorias Visuais Oficiais
+ * Desafios Semanais, Eventos Especiais, Emblemas, Molduras e Selo PRO
+ * Paleta oficial: #1B2B27, #213530, #E0857A, #F0D5B6, #F2F4F3
+ */
+
+:root {
+  --sabore-bg-dark: #1B2B27;
+  --sabore-bg-card: #213530;
+  --sabore-coral: #E0857A;
+  --sabore-champagne: #F0D5B6;
+  --sabore-light: #F2F4F3;
+  --sabore-gold: #FFD700;
+}
+
+/* ==========================================================================
+   7. SELO DE USUÁRIO PRO
+   - Pequeno, elegante e discreto.
+   - Aparece SOMENTE quando a conta estiver com PRO ativo.
+   - Desaparece automaticamente ao voltar para FREE.
+   - Suporte para imagem definitiva do selo PRO (/assets/Emblemas/selo-pro.png).
+   ========================================================================== */
+.sabore-pro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  background: linear-gradient(135deg, rgba(224, 133, 122, 0.25) 0%, rgba(240, 213, 182, 0.35) 100%);
+  border: 1px solid rgba(240, 213, 182, 0.55);
+  color: var(--sabore-champagne);
+  padding: 1.5px 6.5px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+  vertical-align: middle;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2), inset 0 0 6px rgba(240, 213, 182, 0.2);
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 5px;
+}
+
+.sabore-pro-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(224, 133, 122, 0.4);
+  border-color: var(--sabore-champagne);
+}
+
+.sabore-pro-badge .pro-icon-img {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+  border-radius: 50%;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+}
+
+.sabore-pro-badge .pro-icon-svg {
+  width: 10px;
+  height: 10px;
+  color: #FFD700;
+  filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.6));
+}
+
+.sabore-pro-badge .pro-text {
+  font-family: 'DM Mono', monospace, sans-serif;
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   6. MOLDURAS COMEMORATIVAS (AVATAR FRAMES)
+   - Recompensas exclusivas dos eventos especiais.
+   - Molduras iniciais: Moldura Natal 2026 e Moldura Réveillon 2027.
+   - Adaptam-se ao avatar sem esconder a foto do usuário.
+   ========================================================================== */
+.avatar-frame-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.avatar-frame-wrap > img,
+.avatar-frame-wrap > .user-avatar,
+.avatar-frame-wrap > .author-avatar,
+.avatar-frame-wrap > .large-user-avatar {
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
+  position: relative;
+  z-index: 1;
+}
+
+/* Base da moldura */
+.avatar-frame-wrap.has-frame::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+/* Moldura Natal 2026: Verde esmeralda, borda dourada festiva e estrela natalina */
+.avatar-frame-wrap.moldura-natal-2026::before {
+  border: 2.5px solid #27C93F;
+  box-shadow: 0 0 0 1.8px #C5A059, 0 0 10px rgba(39, 201, 63, 0.5);
+  background: radial-gradient(circle, transparent 65%, rgba(39, 201, 63, 0.14) 85%, rgba(197, 160, 89, 0.35) 100%);
+}
+
+.avatar-frame-wrap.moldura-natal-2026::after {
+  content: '★';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #FFD700;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.9);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Moldura Réveillon 2027: Ouro champanhe celestial, borda cintilante e brilho de virada */
+.avatar-frame-wrap.moldura-reveillon-2027::before {
+  border: 2.5px solid #F0D5B6;
+  box-shadow: 0 0 0 1.8px rgba(255, 255, 255, 0.45), 0 0 12px rgba(240, 213, 182, 0.65);
+  background: radial-gradient(circle, transparent 65%, rgba(240, 213, 182, 0.18) 85%, rgba(255, 255, 255, 0.3) 100%);
+}
+
+.avatar-frame-wrap.moldura-reveillon-2027::after {
+  content: '✨';
+  position: absolute;
+  top: -9px;
+  right: -3px;
+  font-size: 11px;
+  filter: drop-shadow(0 0 4px rgba(240, 213, 182, 0.9));
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Moldura no perfil (avatar grande de 110px a 140px) */
+.avatar-container.has-frame.moldura-natal-2026::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  right: -7px;
+  bottom: -7px;
+  border-radius: 50%;
+  border: 4px solid #27C93F;
+  box-shadow: 0 0 0 3px #C5A059, 0 0 20px rgba(39, 201, 63, 0.6);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.avatar-container.has-frame.moldura-natal-2026::after {
+  content: '★';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.avatar-container.has-frame.moldura-reveillon-2027::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  right: -7px;
+  bottom: -7px;
+  border-radius: 50%;
+  border: 4px solid #F0D5B6;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 0 24px rgba(240, 213, 182, 0.8);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.avatar-container.has-frame.moldura-reveillon-2027::after {
+  content: '✨';
+  position: absolute;
+  top: -16px;
+  right: -5px;
+  font-size: 18px;
+  filter: drop-shadow(0 0 8px rgba(240, 213, 182, 0.9));
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ==========================================================================
+   NAVEGAÇÃO PRINCIPAL DA COMUNIDADE (TABS)
+   ========================================================================== */
+.community-tabs-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(242, 244, 243, 0.08);
+  padding-bottom: 14px;
+}
+
+.comm-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(242, 244, 243, 0.1);
+  background: rgba(242, 244, 243, 0.03);
+  color: rgba(242, 244, 243, 0.7);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comm-tab-btn:hover {
+  background: rgba(242, 244, 243, 0.07);
+  color: var(--sabore-light);
+  border-color: rgba(242, 244, 243, 0.2);
+}
+
+.comm-tab-btn.active {
+  background: rgba(224, 133, 122, 0.18);
+  border-color: var(--sabore-coral);
+  color: var(--sabore-champagne);
+  box-shadow: 0 4px 14px rgba(224, 133, 122, 0.2);
+}
+
+.badge-competicao {
+  font-size: 0.65rem;
+  background: linear-gradient(135deg, #FF5F56, #FF9F0A);
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   DESAFIO DA SEMANA SIMPLIFICADO
+   ========================================================================== */
+.weekly-challenge-card .challenge-cover-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  overflow: hidden;
+  max-height: 140px;
+}
+
+.challenge-cover-img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+  border-radius: 14px;
+}
+
+.challenge-tag-pill.clickable-tag {
+  background: rgba(224, 133, 122, 0.18);
+  border: 1px solid rgba(224, 133, 122, 0.45);
+  color: var(--sabore-champagne);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.challenge-tag-pill.clickable-tag:hover {
+  background: var(--sabore-coral);
+  color: var(--sabore-bg-dark);
+  transform: scale(1.05);
+}
+
+.challenge-completed-box {
+  background: rgba(39, 201, 63, 0.12);
+  border: 1px solid rgba(39, 201, 63, 0.4);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.challenge-completed-box .completed-header {
+  color: #27C93F;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.challenge-completed-box .completed-points {
+  color: var(--sabore-champagne);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   EVENTOS ESPECIAIS (COMPETIÇÕES COMEMORATIVAS)
+   ========================================================================== */
+.special-events-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.event-selector-bar {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.event-tab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(242, 244, 243, 0.15);
+  background: rgba(33, 53, 48, 0.7);
+  color: rgba(242, 244, 243, 0.8);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.event-tab-pill:hover {
+  border-color: var(--sabore-coral);
+  color: var(--sabore-light);
+}
+
+.event-tab-pill.active {
+  background: linear-gradient(135deg, rgba(224, 133, 122, 0.3) 0%, rgba(240, 213, 182, 0.25) 100%);
+  border-color: var(--sabore-coral);
+  color: var(--sabore-champagne);
+  box-shadow: 0 4px 15px rgba(224, 133, 122, 0.25);
+}
+
+.event-banner-card {
+  position: relative;
+  min-height: 220px;
+  border-radius: 20px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 24px;
+  border: 1px solid rgba(240, 213, 182, 0.3);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+}
+
+.event-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(27, 43, 39, 0.3) 0%, rgba(18, 31, 28, 0.94) 85%);
+  z-index: 1;
+}
+
+.event-banner-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.event-status-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(39, 201, 63, 0.2);
+  border: 1px solid #27C93F;
+  color: #27C93F;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.event-status-pill.votacao {
+  background: rgba(255, 159, 10, 0.2);
+  border-color: #FF9F0A;
+  color: #FF9F0A;
+}
+
+.event-status-pill.encerrado {
+  background: rgba(242, 244, 243, 0.15);
+  border-color: rgba(242, 244, 243, 0.4);
+  color: rgba(242, 244, 243, 0.7);
+}
+
+.event-banner-content h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.event-banner-content p {
+  font-size: 0.86rem;
+  color: rgba(242, 244, 243, 0.85);
+  line-height: 1.5;
+  max-width: 720px;
+  margin-bottom: 14px;
+}
+
+.event-meta-tags {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.event-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: rgba(242, 244, 243, 0.75);
+  background: rgba(242, 244, 243, 0.08);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.event-meta-item strong {
+  color: var(--sabore-champagne);
+}
+
+.event-timeline-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(33, 53, 48, 0.5);
+  border: 1px solid rgba(242, 244, 243, 0.08);
+  border-radius: 16px;
+  padding: 14px 20px;
+  gap: 12px;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.timeline-step .step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(240, 213, 182, 0.18);
+  color: var(--sabore-champagne);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.timeline-step.active .step-num {
+  background: var(--sabore-coral);
+  color: var(--sabore-bg-dark);
+}
+
+.timeline-step .step-info strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #fff;
+}
+
+.timeline-step .step-info span {
+  font-size: 0.72rem;
+  color: rgba(242, 244, 243, 0.6);
+}
+
+.timeline-arrow {
+  color: rgba(242, 244, 243, 0.3);
+  font-size: 0.8rem;
+}
+
+.event-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .event-details-grid { grid-template-columns: 1fr; }
+  .event-timeline-strip { flex-direction: column; align-items: flex-start; }
+  .timeline-arrow { display: none; }
+}
+
+.event-detail-box {
+  background: rgba(33, 53, 48, 0.6);
+  border: 1px solid rgba(242, 244, 243, 0.08);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.detail-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: var(--sabore-champagne);
+}
+
+.detail-box-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.detail-box-body {
+  font-size: 0.82rem;
+  color: rgba(242, 244, 243, 0.75);
+  line-height: 1.55;
+}
+
+.prize-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.prize-item:last-child {
+  margin-bottom: 0;
+}
+
+.prize-badge-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(240, 213, 182, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #FFD700;
+  flex-shrink: 0;
+}
+
+.prize-item strong {
+  display: block;
+  font-size: 0.84rem;
+  color: #fff;
+}
+
+.prize-item p {
+  margin: 0;
+  font-size: 0.74rem;
+  color: rgba(242, 244, 243, 0.6);
+}
+
+.event-user-action-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(224, 133, 122, 0.14) 0%, rgba(240, 213, 182, 0.1) 100%);
+  border: 1px solid rgba(224, 133, 122, 0.35);
+  border-radius: 16px;
+  padding: 18px 22px;
+}
+
+@media (max-width: 640px) {
+  .event-user-action-card { flex-direction: column; align-items: flex-start; }
+}
+
+.action-card-left h3 {
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.action-card-left p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(242, 244, 243, 0.75);
+}
+
+.btn-event-participate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  background: var(--sabore-coral);
+  color: var(--sabore-bg-dark);
+  font-size: 0.86rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(224, 133, 122, 0.3);
+}
+
+.btn-event-participate:hover {
+  background: var(--sabore-champagne);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240, 213, 182, 0.4);
+}
+
+.event-winner-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(33, 53, 48, 0.8) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 30px rgba(255, 215, 0, 0.15);
+}
+
+.winner-trophy {
+  font-size: 2.4rem;
+  color: #FFD700;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+}
+
+.winner-label {
+  display: block;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  color: #FFD700;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.event-winner-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  color: #fff;
+  margin: 4px 0;
+}
+
+.winner-rewards-awarded {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.awarded-pill {
+  font-size: 0.72rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  color: #FFD700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ==========================================================================
+   GALERIA DE VOTAÇÃO DOS EVENTOS
+   ========================================================================== */
+.event-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.event-entry-card {
+  background: rgba(33, 53, 48, 0.6);
+  border: 1px solid rgba(242, 244, 243, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-entry-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(240, 213, 182, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.entry-card-media {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: rgba(18, 31, 28, 0.7);
+}
+
+.entry-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.event-entry-card:hover .entry-card-media img {
+  transform: scale(1.04);
+}
+
+.entry-votes-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(18, 31, 28, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(240, 213, 182, 0.4);
+  color: var(--sabore-champagne);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.entry-card-content {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.entry-card-content h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: #fff;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.entry-author-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.entry-author-row .entry-author-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.entry-author-row .entry-author-name {
+  font-size: 0.8rem;
+  color: rgba(242, 244, 243, 0.75);
+  display: flex;
+  align-items: center;
+}
+
+.entry-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(242, 244, 243, 0.06);
+}
+
+.btn-entry-view {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(242, 244, 243, 0.15);
+  background: transparent;
+  color: rgba(242, 244, 243, 0.85);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn-entry-view:hover {
+  background: rgba(242, 244, 243, 0.08);
+  color: #fff;
+}
+
+.btn-entry-vote {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--sabore-coral);
+  color: var(--sabore-bg-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.btn-entry-vote:hover {
+  background: var(--sabore-champagne);
+}
+
+.btn-entry-vote.voted {
+  background: rgba(39, 201, 63, 0.15);
+  border: 1px solid #27C93F;
+  color: #27C93F;
+  cursor: default;
+}
+
+.btn-entry-vote:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   MODAL DE INSCRIÇÃO OFICIAL (MODELO B)
+   ========================================================================== */
+.entry-choice-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(242, 244, 243, 0.08);
+  padding-bottom: 8px;
+}
+
+.entry-choice-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(242, 244, 243, 0.65);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.entry-choice-btn.active {
+  background: rgba(242, 244, 243, 0.08);
+  border-color: rgba(242, 244, 243, 0.15);
+  color: var(--sabore-champagne);
+}
+
+.user-recipes-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.recipe-select-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(242, 244, 243, 0.08);
+  background: rgba(242, 244, 243, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recipe-select-item:hover {
+  background: rgba(242, 244, 243, 0.06);
+  border-color: rgba(242, 244, 243, 0.18);
+}
+
+.recipe-select-item.selected {
+  background: rgba(224, 133, 122, 0.15);
+  border-color: var(--sabore-coral);
+}
+
+.recipe-select-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   MINHAS CONQUISTAS E MOLDURAS NO PERFIL
+   ========================================================================== */
+.profile-achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.achievement-badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 10px;
+  border-radius: 14px;
+  background: rgba(33, 53, 48, 0.6);
+  border: 1px solid rgba(240, 213, 182, 0.2);
+  transition: all 0.2s ease;
+}
+
+.achievement-badge-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--sabore-coral);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.achievement-badge-img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+
+.achievement-badge-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+  margin-bottom: 3px;
+}
+
+.achievement-badge-date {
+  font-size: 0.68rem;
+  color: rgba(242, 244, 243, 0.5);
+}
+
+.profile-frames-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.frame-option-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(242, 244, 243, 0.08);
+  background: rgba(33, 53, 48, 0.4);
+}
+
+.frame-option-card.equipped {
+  border-color: var(--sabore-champagne);
+  background: rgba(240, 213, 182, 0.08);
+}
+
+.btn-frame-toggle {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(242, 244, 243, 0.2);
+  background: transparent;
+  color: rgba(242, 244, 243, 0.85);
+  transition: all 0.2s ease;
+}
+
+.btn-frame-toggle:hover {
+  background: rgba(242, 244, 243, 0.1);
+  color: #fff;
+}
+
+.btn-frame-toggle.active {
+  background: var(--sabore-champagne);
+  border-color: var(--sabore-champagne);
+  color: var(--sabore-bg-dark);
+}
+
+
+/* ==========================================================================
+   GALERIA DE VOTAÇÃO DOS EVENTOS ESPECIAIS
+   ========================================================================== */
+
+.event-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 10px;
+}
+
+.event-gallery-card {
+  background: rgba(33, 53, 48, 0.55);
+  border-radius: 16px;
+  border: 1px solid rgba(242, 244, 243, 0.08);
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.event-gallery-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  border-color: rgba(224, 133, 122, 0.3);
+}
+
+.gallery-card-image {
+  position: relative;
+  height: 170px;
+  background: rgba(27, 43, 39, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gallery-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-card-image.no-img i {
+  font-size: 2.5rem;
+  color: rgba(242, 244, 243, 0.2);
+}
+
+.gallery-vote-pill {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(27, 43, 39, 0.9);
+  border: 1px solid rgba(240, 213, 182, 0.4);
+  color: #F0D5B6;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.my-vote-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(224, 133, 122, 0.9);
+  color: var(--sabore-bg-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.gallery-card-body {
+  padding: 14px;
+}
+
+.gallery-author-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.gallery-author-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(224, 133, 122, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #F0D5B6;
+  flex-shrink: 0;
+}
+
+.gallery-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gallery-author-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(242, 244, 243, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.own-entry-pill {
+  font-size: 0.65rem;
+  background: rgba(240, 213, 182, 0.15);
+  border: 1px solid rgba(240, 213, 182, 0.3);
+  color: #F0D5B6;
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.gallery-recipe-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  color: #fff;
+  margin: 0 0 12px;
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.gallery-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-gallery-view {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(242, 244, 243, 0.15);
+  background: transparent;
+  color: rgba(242, 244, 243, 0.85);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-gallery-view:hover {
+  background: rgba(242, 244, 243, 0.08);
+  color: #fff;
+}
+
+.btn-gallery-vote {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: none;
+  background: var(--sabore-coral);
+  color: var(--sabore-bg-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-gallery-vote:hover {
+  background: #d4746a;
+  transform: scale(1.03);
+}
+
+.vote-own-lock,
+.vote-already-pill {
+  font-size: 0.7rem;
+  color: rgba(242, 244, 243, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vote-already-pill {
+  color: #81c784;
+}
+
+.gallery-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(242, 244, 243, 0.4);
+}
+
+.gallery-empty-state i {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* Entry recipe pick list */
+.entry-recipe-pick-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(242, 244, 243, 0.08);
+  background: rgba(242, 244, 243, 0.03);
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.entry-recipe-pick-item:hover {
+  background: rgba(242, 244, 243, 0.06);
+  border-color: rgba(242, 244, 243, 0.15);
+}
+
+.entry-recipe-pick-item img {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.entry-recipe-pick-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  background: rgba(27, 43, 39, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgba(242, 244, 243, 0.3);
+}
+
+.entry-pick-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entry-pick-info strong {
+  font-size: 0.85rem;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.entry-pick-info span {
+  font-size: 0.75rem;
+  color: rgba(242, 244, 243, 0.5);
+}
+
+.btn-select-entry {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--sabore-coral);
+  color: var(--sabore-bg-dark);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.btn-select-entry:hover {
+  background: #d4746a;
+}
+
+.btn-select-entry:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Event Recipe Detail Modal */
+.event-recipe-modal-banner img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.event-recipe-modal-header {
+  padding: 0 0 14px;
+  border-bottom: 1px solid rgba(242, 244, 243, 0.08);
+  margin-bottom: 16px;
+}
+
+.event-recipe-meta-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: rgba(242, 244, 243, 0.65);
+}
+
+.event-recipe-meta-row strong {
+  color: #F0D5B6;
+}
+
+.event-recipe-modal-body .recipe-section {
+  margin-bottom: 20px;
+}
+
+.event-recipe-modal-body .recipe-section h4 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--sabore-champagne);
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Event status pill variants */
+.event-status-pill.status-em_breve { background: rgba(100, 100, 150, 0.4); }
+.event-status-pill.status-inscricoes { background: rgba(60, 170, 100, 0.35); color: #81c784; }
+.event-status-pill.status-votacao { background: rgba(224, 133, 122, 0.35); color: #E0857A; }
+.event-status-pill.status-encerrado { background: rgba(240, 213, 182, 0.2); color: #F0D5B6; }

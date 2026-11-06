@@ -1,0 +1,14 @@
+{
+  "desafiosCustomizados": [],
+  "participacoes": [
+    {
+      "usuarioId": 99991,
+      "desafioId": 1,
+      "receitaId": 88881,
+      "nomeReceita": "Bolo de Cenoura Criativo",
+      "foto": null,
+      "pontosConcedidos": 30,
+      "createdAt": "2026-11-06T17:46:01.134Z"
+    }
+  ]
+}

@@ -42,8 +42,10 @@ const formatRecipe = (recipe) => {
         authorId: recipe.usuarioId,
         author: recipe.usuario ? recipe.usuario.nome : "Chef",
         authorAvatar: recipe.usuario?.foto || null,
+        authorPlan: recipe.usuario?.plano || "FREE",
+        authorFrame: recipe.usuario?.molduraAtiva || null,
         authorAchievements: recipe.usuario?.conquistas || [],
-        authorHasProfileFrame: Boolean(recipe.usuario?.conquistas?.some(item => item.molduraPerfil)),
+        authorHasProfileFrame: Boolean(recipe.usuario?.molduraAtiva || recipe.usuario?.conquistas?.some(item => item.molduraPerfil)),
         likes: recipe._count?.favoritos || 0,
         hashtags: recipe.hashtags ? recipe.hashtags.map(item => `#${item.hashtag.nome}`) : [],
         publishedAt: recipe.publicadaEm || null,
@@ -189,8 +191,18 @@ const cadastrar = async (req, res) => {
             }
         });
 
-        // Contabiliza pontos de engajamento se a receita for válida (tem título, etapas e não é rascunho)
-        if (!fullRecipe.rascunho && fullRecipe.titulo && fullRecipe.modoPreparo) {
+        // Contabiliza pontos de engajamento
+        let desafioResultado = { concluiuDesafio: false };
+        try {
+            const { processarConclusaoDesafioPorReceita } = require("../services/desafiosSemanais.service");
+            desafioResultado = await processarConclusaoDesafioPorReceita(usuarioId, fullRecipe);
+        } catch (e) {
+            console.error("[Desafio Semanal] Erro ao processar desafio:", e.message);
+        }
+
+        // Evitar pontuação duplicada: a publicação utilizada para concluir o desafio
+        // deve conceder 30 pontos no total, e não 30 pontos mais os 10 pontos normais de publicação.
+        if (!desafioResultado.concluiuDesafio && !fullRecipe.rascunho && fullRecipe.titulo && fullRecipe.modoPreparo) {
             try {
                 const { registrarPublicacaoReceita } = require("../services/engajamento.service");
                 await registrarPublicacaoReceita(usuarioId, fullRecipe.id, fullRecipe.titulo);
@@ -199,7 +211,10 @@ const cadastrar = async (req, res) => {
             }
         }
 
-        res.status(201).json(formatRecipe(fullRecipe));
+        res.status(201).json({
+            ...formatRecipe(fullRecipe),
+            desafioInfo: desafioResultado
+        });
     } catch (error) {
         console.error("[Receitas Controller] Erro ao cadastrar receita:", error);
         res.status(500).json({ erro: "Erro ao cadastrar receita.", detalhe: error.message });
@@ -459,7 +474,26 @@ const atualizar = async (req, res) => {
                 hashtags: { include: { hashtag: true } }
             }
         });
-        res.status(200).json(formatRecipe(fullRecipe));
+        // Se a receita foi tornada pública e não é rascunho, processa eventual desafio semanal
+        let desafioResultado = { concluiuDesafio: false };
+        if (fullRecipe && fullRecipe.publica && !fullRecipe.rascunho) {
+            try {
+                const { processarConclusaoDesafioPorReceita } = require("../services/desafiosSemanais.service");
+                desafioResultado = await processarConclusaoDesafioPorReceita(usuarioId, fullRecipe);
+            } catch (e) {}
+
+            if (!desafioResultado.concluiuDesafio && fullRecipe.titulo && fullRecipe.modoPreparo) {
+                try {
+                    const { registrarPublicacaoReceita } = require("../services/engajamento.service");
+                    await registrarPublicacaoReceita(usuarioId, fullRecipe.id, fullRecipe.titulo);
+                } catch (engErr) {}
+            }
+        }
+
+        res.status(200).json({
+            ...formatRecipe(fullRecipe),
+            desafioInfo: desafioResultado
+        });
     } catch (error) {
         res.status(500).json({ erro: "Erro ao atualizar receita.", detalhe: error.message });
     }
@@ -624,6 +658,24 @@ const listarHashtagsEmAlta = async (req, res) => {
             .filter(item => item.interacoes > 0)
             .sort((a, b) => b.interacoes - a.interacoes || b.receitas - a.receitas);
 
+        // Integrar as hashtags dos desafios à seção Hashtags em Alta já existente
+        try {
+            const { obterDesafioSemanalAtivo } = require("../services/desafiosSemanais.service");
+            const desafioAtivo = obterDesafioSemanalAtivo();
+            if (desafioAtivo && desafioAtivo.hashtag) {
+                const tagClean = desafioAtivo.hashtag.toLowerCase();
+                const jaExiste = emAlta.some(item => item.tag.toLowerCase() === tagClean);
+                if (!jaExiste) {
+                    emAlta.unshift({
+                        tag: desafioAtivo.hashtag,
+                        interacoes: Math.max(10, (emAlta[0]?.interacoes || 5) + 1),
+                        receitas: 1,
+                        isDesafio: true
+                    });
+                }
+            }
+        } catch (hErr) {}
+
         res.status(200).json(emAlta);
     } catch (error) {
         res.status(500).json({ erro: "Erro ao buscar hashtags em alta.", detalhe: error.message });
@@ -632,59 +684,46 @@ const listarHashtagsEmAlta = async (req, res) => {
 
 const obterDesafioSemanal = async (req, res) => {
     try {
-        const now = new Date();
-        const target = new Date(now.valueOf());
-        const dayNr = (now.getDay() + 6) % 7;
-        target.setDate(target.getDate() - dayNr + 3);
-        const firstThursday = target.valueOf();
-        target.setMonth(0, 1);
-        if (target.getDay() !== 4) {
-            target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+        const { obterDesafioSemanalAtivo, verificarParticipacaoDesafio, contarParticipantes } = require("../services/desafiosSemanais.service");
+        const desafio = obterDesafioSemanalAtivo();
+        if (!desafio) {
+            return res.status(404).json({ erro: "Nenhum desafio semanal ativo." });
         }
-        const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
-        const year = now.getFullYear();
 
-        const dayOfWeek = now.getDay();
-        const daysRemaining = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+        const usuarioId = req.usuario?.id || null;
+        const [participacao, participantsCount] = await Promise.all([
+            usuarioId ? verificarParticipacaoDesafio(usuarioId, desafio.id) : null,
+            contarParticipantes(desafio.id)
+        ]);
 
-        const weekSeed = year * 53 + weekNumber;
-        const index = Math.abs(weekSeed) % DESAFIOS_SEMANAIS.length;
-        const desafio = DESAFIOS_SEMANAIS[index];
-
-        const cleanTag = desafio.hashtag.replace(/^#/, "").toLowerCase();
-        const receitasDoDesafio = await prisma.receita.findMany({
-            where: {
-                publica: true,
-                rascunho: false,
-                OR: [
-                    { hashtags: { some: { hashtag: { nome: { equals: cleanTag, mode: "insensitive" } } } } },
-                    { categorias: { some: { categoria: { nome: { contains: cleanTag, mode: "insensitive" } } } } },
-                    { titulo: { contains: desafio.hashtag, mode: "insensitive" } },
-                    { descricao: { contains: desafio.hashtag, mode: "insensitive" } }
-                ]
-            },
-            select: { id: true, usuarioId: true }
-        }).catch(() => []);
-
-        const recipesCount = receitasDoDesafio.length;
-        const distinctUsers = new Set(receitasDoDesafio.map(r => r.usuarioId));
-        const desafioChave = `${desafio.id}-${year}-w${weekNumber}`;
-        const inscricoes = await prisma.desafioParticipacao.findMany({
-            where: { desafioChave },
-            select: { usuarioId: true }
-        }).catch(() => []);
-        inscricoes.forEach(inscricao => distinctUsers.add(inscricao.usuarioId));
-        const participantsCount = distinctUsers.size;
+        const fimEm = new Date(desafio.fimEm);
+        const agora = new Date();
+        const diffMs = fimEm.getTime() - agora.getTime();
+        const diasRestantes = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+        const timeRemainingText = diasRestantes <= 0 ? "Termina hoje às 23:59!" : `Termina em ${diasRestantes} dia${diasRestantes > 1 ? "s" : ""}`;
 
         res.status(200).json({
-            ...desafio,
-            weekNumber,
-            year,
-            daysRemaining,
-            timeRemainingText: daysRemaining === 0 ? "Termina hoje às 23:59!" : `Termina em ${daysRemaining} dia${daysRemaining > 1 ? "s" : ""}`,
-            recipesCount,
+            id: desafio.id,
+            title: desafio.titulo,
+            titulo: desafio.titulo,
+            description: desafio.descricao,
+            descricao: desafio.descricao,
+            tema: desafio.tema,
+            hashtag: desafio.hashtag,
+            image: desafio.imagem,
+            imagem: desafio.imagem,
+            orientacoes: desafio.orientacoes,
+            pontosRecompensa: desafio.pontosRecompensa || 30,
+            inicioEm: desafio.inicioEm,
+            fimEm: desafio.fimEm,
+            statusTempo: desafio.statusTempo,
+            daysRemaining: diasRestantes,
+            timeRemainingText,
+            recipesCount: participantsCount,
             participantsCount,
-            isJoined: Boolean(req.usuario && inscricoes.some(inscricao => inscricao.usuarioId === req.usuario.id))
+            isJoined: Boolean(participacao),
+            jaConcluido: Boolean(participacao),
+            pontosConquistados: participacao ? 30 : 0
         });
     } catch (error) {
         res.status(500).json({ erro: "Erro ao obter desafio semanal.", detalhe: error.message });
@@ -693,24 +732,22 @@ const obterDesafioSemanal = async (req, res) => {
 
 const participarDesafioSemanal = async (req, res) => {
     try {
-        const now = new Date();
-        const target = new Date(now.valueOf());
-        const dayNr = (now.getDay() + 6) % 7;
-        target.setDate(target.getDate() - dayNr + 3);
-        const firstThursday = target.valueOf();
-        target.setMonth(0, 1);
-        if (target.getDay() !== 4) target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
-        const weekNumber = 1 + Math.ceil((firstThursday - target) / 604800000);
-        const year = now.getFullYear();
-        const index = Math.abs(year * 53 + weekNumber) % DESAFIOS_SEMANAIS.length;
-        const desafioChave = `${DESAFIOS_SEMANAIS[index].id}-${year}-w${weekNumber}`;
-        await prisma.desafioParticipacao.upsert({
-            where: { desafioChave_usuarioId: { desafioChave, usuarioId: req.usuario.id } },
-            update: {},
-            create: { desafioChave, usuarioId: req.usuario.id }
+        const { obterDesafioSemanalAtivo, verificarParticipacaoDesafio, contarParticipantes } = require("../services/desafiosSemanais.service");
+        const desafio = obterDesafioSemanalAtivo();
+        if (!desafio || desafio.statusTempo !== "ATIVO") {
+            return res.status(400).json({ erro: "Não há desafio semanal ativo no momento." });
+        }
+        const usuarioId = req.usuario.id;
+        const jaParticipou = await verificarParticipacaoDesafio(usuarioId, desafio.id);
+        const participantsCount = await contarParticipantes(desafio.id);
+
+        res.status(200).json({
+            isJoined: true,
+            desafioId: desafio.id,
+            hashtag: desafio.hashtag,
+            participantsCount,
+            jaConcluido: Boolean(jaParticipou)
         });
-        const participantsCount = await prisma.desafioParticipacao.count({ where: { desafioChave } });
-        res.status(200).json({ isJoined: true, participantsCount });
     } catch (error) {
         res.status(500).json({ erro: "Erro ao participar do desafio.", detalhe: error.message });
     }

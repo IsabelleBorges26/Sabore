@@ -35,6 +35,8 @@ const bibliotecasRoutes = require("./src/routes/bibliotecas.routes");
 const socialRoutes = require("./src/routes/social.routes");
 const estatisticasRoutes = require("./src/routes/estatisticas.routes");
 const contatoRoutes = require("./src/routes/contato.routes");
+const desafiosSemanaisRoutes = require("./src/routes/desafiosSemanais.routes");
+const eventosEspeciaisRoutes = require("./src/routes/eventosEspeciais.routes");
 const desafiosRoutes = require("./src/routes/desafios.routes");
 const desafioRoutes = require("./src/routes/desafio.routes");
 
@@ -55,6 +57,10 @@ app.use("/bibliotecas", bibliotecasRoutes);
 app.use("/social", socialRoutes);
 app.use("/estatisticas", estatisticasRoutes);
 app.use("/contato", contatoRoutes);
+app.use("/desafios/semanal", desafiosSemanaisRoutes);
+app.use("/desafios/eventos", eventosEspeciaisRoutes);
+app.use("/desafios", desafiosSemanaisRoutes);
+app.use("/desafios", eventosEspeciaisRoutes);
 app.use("/desafios", desafiosRoutes);
 app.use("/desafios", desafioRoutes);
 

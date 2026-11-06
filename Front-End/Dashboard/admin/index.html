@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="../home/style.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../assets/css/sabore-features.css">
 </head>
 <body>
   <div class="dashboard-container">
@@ -114,9 +115,11 @@
         <!-- Abas Administrativas -->
         <div class="admin-tabs-nav">
           <button class="admin-tab-btn active" data-tab="tab-ranking">Ranking em Tempo Real</button>
+          <button class="admin-tab-btn" data-tab="tab-desafios-semanais"><i class="fa-solid fa-calendar-week"></i> Desafios Semanais</button>
+          <button class="admin-tab-btn" data-tab="tab-eventos-especiais"><i class="fa-solid fa-trophy"></i> Eventos Especiais</button>
           <button class="admin-tab-btn" data-tab="tab-fechamentos">Histórico de Fechamentos</button>
           <button class="admin-tab-btn" data-tab="tab-concessoes">Concessões PRO Emitidas</button>
-          <button class="admin-tab-btn" data-tab="tab-atividades">Auditoria de Atividades Recentes</button>
+          <button class="admin-tab-btn" data-tab="tab-atividades">Auditoria de Atividades</button>
         </div>
 
         <!-- Conteúdo das Abas -->
@@ -214,6 +217,282 @@
                 </thead>
                 <tbody id="admin-atividades-tbody">
                   <tr><td colspan="6" style="text-align: center; padding: 30px;">Nenhuma atividade registrada.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA: GESTÃO DE DESAFIOS SEMANAIS -->
+        <div class="admin-tab-content" id="tab-desafios-semanais">
+          <!-- Ação / Criação de Desafio -->
+          <div class="admin-action-card" style="margin-bottom: 24px;">
+            <div class="admin-action-left">
+              <div class="admin-badge"><i class="fa-solid fa-calendar-plus"></i> DESAFIOS SEMANAIS SIMPLIFICADOS</div>
+              <h2>Criar, Agendar ou Editar Desafio da Semana</h2>
+              <p>Desafios semanais não são competições: cada participante ganha exatamente +30 pontos uma única vez ao publicar com a hashtag oficial.</p>
+            </div>
+            <div class="admin-action-right">
+              <button class="btn-executar-fechamento" id="btn-toggle-form-desafio" type="button" style="background: var(--secondary); color: var(--dark-deep);">
+                <i class="fa-solid fa-plus-circle"></i> Novo Desafio Semanal
+              </button>
+            </div>
+          </div>
+
+          <!-- Formulário Criar/Editar Desafio (Expansível) -->
+          <div id="admin-form-desafio-wrap" class="admin-table-card" style="display: none; margin-bottom: 24px; padding: 22px;">
+            <h3 id="admin-form-desafio-title" style="margin-bottom: 16px; font-size: 1.1rem; color: var(--secondary);"><i class="fa-solid fa-pen-to-square"></i> Cadastrar / Agendar Desafio</h3>
+            <form id="admin-form-desafio" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+              <input type="hidden" id="adm-desafio-id">
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 5px;">Título do Desafio:</label>
+                <input type="text" id="adm-desafio-titulo" required placeholder="Ex: Ingredientes que Você Tem em Casa" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 5px;">Hashtag Oficial (com #):</label>
+                <input type="text" id="adm-desafio-hashtag" required placeholder="Ex: #IngredientesQueTenhoEmCasa" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 5px;">Tema / Categoria Curta:</label>
+                <input type="text" id="adm-desafio-tema" placeholder="Ex: Despensa Criativa" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 5px;">URL da Imagem de Capa:</label>
+                <input type="url" id="adm-desafio-imagem" placeholder="https://images.unsplash.com/..." style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 5px;">Início (America/Sao_Paulo):</label>
+                <input type="datetime-local" id="adm-desafio-inicio" required style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 5px;">Encerramento (America/Sao_Paulo):</label>
+                <input type="datetime-local" id="adm-desafio-fim" required style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div style="grid-column: 1 / -1;">
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 5px;">Descrição Curta:</label>
+                <textarea id="adm-desafio-descricao" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;" placeholder="Descrição atrativa para o feed da comunidade"></textarea>
+              </div>
+              <div style="grid-column: 1 / -1; display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                <button type="button" id="adm-desafio-cancelar" style="padding: 10px 18px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer;">Cancelar</button>
+                <button type="submit" style="padding: 10px 22px; border-radius: 8px; background: var(--secondary); color: var(--dark-deep); font-weight: 700; border: none; cursor: pointer;">
+                  <i class="fa-solid fa-floppy-disk"></i> Salvar Desafio
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tabela de Desafios Programados -->
+          <div class="admin-table-card" style="margin-bottom: 24px;">
+            <div class="card-table-header">
+              <h3>Desafios Programados Oficiais (2026)</h3>
+            </div>
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Período</th>
+                    <th>Título</th>
+                    <th>Hashtag Oficial</th>
+                    <th>Pontos</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-desafios-tbody">
+                  <tr><td colspan="6" style="text-align: center; padding: 25px;">Carregando desafios...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabela de Participações e Pontos Concedidos -->
+          <div class="admin-table-card">
+            <div class="card-table-header">
+              <h3>Participações em Desafios e Pontos Concedidos (+30 pts)</h3>
+            </div>
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Data/Hora</th>
+                    <th>Usuário</th>
+                    <th>Desafio</th>
+                    <th>Receita Publicada</th>
+                    <th>Pontos Atribuídos</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-participacoes-tbody">
+                  <tr><td colspan="6" style="text-align: center; padding: 25px;">Carregando participações...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA: GESTÃO DE EVENTOS ESPECIAIS & COMPETIÇÕES -->
+        <div class="admin-tab-content" id="tab-eventos-especiais">
+          <!-- Ação / Criação de Evento -->
+          <div class="admin-action-card" style="margin-bottom: 24px;">
+            <div class="admin-action-left">
+              <div class="admin-badge"><i class="fa-solid fa-trophy"></i> COMPETIÇÕES COMEMORATIVAS</div>
+              <h2>Gestão de Eventos Especiais & Premiações</h2>
+              <p>Controle de inscrições (Modelo B), moderação de receitas, votação popular comunitária em tempo real e confirmação oficial do vencedor com concessão de emblema e moldura exclusiva.</p>
+            </div>
+            <div class="admin-action-right">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <select id="admin-evento-selector" style="padding: 10px 14px; border-radius: 8px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 0.9rem;">
+                  <option value="1">Natal Saboré 2026</option>
+                  <option value="2">Réveillon Saboré 2027</option>
+                </select>
+                <button class="btn-executar-fechamento" id="btn-toggle-form-evento" type="button" style="background: var(--accent); color: var(--dark-deep);">
+                  <i class="fa-solid fa-plus-circle"></i> Criar/Editar Evento
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário Criar/Editar Evento (Expansível) -->
+          <div id="admin-form-evento-wrap" class="admin-table-card" style="display: none; margin-bottom: 24px; padding: 22px;">
+            <h3 id="admin-form-evento-title" style="margin-bottom: 16px; font-size: 1.1rem; color: var(--accent);"><i class="fa-solid fa-pen-nib"></i> Configurar Evento Especial</h3>
+            <form id="admin-form-evento" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
+              <input type="hidden" id="adm-evento-id">
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Nome do Evento:</label>
+                <input type="text" id="adm-evento-titulo" required placeholder="Ex: Natal Saboré 2026" style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Hashtag Oficial:</label>
+                <input type="text" id="adm-evento-hashtag" required placeholder="Ex: #NatalSabore2026" style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Emblema de Conquista Exclusivo:</label>
+                <input type="text" id="adm-evento-emblema" required placeholder="Ex: Espírito Natalino 2026" style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Identificador da Moldura Exclusiva:</label>
+                <input type="text" id="adm-evento-moldura" required placeholder="Ex: moldura-natal-2026" style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Início Inscrições (SP):</label>
+                <input type="datetime-local" id="adm-evento-insc-ini" required style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Fim Inscrições (SP):</label>
+                <input type="datetime-local" id="adm-evento-insc-fim" required style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Início Votação (SP):</label>
+                <input type="datetime-local" id="adm-evento-vot-ini" required style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Fim Votação (SP):</label>
+                <input type="datetime-local" id="adm-evento-vot-fim" required style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+              </div>
+              <div style="grid-column: 1 / -1;">
+                <label style="font-size: 0.82rem; color: rgba(242,244,243,0.7); display: block; margin-bottom: 4px;">Descrição do Evento:</label>
+                <textarea id="adm-evento-descricao" rows="2" style="width: 100%; padding: 9px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); color: #fff;"></textarea>
+              </div>
+              <div style="grid-column: 1 / -1; display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" id="adm-evento-cancelar" style="padding: 10px 18px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer;">Cancelar</button>
+                <button type="submit" style="padding: 10px 22px; border-radius: 8px; background: var(--accent); color: var(--dark-deep); font-weight: 700; border: none; cursor: pointer;">
+                  <i class="fa-solid fa-floppy-disk"></i> Salvar Evento
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Resumo e Ações de Apuração do Evento Selecionado -->
+          <div class="admin-stats-grid" id="admin-evento-summary-cards" style="margin-bottom: 24px;">
+            <div class="admin-stat-card">
+              <i class="fa-solid fa-hourglass-half" style="color: var(--secondary);"></i>
+              <div>
+                <span class="astat-val" id="adm-ev-fase">--</span>
+                <span class="astat-lbl">Fase do Evento</span>
+              </div>
+            </div>
+            <div class="admin-stat-card">
+              <i class="fa-solid fa-book-bookmark" style="color: var(--accent);"></i>
+              <div>
+                <span class="astat-val" id="adm-ev-total-inscricoes">0</span>
+                <span class="astat-lbl">Inscrições Oficiais</span>
+              </div>
+            </div>
+            <div class="admin-stat-card">
+              <i class="fa-solid fa-check-to-slot" style="color: #FFD700;"></i>
+              <div>
+                <span class="astat-val" id="adm-ev-total-votos">0</span>
+                <span class="astat-lbl">Votos Reais Computados</span>
+              </div>
+            </div>
+            <div class="admin-stat-card">
+              <i class="fa-solid fa-medal" style="color: #27C93F;"></i>
+              <div>
+                <span class="astat-val" id="adm-ev-vencedor" style="font-size: 1.1rem; line-height: 1.3;">Aguardando</span>
+                <span class="astat-lbl">Status do Resultado</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barra de Ações Administrativas de Fechamento do Evento -->
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
+            <div>
+              <strong style="color: #fff; font-size: 0.95rem; display: block;">Controle de Votação e Premiação Oficial</strong>
+              <span style="font-size: 0.8rem; color: rgba(242,244,243,0.65);">Critério de desempate automático: inscrição oficial aprovada mais antiga. Votos reais não podem ser manipulados manualmente.</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" id="btn-adm-encerrar-votacao" style="padding: 10px 16px; border-radius: 8px; background: rgba(224,133,122,0.2); border: 1px solid rgba(224,133,122,0.4); color: var(--accent); font-weight: 600; cursor: pointer;">
+                <i class="fa-solid fa-lock"></i> Encerrar Votação
+              </button>
+              <button type="button" id="btn-adm-confirmar-resultado" style="padding: 10px 18px; border-radius: 8px; background: var(--success, #27C93F); border: none; color: #fff; font-weight: 700; cursor: pointer;">
+                <i class="fa-solid fa-award"></i> Confirmar Resultado & Conceder Premiações
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabela de Inscrições Oficiais para Moderação -->
+          <div class="admin-table-card" style="margin-bottom: 24px;">
+            <div class="card-table-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <h3>Inscrições Oficiais para Moderação (Modelo B)</h3>
+              <span style="font-size: 0.8rem; color: rgba(242,244,243,0.6);">Apenas inscrições aprovadas aparecem na votação comunitária</span>
+            </div>
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Receita Inscrita</th>
+                    <th>Cozinheiro</th>
+                    <th>Votos Válidos</th>
+                    <th>Denúncias</th>
+                    <th>Inscrito Em</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Moderação</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-entradas-tbody">
+                  <tr><td colspan="7" style="text-align: center; padding: 25px;">Selecione um evento para carregar as inscrições...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Auditoria e Denúncias de Eventos -->
+          <div class="admin-table-card">
+            <div class="card-table-header">
+              <h3>Registro de Auditoria do Evento (Moderações e Confirmações)</h3>
+            </div>
+            <div class="ranking-table-responsive">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>Data/Hora</th>
+                    <th>Ação</th>
+                    <th>Alvo</th>
+                    <th>Detalhes</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-auditoria-eventos-tbody">
+                  <tr><td colspan="4" style="text-align: center; padding: 20px;">Nenhum registro de auditoria.</td></tr>
                 </tbody>
               </table>
             </div>

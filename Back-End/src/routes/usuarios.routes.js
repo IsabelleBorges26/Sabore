@@ -6,9 +6,19 @@ const {
     listar, 
     buscar, 
     atualizar, 
-    excluir 
+    excluir,
+    listarConquistasUsuario,
+    listarMoldurasUsuario,
+    atualizarMolduraUsuario
 } = require("../controllers/usuarios.controllers");
 router.get("/perfil", authMiddleware, perfil);
+router.get("/conquistas", authMiddleware, listarConquistasUsuario);
+router.get("/conquistas/:usuarioId", authMiddleware, listarConquistasUsuario);
+router.get("/molduras", authMiddleware, listarMoldurasUsuario);
+router.put("/moldura", authMiddleware, atualizarMolduraUsuario);
+router.post("/moldura", authMiddleware, atualizarMolduraUsuario);
+router.put("/equipar-moldura", authMiddleware, atualizarMolduraUsuario);
+router.post("/equipar-moldura", authMiddleware, atualizarMolduraUsuario);
 router.get("/listar", listar);
 router.get("/buscar/:id", buscar);
 router.put("/atualizar/:id", authMiddleware, atualizar);

@@ -10,6 +10,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="../../assets/css/sabore-features.css" />
   </head>
   <body>
     <div class="dashboard-container">
@@ -164,12 +165,19 @@
                 >
                   <i class="fa-solid fa-trash"></i> Remover foto
                 </button>
-                <h2 id="profile-name-display"></h2>
+                                <h2 id="profile-name-display"></h2>
                 <section class="profile-achievements" aria-labelledby="profile-achievements-title">
-                  <h3 id="profile-achievements-title"><i class="fa-solid fa-medal"></i> Conquistas da Comunidade</h3>
-                  <div id="profile-achievements-list" class="profile-achievements-list">
-                    <span class="profile-achievements-empty">Suas conquistas em desafios aparecerÃ£o aqui.</span>
+                  <h3 id="profile-achievements-title"><i class="fa-solid fa-medal" style="color: #F0D5B6;"></i> Minhas Conquistas</h3>
+                  <div id="profile-achievements-list" class="profile-achievements-grid">
+                    <span class="profile-achievements-empty" style="font-size:0.82rem;color:rgba(242,244,243,0.5);">Suas conquistas em eventos especiais aparecerão aqui.</span>
                   </div>
+                </section>
+                <!-- Molduras de Perfil -->
+                <section id="profile-frames-section" style="margin-top: 14px; display: none;" aria-labelledby="profile-frames-title">
+                  <h3 id="profile-frames-title" style="font-size: 0.82rem; font-weight: 700; color: rgba(242,244,243,0.75); margin: 0 0 8px; display: flex; align-items: center; gap: 7px;">
+                    <i class="fa-solid fa-circle-user" style="color: #F0D5B6;"></i> Molduras Desbloqueadas
+                  </h3>
+                  <div id="profile-frames-list" class="profile-frames-selector"></div>
                 </section>
                 <span class="plan-badge-large pro" id="profile-plan-badge"
                   >Saboré PRO</span

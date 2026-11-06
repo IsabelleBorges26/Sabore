@@ -232,6 +232,10 @@ const perfil = async (req, res) => {
             console.warn("[Perfil] Não foi possível carregar estatísticas de engajamento:", engajamentoError.message);
         }
 
+        const { obterConquistasUsuario, obterMolduraAtiva, obterMoldurasUsuario, equiparMoldura } = require("../services/conquistas.service");
+        const conquistasUsuario = await obterConquistasUsuario(usuarioId);
+        const molduraAtiva = obterMolduraAtiva(usuarioId);
+
         res.status(200).json({
             id: usuario.id,
             nome: usuario.nome,
@@ -239,6 +243,8 @@ const perfil = async (req, res) => {
             plano: usuario.plano,
             foto: usuario.foto,
             isAdmin: usuario.isAdmin,
+            molduraAtiva: molduraAtiva || usuario.molduraAtiva || null,
+            conquistas: conquistasUsuario || [],
             engajamento: engajamentoInfo,
             stats: {
                 saved: usuario._count.favoritos,
@@ -250,6 +256,38 @@ const perfil = async (req, res) => {
     } catch (error) {
         console.error("[Perfil] Erro ao carregar perfil:", error);
         res.status(500).json({ erro: "Erro ao obter perfil do usuário.", detalhe: error.message });
+    }
+};
+
+const listarConquistasUsuario = async (req, res) => {
+    try {
+        const { obterConquistasUsuario } = require("../services/conquistas.service");
+        const targetId = req.params.usuarioId ? Number(req.params.usuarioId) : req.usuario.id;
+        const conquistas = await obterConquistasUsuario(targetId);
+        res.status(200).json(conquistas);
+    } catch (err) {
+        res.status(500).json({ erro: "Erro ao listar conquistas.", detalhe: err.message });
+    }
+};
+
+const listarMoldurasUsuario = async (req, res) => {
+    try {
+        const { obterMoldurasUsuario } = require("../services/conquistas.service");
+        const resultado = await obterMoldurasUsuario(req.usuario.id);
+        res.status(200).json(resultado);
+    } catch (err) {
+        res.status(500).json({ erro: "Erro ao listar molduras.", detalhe: err.message });
+    }
+};
+
+const atualizarMolduraUsuario = async (req, res) => {
+    try {
+        const { equiparMoldura } = require("../services/conquistas.service");
+        const moldura = req.body.moldura !== undefined ? req.body.moldura : req.body.molduraId;
+        const resultado = await equiparMoldura(req.usuario.id, moldura);
+        res.status(200).json(resultado);
+    } catch (err) {
+        res.status(400).json({ erro: err.message });
     }
 };
 
@@ -357,5 +395,8 @@ module.exports = {
     listar,
     buscar,
     atualizar,
-    excluir
+    excluir,
+    listarConquistasUsuario,
+    listarMoldurasUsuario,
+    atualizarMolduraUsuario
 };

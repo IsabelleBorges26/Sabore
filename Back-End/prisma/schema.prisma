@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL") // a conexão direta configurada está indisponível nesta rede
+  directUrl = env("DIRECT_URL")
 }
 
 enum Plano {
@@ -37,6 +37,7 @@ model Usuario {
   senha                   String
   foto                    String?
   plano                   Plano                   @default(FREE)
+  molduraAtiva            String?
   isAdmin                 Boolean                 @default(false)
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
@@ -233,6 +234,11 @@ model Desafio {
   premioProMeses Int                    @default(0)
   emblema        String?
   molduraPerfil  String?
+  bannerUrl      String?
+  regras         String?                 @db.Text
+  resultadoDivulgadoEm DateTime?
+  resultadoConfirmado Boolean             @default(false)
+  vencedorId     Int?
   criadoPorId    Int?
   createdAt      DateTime                @default(now())
   atualizadoEm   DateTime                @updatedAt
@@ -246,6 +252,9 @@ model DesafioEntrada {
   desafioId   Int
   usuarioId   Int
   receitaId   Int      @unique
+  status      String   @default("APROVADA")
+  motivoRejeicao String?
+  denuncias   Int      @default(0)
   createdAt   DateTime @default(now())
   desafio     Desafio  @relation(fields: [desafioId], references: [id], onDelete: Cascade)
   usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -376,6 +385,8 @@ model DesafioSemana {
   descricao        String
   tema             String
   orientacoes      String
+  hashtag          String?
+  imagem           String?
   pontosRecompensa Int                   @default(30)
   ativo            Boolean               @default(true)
   inicioEm         DateTime
@@ -393,6 +404,7 @@ model ParticipacaoDesafio {
   nomeReceita         String
   descricaoPreparacao String
   foto                String?
+  receitaId           Int?
   pontosConcedidos    Int           @default(0)
   pontosRegistradosEm DateTime?
   createdAt           DateTime      @default(now())
@@ -401,4 +413,16 @@ model ParticipacaoDesafio {
 
   @@unique([usuarioId, desafioId])
   @@index([desafioId, createdAt])
+}
+
+model AuditoriaAdmin {
+  id        Int      @id @default(autoincrement())
+  adminId   Int
+  acao      String
+  alvoTipo  String
+  alvoId    Int?
+  detalhes  Json?
+  createdAt DateTime @default(now())
+
+  @@index([adminId, createdAt])
 }
