@@ -5,6 +5,7 @@ const profileSelect = {
     id: true,
     nome: true,
     foto: true,
+    plano: true,
     _count: {
         select: {
             receitas: { where: { publica: true, rascunho: false } },
@@ -18,6 +19,7 @@ const formatarPerfil = (perfil, seguindoVoce = false) => ({
     id: perfil.id,
     nome: perfil.nome,
     foto: perfil.foto,
+    plano: perfil.plano || "FREE",
     receitasPublicas: perfil._count?.receitas || 0,
     seguidores: perfil._count?.seguidores || 0,
     seguindo: perfil._count?.seguindo || 0,
@@ -156,13 +158,14 @@ const meusSeguidores = async (req, res) => {
     try {
         const seguidores = await prisma.seguidor.findMany({
             where: { seguidoId: req.usuario.id },
-            include: { seguidor: { select: { id: true, nome: true, foto: true } } },
+            include: { seguidor: { select: { id: true, nome: true, foto: true, plano: true } } },
             orderBy: { createdAt: "desc" }
         });
         res.status(200).json(seguidores.map(item => ({
             id: item.seguidor.id,
             nome: item.seguidor.nome,
             foto: item.seguidor.foto,
+            plano: item.seguidor.plano || "FREE",
             desde: item.createdAt
         })));
     } catch (error) {
@@ -208,6 +211,7 @@ const meusSeguindo = async (req, res) => {
                         id: true,
                         nome: true,
                         foto: true,
+                        plano: true,
                         _count: { select: { receitas: { where: { publica: true } } } }
                     }
                 }
@@ -218,6 +222,7 @@ const meusSeguindo = async (req, res) => {
             id: item.seguido.id,
             nome: item.seguido.nome,
             foto: item.seguido.foto,
+            plano: item.seguido.plano || "FREE",
             receitasPublicas: item.seguido._count.receitas,
             desde: item.createdAt
         })));

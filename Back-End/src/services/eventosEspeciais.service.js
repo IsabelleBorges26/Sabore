@@ -8,7 +8,7 @@ const EVENTOS_INICIAIS = [
   {
     id: 1,
     titulo: "Natal Saboré 2026",
-    descricao: "O grande concurso culinário comemorativo de fim de ano do Saboré! Prepare a receita mais marcante da sua ceia natalina, participe da competição oficial e concorra ao Emblema exclusivo Espírito Natalino 2026 e à Moldura de Natal para o seu avatar.",
+    descricao: "Compartilhe sua melhor receita natalina e concorra ao emblema exclusivo do evento.",
     hashtag: "#NatalSabore2026",
     bannerUrl: "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=1200&q=80",
     comecaEm: "2026-12-01T00:00:00.000-03:00",
@@ -20,9 +20,7 @@ const EVENTOS_INICIAIS = [
     resultadoDivulgadoEm: "2026-12-26T00:00:00.000-03:00",
     emblema: "Espírito Natalino 2026",
     emblemaImg: "/assets/Emblemas/espirito-natalino-2026.png",
-    molduraPerfil: "moldura-natal-2026",
-    molduraNome: "Moldura Natal 2026",
-    regras: "1. Cada participante pode ter apenas UMA receita como inscrição oficial na competição.\n2. A receita deve conter a hashtag oficial #NatalSabore2026.\n3. Período de inscrições: 01 a 22/12. Durante esse período, você pode alterar sua inscrição oficial.\n4. Durante a votação (23 a 25/12), substituições e edições da receita inscrita são bloqueadas.\n5. Qualquer usuário autenticado (FREE ou PRO) tem direito a 1 voto no evento.\n6. Não é permitido votar na própria receita inscrita.\n7. Curtidas normais do feed não contam como votos da competição.\n8. Critério de desempate: inscrição oficial aprovada mais antiga.\n9. O vencedor recebe o emblema permanente Espírito Natalino 2026 e a Moldura Natal 2026.",
+    regras: "Inscreva uma receita oficial. Você pode trocá-la enquanto as inscrições estiverem abertas; na votação, ela fica bloqueada. Cada pessoa vota uma vez e não pode votar na própria receita. A mais votada vence. Em caso de empate, vale a inscrição aprovada primeiro.",
     status: "INSCRICOES",
     resultadoConfirmado: false,
     vencedor: null
@@ -30,7 +28,7 @@ const EVENTOS_INICIAIS = [
   {
     id: 2,
     titulo: "Réveillon Saboré 2027",
-    descricao: "Celebre o Ano Novo com o mais alto sabor! Inscreva sua receita mais especial e festiva com a hashtag #ReveillonSabore2027, receba os votos da comunidade e dispute o Emblema Sabor da Virada 2027 e a Moldura exclusiva de Réveillon.",
+    descricao: "Celebre a virada com sua receita especial e concorra ao emblema da comunidade.",
     hashtag: "#ReveillonSabore2027",
     bannerUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80",
     comecaEm: "2026-12-26T00:00:00.000-03:00",
@@ -42,9 +40,7 @@ const EVENTOS_INICIAIS = [
     resultadoDivulgadoEm: "2027-01-02T00:00:00.000-03:00",
     emblema: "Sabor da Virada 2027",
     emblemaImg: "/assets/Emblemas/sabor-da-virada-2027.png",
-    molduraPerfil: "moldura-reveillon-2027",
-    molduraNome: "Moldura Réveillon 2027",
-    regras: "1. Cada participante pode ter apenas UMA inscrição oficial.\n2. Inscrições abertas de 26 a 29/12.\n3. Votação popular comunitária de 30/12/2026 a 01/01/2027.\n4. Um voto por usuário; proibido votar na própria receita inscrita.\n5. O voto confirmado não pode ser alterado.\n6. Critério de desempate: inscrição oficial aprovada mais antiga.\n7. O vencedor recebe o emblema Sabor da Virada 2027 e a Moldura Réveillon 2027.",
+    regras: "Inscreva uma receita oficial. Você pode trocá-la enquanto as inscrições estiverem abertas; na votação, ela fica bloqueada. Cada pessoa vota uma vez e não pode votar na própria receita. A mais votada vence. Em caso de empate, vale a inscrição aprovada primeiro.",
     status: "RASCUNHO",
     resultadoConfirmado: false,
     vencedor: null
@@ -126,7 +122,6 @@ function listarEventos(usuarioId = null) {
       votacaoInicioEm: ev.votacaoIniciaEm,
       votacaoFimEm: ev.votacaoEncerraEm,
       emblemaId: ev.emblema,
-      molduraId: ev.molduraPerfil,
       fase,
       participantesCount: entradasAprovadas.length,
       totalVotos,
@@ -161,7 +156,7 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
       receita = await prisma.receita.findUnique({
         where: { id: Number(ent.receitaId) },
         include: {
-          usuario: { select: { id: true, nome: true, foto: true, plano: true, molduraAtiva: true } },
+          usuario: { select: { id: true, nome: true, foto: true, plano: true } },
           ingredientes: { include: { ingrediente: true } }
         }
       });
@@ -197,7 +192,6 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
         nome: autor.nome,
         foto: autor.foto,
         plano: autor.plano,
-        molduraAtiva: autor.molduraAtiva
       },
       votos: votosDaEntrada,
       inscritoEm: ent.createdAt
@@ -219,7 +213,6 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
     votacaoInicioEm: evento.votacaoIniciaEm,
     votacaoFimEm: evento.votacaoEncerraEm,
     emblemaId: evento.emblema,
-    molduraId: evento.molduraPerfil,
     fase,
     galeria,
     participantesCount: galeria.length,
@@ -343,7 +336,7 @@ async function inscreverReceitaOficial(eventoId, usuarioId, receitaId, dadosRece
     sucesso: true,
     mensagem: entradaExistenteIdx >= 0
       ? "Sua inscrição oficial foi substituída com sucesso!"
-      : "Inscrição oficial confirmada! Sua receita já está na competição.",
+      : "Inscrição confirmada! Sua receita já está no evento.",
     entrada: entradaFinal
   };
 }
@@ -470,7 +463,7 @@ function apurarVencedorEvento(eventoId) {
 /**
  * Confirmação administrativa de resultado e concessão de premiação exclusiva
  * Regras:
- * - Apenas o vencedor recebe o emblema permanente e a moldura exclusiva.
+ * - Apenas o vencedor recebe o emblema permanente e o destaque do evento.
  * - Impede concessão duplicada.
  * - Auditoria completa registrada.
  */
@@ -497,7 +490,7 @@ async function confirmarResultadoEvento(eventoId, adminId) {
     confirmadoEm: new Date().toISOString()
   };
 
-  // Concede o emblema e moldura exclusiva ao vencedor (idempotente)
+  // Concede somente o emblema ao vencedor (idempotente)
   const tituloConquista = evento.emblema;
   const usuarioVencedorId = Number(vencedorEntrada.usuarioId);
 
@@ -507,9 +500,7 @@ async function confirmarResultadoEvento(eventoId, adminId) {
     await concederConquistaVencedor(usuarioVencedorId, {
       desafioId: evId,
       titulo: tituloConquista,
-      emblema: evento.emblemaImg,
-      molduraPerfil: evento.molduraPerfil,
-      molduraNome: evento.molduraNome
+      emblema: evento.emblemaImg
     });
   } catch (errConq) {
     console.warn("[Conquistas] Aviso ao conceder conquista:", errConq.message);
@@ -526,7 +517,6 @@ async function confirmarResultadoEvento(eventoId, adminId) {
           usuarioId: usuarioVencedorId,
           titulo: tituloConquista,
           emblema: evento.emblemaImg,
-          molduraPerfil: evento.molduraPerfil,
           concedidaEm: new Date()
         }
       });
@@ -546,7 +536,7 @@ async function confirmarResultadoEvento(eventoId, adminId) {
       receitaTitulo: vencedorEntrada.titulo,
       votos: vencedorEntrada.votos,
       emblemaConcedido: evento.emblema,
-      molduraConcedida: evento.molduraPerfil
+      destaqueConcedido: true
     },
     createdAt: new Date().toISOString()
   };
@@ -556,7 +546,7 @@ async function confirmarResultadoEvento(eventoId, adminId) {
 
   return {
     sucesso: true,
-    mensagem: `Resultado confirmado com sucesso! O vencedor "${vencedorEntrada.autor?.nome}" recebeu o emblema "${evento.emblema}" e a "${evento.molduraNome}".`,
+    mensagem: `Resultado confirmado! ${vencedorEntrada.autor?.nome || "O vencedor"} recebeu o emblema "${evento.emblema}" e o destaque do evento.`,
     vencedor: evento.vencedor
   };
 }
@@ -636,8 +626,6 @@ function salvarEventoAdmin(dados, adminId) {
     resultadoDivulgadoEm: dados.resultadoDivulgadoEm,
     emblema: dados.emblema || "Campeão da Comunidade",
     emblemaImg: dados.emblemaImg || "/assets/conquistas/padrao.png",
-    molduraPerfil: dados.molduraPerfil || "moldura-padrao",
-    molduraNome: dados.molduraNome || "Moldura Especial",
     regras: dados.regras || "Regras oficiais do evento Saboré.",
     status: "INSCRICOES",
     resultadoConfirmado: false,

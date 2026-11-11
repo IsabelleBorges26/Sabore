@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (emailInput) emailInput.value = savedEmail;
   const navUserName = document.querySelector('.user-name');
   if (navUserName && savedName) {
-    navUserName.textContent = savedName.split(' ')[0];
+    api.renderUserName(navUserName, { ...user, nome: savedName });
   }
   const savedDifficulty = localStorage.getItem('sabore_ai_difficulty') || 'medium';
   const savedServings = localStorage.getItem('sabore_ai_servings') || '2';
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const updatedUser = await api.put(`/usuarios/atualizar/${user.id}`, { nome: newName, email: newEmail });
         api.setUser(updatedUser);
-        if (navUserName) navUserName.textContent = updatedUser.nome.split(' ')[0];
+        if (navUserName) api.renderUserName(navUserName, updatedUser);
         if (difficultySelect) localStorage.setItem('sabore_ai_difficulty', difficultySelect.value);
         if (servingsSelect) localStorage.setItem('sabore_ai_servings', servingsSelect.value);
         dietCheckboxes.forEach(diet => {

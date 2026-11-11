@@ -45,6 +45,40 @@ const api = {
         }
     },
     setUser: (user) => localStorage.setItem("sabore_user", JSON.stringify(user)),
+    renderProBadge: (plan) => {
+        if (String(plan || "").toUpperCase() !== "PRO") return "";
+        return '<span class="sabore-pro-badge" title="Usuário Saboré PRO" aria-label="Usuário PRO"><i class="fa-solid fa-crown" aria-hidden="true"></i></span>';
+    },
+    renderUserIdentity: (name, plan) => {
+        const isPro = String(plan || "").toUpperCase() === "PRO";
+        const styleId = "sabore-pro-identity-style";
+        if (!document.getElementById(styleId)) {
+            const style = document.createElement("style");
+            style.id = styleId;
+            style.textContent = `
+                .sabore-user-identity { display:inline-flex; align-items:center; gap:5px; min-width:0; vertical-align:middle; }
+                .sabore-user-display-name { color:inherit; }
+                .sabore-user-identity.is-pro .sabore-user-display-name { color:transparent; background:linear-gradient(105deg,#fffdf8 0%,#f5dfa7 18%,#c8912f 36%,#fff8e5 51%,#d5a13d 68%,#fffefa 82%,#bd8424 100%); background-size:220% 100%; background-clip:text; -webkit-background-clip:text; font-weight:750; filter:drop-shadow(0 0 5px rgba(225,180,80,.24)); animation:sabore-pro-metal-shine 6s ease-in-out infinite; }
+                .sabore-pro-badge { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; margin-left:1px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; color:#f4d27d; font-size:.78em; line-height:1; filter:drop-shadow(0 0 5px rgba(240,197,93,.42)); }
+                .sabore-user-identity.is-pro .sabore-pro-badge { animation:sabore-pro-crown-glow 3.8s ease-in-out infinite; }
+                .user-meta > .user-plan-tag { display:none !important; }
+                @keyframes sabore-pro-metal-shine { 0%,100% { background-position:100% 0; } 50% { background-position:0 0; } }
+                @keyframes sabore-pro-crown-glow { 0%,100% { filter:drop-shadow(0 0 3px rgba(240,197,93,.28)); } 50% { filter:drop-shadow(0 0 8px rgba(255,223,139,.62)); } }
+                @media (prefers-reduced-motion: reduce) { .sabore-user-identity.is-pro .sabore-user-display-name,.sabore-user-identity.is-pro .sabore-pro-badge { animation:none; } }
+            `;
+            document.head.appendChild(style);
+        }
+        const safeName = String(name || "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
+        return `<span class="sabore-user-identity${isPro ? " is-pro" : ""}"><span class="sabore-user-display-name">${safeName}</span>${api.renderProBadge(plan)}</span>`;
+    },
+    renderUserName: (element, user, plan) => {
+        if (!element || !user?.nome) return;
+        element.style.display = "inline-flex";
+        element.style.alignItems = "center";
+        element.style.gap = "4px";
+        element.style.whiteSpace = "nowrap";
+        element.innerHTML = api.renderUserIdentity(user.nome, plan ?? user.plano);
+    },
     clearUser: () => localStorage.removeItem("sabore_user"),
     clearSession: () => {
         localStorage.removeItem("sabore_token");
@@ -342,7 +376,7 @@ api.openUserProfile = async (userId) => {
         const identity = document.createElement("div");
         const name = document.createElement("h2");
         name.className = "sabore-profile-name";
-        name.textContent = profile.nome;
+        name.innerHTML = api.renderUserIdentity(profile.nome, profile.plano);
         const member = document.createElement("p");
         member.className = "sabore-profile-member";
         member.textContent = "Membro da comunidade Saboré";
@@ -377,6 +411,54 @@ api.openUserProfile = async (userId) => {
             head.appendChild(follow);
         }
         body.appendChild(head);
+
+        const achievementsSection = document.createElement("section");
+        achievementsSection.className = "sabore-profile-achievements";
+        const achievementsTitle = document.createElement("h3");
+        achievementsTitle.textContent = "Conquistas";
+        const achievementsList = document.createElement("div");
+        achievementsList.className = "sabore-profile-achievement-list";
+        achievementsSection.append(achievementsTitle, achievementsList);
+        try {
+            const achievements = await api.get(`/usuarios/conquistas/${id}`);
+            if (overlay.dataset.userId !== String(id)) return;
+            const achievementsToShow = Array.isArray(achievements) ? [...achievements] : [];
+            const normalizedName = String(profile.nome || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+            // Prévia temporária para conferir a coleção de Paulo também no perfil público.
+            if (normalizedName === "paulo moratorio") {
+                [
+                    { titulo: "Espírito Natalino 2026", emblema: "/assets/Emblemas/espirito-natalino-2026.png" },
+                    { titulo: "Sabor da Virada 2027", emblema: "/assets/Emblemas/sabor-da-virada-2027.png" }
+                ].forEach((preview) => {
+                    if (!achievementsToShow.some((item) => (item.titulo || item.nome) === preview.titulo)) achievementsToShow.push(preview);
+                });
+            }
+            if (achievementsToShow.length) {
+                achievementsToShow.forEach((achievement) => {
+                    const card = document.createElement("div");
+                    card.className = "sabore-profile-achievement";
+                    const image = document.createElement("img");
+                    image.src = achievement.emblema || "/assets/conquistas/padrao.png";
+                    image.alt = "";
+                    image.addEventListener("error", () => image.remove(), { once: true });
+                    const label = document.createElement("strong");
+                    label.textContent = achievement.nome || achievement.titulo || "Conquista";
+                    card.append(image, label);
+                    achievementsList.appendChild(card);
+                });
+            } else {
+                const empty = document.createElement("span");
+                empty.className = "sabore-profile-achievement-empty";
+                empty.textContent = "As conquistas aparecerão aqui.";
+                achievementsList.appendChild(empty);
+            }
+        } catch (_) {
+            const empty = document.createElement("span");
+            empty.className = "sabore-profile-achievement-empty";
+            empty.textContent = "Conquistas indisponíveis no momento.";
+            achievementsList.appendChild(empty);
+        }
+        body.appendChild(achievementsSection);
 
         const stats = document.createElement("div");
         stats.className = "sabore-profile-stats";
@@ -551,6 +633,7 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
     };
     let notifications = [];
     let loadingPromise = null;
+    let notificationStateLoaded = false;
     const selectedIds = new Set();
 
     const readStorageKey = () => {
@@ -761,14 +844,22 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
         localStorage.setItem(key, JSON.stringify(Array.from(ids).slice(-200)));
         renderNotifications();
     };
-    const loadNotifications = async () => {
+    const loadNotifications = async (announceNew = false) => {
         if (loadingPromise) return loadingPromise;
         loadingPromise = api.get("/social/notificacoes")
             .then((items) => {
-                notifications = Array.isArray(items) ? items : [];
+                const nextNotifications = Array.isArray(items) ? items : [];
+                const knownIds = new Set(notifications.map((item) => item.id));
+                const newActivity = notificationStateLoaded && announceNew
+                    ? nextNotifications.find((item) => item.tipo !== "recomendacao" && !knownIds.has(item.id))
+                    : null;
+                notifications = nextNotifications;
+                notificationStateLoaded = true;
                 renderNotifications();
                 if (document.getElementById("notifications-modal")?.classList.contains("open")) {
                     markVisibleAsRead();
+                } else if (newActivity && !document.hidden) {
+                    window.SaboreNotify?.(`${newActivity.titulo || "Nova atividade"}: ${newActivity.texto || "Você recebeu uma notificação."}`, "success");
                 }
             })
             .catch(() => {
@@ -788,6 +879,12 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
             await loadNotifications();
             markVisibleAsRead();
         });
+        window.setInterval(() => {
+            if (!document.hidden) loadNotifications(true);
+        }, 60000);
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) loadNotifications(true);
+        });
         window.addEventListener("storage", (event) => {
             if (event.key === deletedStorageKey()) selectedIds.clear();
             if (event.key === readStorageKey() || event.key === deletedStorageKey() || event.key === "sabore_notif_daily") renderNotifications();
@@ -796,6 +893,19 @@ api.normalizeRenderedRecipeSteps = (root = document) => {
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
+    const storedUser = api.getUser();
+    const renderNavbarIdentity = (user) => {
+        if (!user) return;
+        document.querySelectorAll(".user-name").forEach((element) => api.renderUserName(element, user));
+    };
+    if (window.location.pathname.includes("/Dashboard/") && storedUser) {
+        renderNavbarIdentity(storedUser);
+        api.get("/usuarios/perfil").then((profile) => {
+            const freshUser = { ...api.getUser(), ...profile };
+            api.setUser(freshUser);
+            renderNavbarIdentity(freshUser);
+        }).catch(() => {});
+    }
     api.normalizeRenderedRecipeSteps();
     const recipesObserver = new MutationObserver(() => api.normalizeRenderedRecipeSteps());
     recipesObserver.observe(document.body, { childList: true, subtree: true });
@@ -856,7 +966,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const navNameGlobal = document.querySelector(".user-name");
     if (navNameGlobal && user.nome) {
-        navNameGlobal.textContent = user.nome.split(" ")[0];
+        api.renderUserName(navNameGlobal, user);
     }
     const trigger = document.getElementById("profile-dropdown-trigger");
     if (!trigger) return;
@@ -950,7 +1060,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const navName = document.querySelector(".user-name");
     if (navName && user.nome) {
-        navName.textContent = user.nome.split(" ")[0];
+        api.renderUserName(navName, user);
     }
     let dropdownMenu = document.getElementById("profile-dropdown-menu");
     if (!dropdownMenu) {

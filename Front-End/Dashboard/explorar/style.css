@@ -832,6 +832,19 @@ a {
 .recipe-author-line[role="button"]:hover, .recipe-author-line[role="button"]:focus-visible { color: var(--accent); background: rgba(242,244,243,.035); }
 @media (max-width: 580px) { .publish-from-book { grid-template-columns: 1fr; } .publish-from-book button { width: 100%; } }
 @media (max-width: 580px) { .composer-row { grid-template-columns: 1fr; } }
+
+/* O bloco de receita salva mantém cada controle dentro do modal em qualquer largura. */
+#create-post-modal .community-composer-card { width: min(680px, calc(100vw - 32px)); box-sizing: border-box; overflow-x: hidden; }
+#create-post-modal .community-composer-form,
+#create-post-modal .publish-from-book,
+#create-post-modal .publish-from-book > div,
+#create-post-modal .publish-from-book > select,
+#create-post-modal .publish-from-book > button { min-width: 0; width: 100%; box-sizing: border-box; }
+#create-post-modal .publish-from-book { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; align-items: stretch; }
+#create-post-modal .publish-from-book > div { grid-column: auto; }
+#create-post-modal .publish-from-book > select { max-width: 100%; color: var(--light); background-color: var(--dark-deep); }
+#create-post-modal .publish-from-book > select option { color: var(--light); background-color: #213530; }
+#create-post-modal .publish-from-book > button { justify-content: center; white-space: normal; }
 .chef-card-item:hover {
   transform: translateY(-4px);
   border-color: var(--secondary-light);
@@ -1859,6 +1872,5 @@ a {
   color: rgba(242, 244, 243, 0.5);
   font-size: 0.85rem;
 }
-.author-avatar.achievement-profile-frame { outline: 2px solid #f0c66e; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(240, 198, 110, .18), 0 0 14px rgba(240, 198, 110, .35); }
 .challenge-vote-btn { border: 1px solid rgba(232, 131, 119, .5); border-radius: 999px; padding: 5px 10px; color: var(--light); background: rgba(232, 131, 119, .16); cursor: pointer; }
 .challenge-vote-btn:disabled { opacity: .6; cursor: default; }

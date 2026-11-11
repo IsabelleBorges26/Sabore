@@ -675,14 +675,11 @@ document.addEventListener('DOMContentLoaded', () => {
       updatePlanUI();
       const profileName = document.querySelector('.perfil-user-card h2') || document.getElementById('profile-name-display');
       if (profileName && user.nome) {
-        const proTag = profileData.plano === 'PRO'
-          ? `<span class="sabore-pro-badge" title="Membro Saboré PRO" style="margin-left:6px;"><img src="../../assets/Emblemas/selo-pro.png" class="pro-icon-img" alt="PRO" onerror="this.style.display='none';"><span class="pro-text">PRO</span></span>`
-          : '';
-        profileName.innerHTML = user.nome + proTag;
+        profileName.innerHTML = api.renderUserIdentity(user.nome, profileData.plano);
       }
       const navUserName = document.querySelector('.user-name');
       if (navUserName && user.nome) {
-        navUserName.textContent = user.nome.split(' ')[0];
+        api.renderUserName(navUserName, user, profileData.plano);
       }
       const savedBio = localStorage.getItem('sabore_user_bio') || profileData.bio || 'Amante da gastronomia, sempre testando novas receitas saudáveis e pratos rápidos com auxílio do Chef IA Saboré.';
       userState.bio = savedBio;
@@ -699,9 +696,20 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const achievements = await api.get('/usuarios/conquistas');
         const achievementsList = document.getElementById('profile-achievements-list');
+        const achievementsToShow = Array.isArray(achievements) ? [...achievements] : [];
+        const normalizedProfileName = String(profileData.nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+        // Prévia temporária dos emblemas solicitados para validar o perfil de Paulo Moratorio.
+        if (normalizedProfileName === 'paulo moratorio') {
+          [
+            { titulo: 'Espírito Natalino 2026', emblema: '/assets/Emblemas/espirito-natalino-2026.png' },
+            { titulo: 'Sabor da Virada 2027', emblema: '/assets/Emblemas/sabor-da-virada-2027.png' }
+          ].forEach(preview => {
+            if (!achievementsToShow.some(item => (item.titulo || item.nome) === preview.titulo)) achievementsToShow.push(preview);
+          });
+        }
         if (achievementsList) {
-          if (Array.isArray(achievements) && achievements.length) {
-            achievementsList.innerHTML = achievements.map(item => {
+          if (achievementsToShow.length) {
+            achievementsList.innerHTML = achievementsToShow.map(item => {
               const nome = item.nome || item.titulo || 'Conquista';
               let imgSrc = item.emblema || '';
               if (imgSrc.startsWith('/assets/')) {
@@ -725,62 +733,6 @@ document.addEventListener('DOMContentLoaded', () => {
             achievementsList.innerHTML = '<span class="profile-achievements-empty" style="font-size:0.82rem;color:rgba(242,244,243,0.5);grid-column:1/-1;">Suas conquistas em eventos especiais aparecerão aqui.</span>';
           }
         }
-        // Load frames
-        try {
-          const moldurasResp = await api.get('/usuarios/molduras');
-          const framesSection = document.getElementById('profile-frames-section');
-          const framesList = document.getElementById('profile-frames-list');
-          const listaMolduras = Array.isArray(moldurasResp) ? moldurasResp : (moldurasResp?.molduras || []);
-          const molduraAtiva = moldurasResp?.molduraAtiva || profileData.molduraAtiva || null;
-
-          // Atualiza moldura ativa no avatar do perfil
-          const avatarContainer = document.querySelector('.avatar-container');
-          if (avatarContainer) {
-            avatarContainer.classList.remove('has-frame', 'moldura-natal-2026', 'moldura-reveillon-2027');
-            if (molduraAtiva) {
-              avatarContainer.classList.add('has-frame', molduraAtiva);
-            }
-          }
-          const navAvatarWrap = document.querySelector('.user-avatar-wrap');
-          if (navAvatarWrap) {
-            navAvatarWrap.classList.remove('has-frame', 'moldura-natal-2026', 'moldura-reveillon-2027');
-            if (molduraAtiva) {
-              navAvatarWrap.classList.add('has-frame', molduraAtiva);
-            }
-          }
-
-          if (framesSection && framesList && listaMolduras.length > 0) {
-            framesSection.style.display = '';
-            framesList.innerHTML = listaMolduras.map(m => {
-              const frameId = m.id || m.molduraId;
-              const isEquipped = frameId === molduraAtiva;
-              const frameNome = m.nome || frameId;
-              return `<div class="frame-option-card ${isEquipped ? 'equipped' : ''}" data-frame-id="${frameId}">
-                <div style="display:flex;align-items:center;gap:10px;">
-                  <div class="avatar-frame-wrap ${isEquipped ? 'has-frame ' + frameId : ''}" style="width:40px;height:40px;border-radius:50%;background:rgba(240,213,182,0.15);display:flex;align-items:center;justify-content:center;font-weight:700;color:#F0D5B6;">${user?.nome?.charAt(0)?.toUpperCase() || 'U'}</div>
-                  <div><strong style="font-size:0.85rem;color:#fff;">${frameNome}</strong>
-                  ${isEquipped ? '<span style="font-size:0.7rem;color:#27C93F;display:block;font-weight:600;"><i class="fa-solid fa-circle-check"></i> Equipada</span>' : ''}</div>
-                </div>
-                <button type="button" class="btn-frame-toggle ${isEquipped ? 'active' : ''}" data-frame-id="${frameId}">${isEquipped ? 'Remover' : 'Equipar'}</button>
-              </div>`;
-            }).join('');
-            framesList.querySelectorAll('.btn-frame-toggle').forEach(btn => {
-              btn.addEventListener('click', async () => {
-                const frameId = btn.dataset.frameId;
-                const currentlyEquipped = btn.classList.contains('active');
-                btn.disabled = true;
-                try {
-                  await api.put('/usuarios/moldura', { moldura: currentlyEquipped ? null : frameId });
-                  loadProfileData();
-                } catch (err) {
-                  if (window.SaboreNotify) window.SaboreNotify('Não foi possível atualizar a moldura.', 'error');
-                  else alert(err.message || 'Não foi possível atualizar a moldura.');
-                  btn.disabled = false;
-                }
-              });
-            });
-          }
-        } catch (frameErr) { console.warn('Não foi possível carregar molduras:', frameErr); }
       } catch (achievementError) {
         console.warn('Não foi possível carregar as conquistas do perfil:', achievementError);
       }
@@ -828,7 +780,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="social-user-details">
                 ${item.foto ? `<img src="${item.foto}" alt="${item.nome}" class="social-user-avatar">` : `<div class="social-user-placeholder">${(item.nome || 'U').charAt(0).toUpperCase()}</div>`}
                 <div class="social-user-names">
-                  <h4>${item.nome}</h4>
+                  <h4>${api.renderUserIdentity(item.nome, item.plano)}</h4>
                   <span>Seguindo você desde ${new Date(item.desde || Date.now()).toLocaleDateString('pt-BR')}</span>
                 </div>
               </div>
@@ -893,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="social-user-details">
                 ${item.foto ? `<img src="${item.foto}" alt="${item.nome}" class="social-user-avatar">` : `<div class="social-user-placeholder">${(item.nome || 'U').charAt(0).toUpperCase()}</div>`}
                 <div class="social-user-names">
-                  <h4>${item.nome}</h4>
+                  <h4>${api.renderUserIdentity(item.nome, item.plano)}</h4>
                   <span>${item.receitasPublicas !== undefined ? `${item.receitasPublicas} receitas publicadas` : 'Membro da comunidade'}</span>
                 </div>
               </div>

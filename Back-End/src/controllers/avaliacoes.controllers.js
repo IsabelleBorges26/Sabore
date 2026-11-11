@@ -36,7 +36,8 @@ const cadastrar = async (req, res) => {
                     select: {
                         id: true,
                         nome: true,
-                        foto: true
+                        foto: true,
+                        plano: true
                     }
                 }
             }
@@ -72,7 +73,8 @@ const listar = async (req, res) => {
                     select: {
                         id: true,
                         nome: true,
-                        foto: true
+                        foto: true,
+                        plano: true
                     }
                 }
             },

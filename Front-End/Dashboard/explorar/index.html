@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SABORÉ — Comunidade</title>
-  <link rel="icon" type="image/png" href="../../assets/LOGO SABORÉ.png">
+  <link rel="icon" type="image/png" href="../../assets/branding/LOGO SABORÉ.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="../../assets/css/sabore-features.css">
@@ -14,7 +14,7 @@
     <aside class="sidebar">
       <div class="sidebar-header">
         <a href="../../inicial/index.html" class="logo-area">
-          <img src="../../assets/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
+          <img src="../../assets/branding/LOGO_SABORÉ-SEM FUNDO.png" alt="Saboré Logo" class="sidebar-logo">
         </a>
         <p class="sidebar-slogan">Saboreie novas possibilidades</p>
       </div>
@@ -70,8 +70,8 @@
       <div class="dashboard-body">
         <!-- Abas de Navegação Principal da Comunidade -->
         <div class="community-tabs-nav" role="tablist">
-          <button class="comm-tab-btn active" id="btn-tab-feed" type="button"><i class="fa-solid fa-compass"></i> Feed & Desafio da Semana</button>
-          <button class="comm-tab-btn" id="btn-tab-eventos" type="button"><i class="fa-solid fa-trophy"></i> Eventos Especiais <span class="badge-competicao">Competições</span></button>
+          <button class="comm-tab-btn active" id="btn-tab-feed" type="button"><i class="fa-solid fa-compass"></i> Explorar Receitas</button>
+          <button class="comm-tab-btn" id="btn-tab-eventos" type="button"><i class="fa-solid fa-calendar-days"></i> Eventos Especiais</button>
         </div>
 
         <div class="dashboard-grid">
@@ -99,7 +99,7 @@
               <section class="card-section">
                 <div class="section-title-wrap" style="margin-bottom: 8px;">
                   <div class="title-details">
-                    <h3><i class="fa-solid fa-users"></i> Feed da Comunidade</h3>
+                    <h3><i class="fa-solid fa-users"></i> Publicações da comunidade</h3>
                     <p class="section-desc-sub" style="margin-top: 2px;">O que a comunidade está cozinhando e curtindo ultimamente.</p>
                   </div>
                   <div class="explore-feed-controls">
@@ -124,8 +124,16 @@
               </section>
             </div>
 
-            <!-- VISTA 2: EVENTOS ESPECIAIS (COMPETIÇÕES COMEMORATIVAS) -->
+            <!-- VISTA 2: EVENTOS ESPECIAIS -->
             <div id="view-comunidade-eventos" class="special-events-view" style="display: none;">
+              <div class="event-page-atmosphere" aria-hidden="true">
+                <span class="event-snowfall-layer snow-far"></span>
+                <span class="event-snowfall-layer snow-near"></span>
+                <span class="event-firework firework-one"></span>
+                <span class="event-firework firework-two"></span>
+                <span class="event-firework firework-three"></span>
+                <span class="event-firework firework-four"></span>
+              </div>
               <!-- Seletor de Eventos Especiais -->
               <div class="event-selector-bar" id="event-selector-bar">
                 <button type="button" class="event-tab-pill active" data-event-id="1"><i class="fa-solid fa-gift"></i> Natal Saboré 2026</button>
@@ -134,11 +142,14 @@
 
               <!-- Banner Temático do Evento -->
               <div class="event-banner-card" id="event-banner-card">
+                <div class="event-snow-layer" aria-hidden="true"></div>
+                <div class="event-lights-layer" aria-hidden="true"></div>
+                <div class="event-hanging-ornaments" aria-hidden="true"><span></span><span></span><span></span></div>
                 <div class="event-banner-overlay"></div>
                 <div class="event-banner-content">
                   <div class="event-status-pill" id="event-status-pill">Carregando...</div>
                   <h2 id="event-banner-title">Natal Saboré 2026</h2>
-                  <p id="event-banner-desc">O grande concurso gastronômico comemorativo do Saboré!</p>
+                  <p id="event-banner-desc">Compartilhe sua receita especial e celebre com a comunidade.</p>
                   <div class="event-meta-tags">
                     <span class="event-meta-item"><i class="fa-solid fa-hashtag"></i> <strong id="event-hashtag-badge">#NatalSabore2026</strong></span>
                     <span class="event-meta-item"><i class="fa-regular fa-calendar"></i> <span id="event-period-text">01 a 25/12/2026</span></span>
@@ -177,35 +188,16 @@
 
               <!-- Informações de Regras e Premiação Exclusiva -->
               <div class="event-details-grid">
-                <div class="event-detail-box">
-                  <div class="detail-box-header">
-                    <i class="fa-solid fa-scroll"></i>
-                    <h3>Regras Resumidas</h3>
-                  </div>
-                  <div class="detail-box-body" id="event-rules-content">
-                    <p>• 1 única inscrição oficial por participante (Modelo B).<br>• Inscrições substituíveis enquanto o prazo estiver aberto.<br>• Durante a votação, edições são bloqueadas.<br>• 1 voto por usuário. Proibido votar na própria receita.<br>• Desempate: inscrição oficial aprovada mais antiga.</p>
-                  </div>
-                </div>
+                <section class="event-detail-box event-howto-summary">
+                  <div class="detail-box-header"><i class="fa-solid fa-list-ol" aria-hidden="true"></i><h3>Como participar</h3></div>
+                  <p>Veja as etapas, regras de inscrição e votação em um resumo rápido.</p>
+                  <button type="button" class="event-guide-open" id="btn-open-event-guide"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Ver como funciona</button>
+                </section>
                 <div class="event-detail-box event-prize-box">
-                  <div class="detail-box-header">
-                    <i class="fa-solid fa-gem" style="color: #FFD700;"></i>
-                    <h3>Premiação Exclusiva do Vencedor</h3>
-                  </div>
+                  <div class="detail-box-header"><i class="fa-solid fa-gem" style="color:#FFD700"></i><h3>Prêmio do evento</h3></div>
                   <div class="detail-box-body">
-                    <div class="prize-item">
-                      <div class="prize-badge-icon"><i class="fa-solid fa-medal"></i></div>
-                      <div>
-                        <strong id="event-prize-badge-name">Espírito Natalino 2026</strong>
-                        <p>Emblema de conquista permanente na coleção do perfil.</p>
-                      </div>
-                    </div>
-                    <div class="prize-item">
-                      <div class="prize-badge-icon" style="color: #F0D5B6;"><i class="fa-solid fa-circle-user"></i></div>
-                      <div>
-                        <strong id="event-prize-frame-name">Moldura Natal 2026</strong>
-                        <p>Moldura temática exclusiva ao redor do avatar.</p>
-                      </div>
-                    </div>
+                    <div class="prize-item"><div class="prize-badge-icon"><i class="fa-solid fa-medal"></i></div><div><strong id="event-prize-badge-name">Espírito Natalino 2026</strong><p>Emblema exclusivo no perfil.</p></div></div>
+                    <div class="prize-item"><div class="prize-badge-icon" style="color:#F0D5B6"><i class="fa-solid fa-award"></i></div><div><strong>Destaque como vencedor</strong><p>Seu perfil ganha visibilidade na comunidade.</p></div></div>
                   </div>
                 </div>
               </div>
@@ -213,8 +205,8 @@
               <!-- Banner de Ação de Inscrição Oficial -->
               <div class="event-user-action-card" id="event-user-action-card">
                 <div class="action-card-left" id="event-user-action-info">
-                  <h3>Participe desta Competição Oficial</h3>
-                  <p>Inscreva sua melhor receita na galeria oficial para disputar os votos da comunidade e o emblema exclusivo.</p>
+                  <h3>Inscreva sua receita</h3>
+                  <p>Concorra ao emblema exclusivo e ao destaque de vencedor.</p>
                 </div>
                 <div class="action-card-right">
                   <button type="button" class="btn-event-participate" id="btn-open-event-entry-modal">
@@ -227,12 +219,12 @@
               <div class="event-winner-card" id="event-winner-card" style="display: none;">
                 <div class="winner-trophy"><i class="fa-solid fa-trophy"></i></div>
                 <div class="winner-info">
-                  <span class="winner-label">Vencedor Oficial da Competição</span>
+                  <span class="winner-label">Receita vencedora</span>
                   <h3 id="event-winner-recipe-title">Receita Campeã</h3>
                   <p id="event-winner-author-line">Criada por <strong id="event-winner-author">Nome do Autor</strong> com <span id="event-winner-votes">0</span> votos válidos</p>
                   <div class="winner-rewards-awarded">
                     <span class="awarded-pill"><i class="fa-solid fa-medal"></i> Emblema Desbloqueado</span>
-                    <span class="awarded-pill"><i class="fa-solid fa-circle-user"></i> Moldura Exclusiva Conquistada</span>
+                    <span class="awarded-pill"><i class="fa-solid fa-award"></i> Destaque de vencedor</span>
                   </div>
                 </div>
               </div>
@@ -242,7 +234,7 @@
                 <div class="section-title-wrap">
                   <div class="title-details">
                     <h3><i class="fa-solid fa-check-to-slot"></i> Galeria de Receitas Inscritas</h3>
-                    <p class="section-desc-sub" id="event-gallery-subtitle">Apenas inscrições oficiais aprovadas aparecem na votação.</p>
+                    <p class="section-desc-sub" id="event-gallery-subtitle">Receitas inscritas pela comunidade.</p>
                   </div>
                   <div class="event-voting-indicator-pill" id="event-voting-indicator">
                     <i class="fa-regular fa-clock"></i> Aguardando abertura de votos
@@ -263,7 +255,7 @@
               <div class="tag-cloud-container" id="popular-tags-cloud">
               </div>
             </section>
-            <!-- DESAFIO DA SEMANA (SIMPLIFICADO: NÃO É COMPETIÇÃO, SEM VOTAÇÃO/MOLDURAS, +30 PONTOS) -->
+            <!-- DESAFIO DA SEMANA -->
             <section class="weekly-challenge-card" id="weekly-challenge-card">
               <div class="challenge-cover-container" id="challenge-cover-container">
                 <img id="challenge-cover-img" src="" alt="Imagem do Desafio" class="challenge-cover-img" style="display:none;">
@@ -428,12 +420,39 @@
     </div>
   </div>
   <!-- MODAL DE INSCRIÇÃO OFICIAL EM EVENTO ESPECIAL (MODELO B) -->
+  <div class="modal-overlay event-guide-overlay" id="event-guide-modal" aria-hidden="true">
+    <section class="modal-card event-guide-modal-card" role="dialog" aria-modal="true" aria-labelledby="event-guide-title">
+      <button class="modal-close-btn" id="close-event-guide-modal" type="button" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header-simple"><h3 id="event-guide-title">Como participar</h3><p>Etapas e regras essenciais para o evento.</p></div>
+      <div class="event-guide-content">
+        <section><h4><i class="fa-solid fa-list-ol" aria-hidden="true"></i> Etapas</h4>
+          <div class="event-guide-steps">
+            <article class="event-howto-step"><span class="event-step-number">1</span><div><h5>Escolha sua receita</h5><p>Crie uma receita com o tema ou escolha uma já publicada na comunidade.</p></div></article>
+            <article class="event-howto-step"><span class="event-step-number">2</span><div><h5>Inscreva sua receita</h5><p>Inscreva uma receita oficial para representar você e receber votos.</p></div></article>
+            <article class="event-howto-step"><span class="event-step-number">3</span><div><h5>Vote e acompanhe</h5><p>Na fase de votação, escolha sua favorita e acompanhe os votos.</p></div></article>
+            <article class="event-howto-step"><span class="event-step-number">4</span><div><h5>Conquiste o emblema</h5><p>A receita mais votada vence e recebe o emblema exclusivo do evento.</p></div></article>
+          </div>
+        </section>
+        <section class="event-guide-rules"><h4><i class="fa-solid fa-shield-heart" aria-hidden="true"></i> Regras do evento</h4>
+          <ul class="event-rule-list">
+            <li><div><strong>Uma inscrição</strong><span>Só uma receita sua concorre à votação.</span></div></li>
+            <li><div><strong>Troca de receita</strong><span>Troque sua inscrição enquanto as inscrições estiverem abertas.</span></div></li>
+            <li><div><strong>Votação da comunidade</strong><span>Cada pessoa cadastrada vota uma vez, participe ou não.</span></div></li>
+            <li><div><strong>Voto justo</strong><span>Não é permitido votar na própria receita.</span></div></li>
+            <li><div><strong>Quem vence</strong><span>Ganha a receita com mais votos válidos.</span></div></li>
+            <li><div><strong>Em caso de empate</strong><span>Vence a inscrição aprovada primeiro.</span></div></li>
+            <li><div><strong>Emblema exclusivo</strong><span>O prêmio fica salvo nas conquistas do vencedor.</span></div></li>
+          </ul>
+        </section>
+      </div>
+    </section>
+  </div>
   <div class="modal-overlay" id="event-entry-modal">
     <div class="modal-card" style="max-width: 580px; max-height: 88vh; overflow-y: auto;">
       <button class="modal-close-btn" id="close-event-entry-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-header-simple">
         <h3 id="event-entry-modal-title">Inscrição Oficial no Evento</h3>
-        <p id="event-entry-modal-subtitle">Modelo B: Apenas 1 receita será sua inscrição oficial na competição.</p>
+        <p id="event-entry-modal-subtitle">Escolha uma receita pública para representar você no evento.</p>
       </div>
       <div class="entry-modal-alert" id="event-entry-modal-alert" style="display:none; padding: 10px 14px; border-radius: 10px; background: rgba(224, 133, 122, 0.15); border: 1px solid rgba(224, 133, 122, 0.35); color: #F0D5B6; font-size: 0.82rem; margin-bottom: 14px;"></div>
       

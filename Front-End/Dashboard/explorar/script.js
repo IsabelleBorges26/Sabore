@@ -35,19 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const authorId = recipe?.authorId ?? recipe?.usuarioId;
     return userId != null && authorId != null && String(authorId) === String(userId);
   };
-  const renderSaboreProBadge = (plano) => {
-    if (String(plano || '').toUpperCase() !== 'PRO') return '';
-    return `<span class="sabore-pro-badge" title="Membro Saboré PRO" aria-label="PRO"><img src="../../assets/Emblemas/selo-pro.png" class="pro-icon-img" alt="PRO" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><svg class="pro-icon-svg" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M12 2l2.4 7.4h7.6l-6.1 4.5 2.3 7.1-6.2-4.5-6.2 4.5 2.3-7.1-6.1-4.5h7.6z"/></svg><span class="pro-text">PRO</span></span>`;
-  };
 
   const showAuthorAvatar = (element, recipe) => {
     if (!element) return;
-    element.className = element.className.replace(/\bmoldura-[a-z0-9-]+\b/g, '').replace(/\bhas-frame\b/g, '');
-    if (recipe.authorFrame) {
-      element.classList.add('has-frame', recipe.authorFrame);
-    } else if (recipe.authorHasProfileFrame) {
-      element.classList.add('achievement-profile-frame');
-    }
     const initial = String(recipe.author || 'S').trim().charAt(0).toUpperCase() || 'S';
     element.textContent = initial;
     if (recipe.authorAvatar) {
@@ -62,84 +52,84 @@ document.addEventListener('DOMContentLoaded', () => {
   const WEEKLY_CHALLENGES = [
     {
       id: "inverno",
-      title: "Receitas de Inverno & Conforto ❄️",
+      title: "Receitas de Inverno & Conforto",
       hashtag: "#DesafioInverno",
       badge: "Chef Invernal",
       description: "Crie um prato quente, sopa encorpada ou bebida cremosa para aquecer a comunidade Saboré!"
     },
     {
       id: "massas",
-      title: "Festival de Massas Artesanais 🍝",
+      title: "Festival de Massas Artesanais",
       hashtag: "#DesafioMassas",
       badge: "Mestre das Massas",
       description: "Prepare uma massa fresca caseira ou um molho artesanal autêntico da nonna."
     },
     {
       id: "fit",
-      title: "Marmita Fit & Alta Performance 🥗",
+      title: "Marmita Fit & Alta Performance",
       hashtag: "#DesafioFit",
       badge: "Chef Saudável",
       description: "Compartilhe uma refeição equilibrada, nutritiva e prática para o dia a dia fitness."
     },
     {
       id: "doces",
-      title: "Doces & Sobremesas de Sonho 🍓",
+      title: "Doces & Sobremesas de Sonho",
       hashtag: "#DesafioDoces",
       badge: "Confeiteiro Saboré",
       description: "Surpreenda a comunidade com tortas, bolos, mousses ou doces artesanais irresistíveis."
     },
     {
       id: "oriental",
-      title: "Uma Viagem à Cozinha Oriental 🥢",
+      title: "Uma Viagem à Cozinha Oriental",
       hashtag: "#DesafioOriental",
       badge: "Chef Oriental",
       description: "Traga o melhor da culinária asiática: sushis, woks, ramens ou yakisobas aromáticos."
     },
     {
       id: "brunch",
-      title: "Café da Manhã de Cinema ☕",
+      title: "Café da Manhã de Cinema",
       hashtag: "#DesafioBrunch",
       badge: "Mestre do Brunch",
       description: "Pães quentinhos, ovos especiais, panquecas ou tigelas de açaí para começar o dia no topo."
     },
     {
       id: "burger",
-      title: "Hambúrguer Gourmet Caseiro 🍔",
+      title: "Hambúrguer Gourmet Caseiro",
       hashtag: "#DesafioBurger",
       badge: "Burger Master",
       description: "Monte um burger autoral: combine seu blend especial, molhos caseiros e queijos derretidos."
     },
     {
       id: "sustentavel",
-      title: "Cozinha Sustentável & Zero Desperdício 🌿",
+      title: "Cozinha Sustentável & Zero Desperdício",
       hashtag: "#DesafioSustentavel",
       badge: "Chef Consciente",
       description: "Use talos, cascas e sobras nobres para criar pratos deliciosos e sustentáveis."
     },
     {
       id: "risotos",
-      title: "Mestres do Risoto Cremoso 🍚",
+      title: "Mestres do Risoto Cremoso",
       hashtag: "#DesafioRisoto",
       badge: "Rei do Risoto",
       description: "Acerte no ponto perfeito da textura e emulsão de um risoto sofisticado."
     },
     {
       id: "petiscos",
-      title: "Comida de Boteco & Petiscos 🥟",
+      title: "Comida de Boteco & Petiscos",
       hashtag: "#DesafioPetiscos",
       badge: "Chef Boêmio",
       description: "Pastéis, croquetes, bolinhos de arroz e petiscos crocantes para celebrar com amigos."
     },
     {
       id: "brasil",
-      title: "Sabores Regionais do Brasil 🥘",
+      title: "Sabores Regionais do Brasil",
       hashtag: "#DesafioBrasil",
       badge: "Chef Raiz",
       description: "Celebre nossa culinária: moquecas, baião de dois, feijão tropeiro e temperos típicos."
     },
     {
       id: "rapido",
-      title: "Prato Incrível em 15 Minutos ⏱️",
+      title: "Prato Incrível em 15 Minutos",
       hashtag: "#Desafio15Min",
       badge: "Chef Relâmpago",
       description: "Mostre que agilidade e alto sabor andam juntos em receitas rápidas do dia a dia."
@@ -381,7 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
     { btn: 'close-details-modal', modal: 'recipe-details-modal' },
     { btn: 'recipe-detail-close-btn', modal: 'recipe-details-modal' },
     { btn: 'close-save-modal', modal: 'save-to-book-modal' },
-    { btn: 'close-notif-modal', modal: 'notifications-modal' }
+    { btn: 'close-notif-modal', modal: 'notifications-modal' },
+    { btn: 'close-event-guide-modal', modal: 'event-guide-modal' }
   ];
   closeTriggers.forEach(trigger => {
     const btn = document.getElementById(trigger.btn);
@@ -389,6 +380,27 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => closeModal(trigger.modal));
     }
   });
+  const eventGuideModal = document.getElementById('event-guide-modal');
+  const eventGuideOpen = document.getElementById('btn-open-event-guide');
+  const eventGuideClose = document.getElementById('close-event-guide-modal');
+  if (eventGuideOpen && eventGuideModal) {
+    eventGuideOpen.addEventListener('click', () => {
+      eventGuideModal.setAttribute('aria-hidden', 'false');
+      openModal('event-guide-modal');
+      eventGuideClose?.focus();
+    });
+    eventGuideModal.addEventListener('click', (event) => {
+      if (event.target === eventGuideModal) eventGuideModal.setAttribute('aria-hidden', 'true');
+    });
+    eventGuideClose?.addEventListener('click', () => eventGuideModal.setAttribute('aria-hidden', 'true'));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && eventGuideModal.classList.contains('open')) {
+        closeModal('event-guide-modal');
+        eventGuideModal.setAttribute('aria-hidden', 'true');
+        eventGuideOpen.focus();
+      }
+    });
+  }
   const notifBtn = document.getElementById('notifications-btn');
   if (notifBtn) {
     const initialBadge = notifBtn.querySelector('.badge-dot');
@@ -563,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="explore-content-area">
           <div class="recipe-author-line">
             <span class="author-avatar author-avatar-placeholder" aria-hidden="true"></span>
-            <span class="author-name">${rec.author || 'Membro da Comunidade'}${renderSaboreProBadge(rec.authorPlan)}</span>
+            <span class="author-name">${api.renderUserIdentity(rec.author || 'Membro da Comunidade', rec.authorPlan)}</span>
           </div>
           <h4>${rec.title}</h4>
           <p class="post-caption">${rec.description || 'Receita compartilhada pela comunidade Saboré.'}</p>
@@ -781,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       card.appendChild(avatarEl);
       const nameEl = document.createElement('h4');
-      nameEl.textContent = chef.name;
+      nameEl.innerHTML = api.renderUserIdentity(chef.name, chef.plan);
       card.appendChild(nameEl);
       const memberEl = document.createElement('p');
       memberEl.textContent = 'Membro da comunidade Saboré';
@@ -1033,16 +1045,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const coverImg = document.getElementById('challenge-cover-img');
     if (coverImg) {
-      if (desafio.imagem) {
-        coverImg.src = desafio.imagem;
-        coverImg.style.display = 'block';
-      } else {
-        coverImg.style.display = 'none';
-      }
+      const officialChallengeImages = {
+        1: '/assets/community/desafio-despensa.jpg',
+        2: '/assets/community/desafio-apresentacao.jpg',
+        3: '/assets/community/desafio-mundo.jpg',
+        4: '/assets/community/desafio-doces.jpg',
+        5: '/assets/community/desafio-zero-desperdicio.jpg',
+        6: '/assets/community/desafio-chef.jpg',
+        7: '/assets/community/desafio-natal.jpg',
+        8: '/assets/community/desafio-ceia.jpg',
+        9: '/assets/community/desafio-retrospectiva.jpg'
+      };
+      const imagemDesafio = officialChallengeImages[Number(desafio.id)] || desafio.imagem || '../../assets/community/desafio-inverno.jpg';
+      coverImg.src = imagemDesafio.startsWith('http') || imagemDesafio.startsWith('../../')
+        ? imagemDesafio
+        : `../..${imagemDesafio.startsWith('/') ? imagemDesafio : `/${imagemDesafio}`}`;
+      coverImg.style.display = 'block';
+      coverImg.onerror = () => {
+        coverImg.onerror = null;
+        coverImg.src = '../../assets/community/desafio-inverno.jpg';
+      };
     }
 
     if (titleEl) titleEl.textContent = desafio.titulo;
-    if (descEl) descEl.textContent = desafio.descricao;
+    if (descEl) {
+      const summary = String(desafio.descricao || '').trim();
+      descEl.textContent = summary.length > 112 ? `${summary.slice(0, 109).trimEnd()}…` : summary;
+    }
     
     if (badgeTextEl) {
       if (isEncerrado) {
@@ -1387,7 +1416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userState.selectedExploreRecipe = rec;
     showAuthorAvatar(detailAuthorAvatar, rec);
     if (detailAuthorName) {
-      detailAuthorName.innerHTML = 'Por ' + (rec.author || 'Comunidade Saboré') + renderSaboreProBadge(rec.authorPlan);
+      detailAuthorName.innerHTML = 'Por ' + api.renderUserIdentity(rec.author || 'Comunidade Saboré', rec.authorPlan);
     }
     if (detailTitle) {
       detailTitle.textContent = rec.title || 'Sem título';
@@ -1490,7 +1519,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navAvatar = document.querySelector('.user-avatar');
     if (navAvatar && user.foto) navAvatar.src = user.foto;
     const navName = document.querySelector('.user-name');
-    if (navName) navName.textContent = user.nome;
+    if (navName) api.renderUserName(navName, user);
     const feedLoadId = ++latestFeedLoad;
     const isCurrentFeedLoad = () => feedLoadId === latestFeedLoad;
     try {
@@ -1504,6 +1533,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!isCurrentFeedLoad()) return;
       const profileData = profileResult.status === 'fulfilled' ? profileResult.value : null;
       userState.isPro = profileData?.plano === "PRO";
+      if (navName) api.renderUserName(navName, user, profileData?.plano);
       updatePlanUI();
       const books = booksResult.status === 'fulfilled' ? booksResult.value : [];
       userState.books = books.map(b => ({
@@ -1541,7 +1571,7 @@ document.addEventListener('DOMContentLoaded', () => {
             time: recipe.time, difficulty: recipe.difficulty, category: recipe.category,
             likes: recipe.likes, avaliacoes: recipe.avaliacoes, image: recipe.image,
             authorId: recipe.authorId, author: recipe.author, authorAvatar: recipe.authorAvatar,
-            authorHasProfileFrame: recipe.authorHasProfileFrame, authorAchievements: recipe.authorAchievements,
+            authorPlan: recipe.authorPlan,
             publishedAt: recipe.publishedAt, ingredients: recipe.ingredients, steps: recipe.steps,
             categories: recipe.categories, hashtags: recipe.hashtags
           }));
@@ -1564,8 +1594,7 @@ document.addEventListener('DOMContentLoaded', () => {
           authorId: rec.authorId,
           author: rec.author,
           authorAvatar: rec.authorAvatar,
-          authorHasProfileFrame: rec.authorHasProfileFrame,
-          authorAchievements: rec.authorAchievements,
+          authorPlan: rec.authorPlan,
           diet: rec.category,
           tags,
           hashtags,
@@ -1606,6 +1635,7 @@ document.addEventListener('DOMContentLoaded', () => {
           .map(u => ({
             id: u.id,
             name: u.nome,
+            plan: u.plano,
             recipes: 0, // Será preenchido quando houver rota de contagem
             avatar: u.foto || null,
             followed: false,
@@ -1733,7 +1763,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="comment-author-avatar" aria-hidden="true"></span>
           <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 600; font-size: 0.88rem; color: #fff; display: inline-flex; align-items: center; gap: 4px;">${userName}${renderSaboreProBadge(item.usuario?.plano)}</span>
+              <span style="font-weight: 600; font-size: 0.88rem; color: #fff; display: inline-flex; align-items: center; gap: 4px;">${api.renderUserIdentity(userName, item.usuario?.plano)}</span>
               <div style="display: flex; gap: 2px;">${starsHtml}</div>
             </div>
             <p style="margin: 0; font-size: 0.84rem; color: #d4d4d8; line-height: 1.4;">${item.comentario || 'Deixou uma avaliação.'}</p>
@@ -1742,7 +1772,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showAuthorAvatar(commentCard.querySelector('.comment-author-avatar'), {
           author: userName,
           authorAvatar: item.usuario?.foto,
-          authorFrame: item.usuario?.molduraAtiva
         });
         commentsListContainer.appendChild(commentCard);
       });
@@ -1835,16 +1864,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewFeed = document.getElementById('view-comunidade-feed');
     const viewEventos = document.getElementById('view-comunidade-eventos');
     if (!btnFeed || !btnEventos || !viewFeed || !viewEventos) return;
+    const communityGrid = viewFeed.closest('.dashboard-grid');
 
     function showFeedTab() {
       viewFeed.style.display = '';
       viewEventos.style.display = 'none';
+      communityGrid?.classList.remove('events-mode');
+      document.body.classList.remove('community-events-mode');
       btnFeed.classList.add('active');
       btnEventos.classList.remove('active');
     }
     function showEventosTab() {
       viewFeed.style.display = 'none';
       viewEventos.style.display = '';
+      communityGrid?.classList.add('events-mode');
+      document.body.classList.add('community-events-mode');
       btnFeed.classList.remove('active');
       btnEventos.classList.add('active');
       loadSpecialEventsView();
@@ -1854,7 +1888,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =====================================================================
-     SPECIAL EVENTS – Eventos Especiais (Competições Comemorativas)
+     SPECIAL EVENTS – Eventos Especiais
   ===================================================================== */
   let currentEventData = null;
   let currentEventId = null;
@@ -1989,13 +2023,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderSpecialEvent(data) {
     if (!data) return;
     const { fase, galeria = [], participantesCount = 0, totalVotos = 0, minhaEntrada, meuVoto } = data;
+    const isNewYear = String(currentEventId || data.id) === '2' || /réveillon|reveillon/i.test(data.nome || data.titulo || '');
+    const banner = document.getElementById('event-banner-card');
+    if (banner) {
+      banner.dataset.theme = isNewYear ? 'reveillon' : 'natal';
+      const eventsView = document.getElementById('view-comunidade-eventos');
+      if (eventsView) eventsView.dataset.eventTheme = banner.dataset.theme;
+    }
 
     // Status pill
     const statusPill = document.getElementById('event-status-pill');
     if (statusPill) {
-      const labels = { EM_BREVE: '🔜 Em Breve', INSCRICOES: '📋 Inscrições Abertas', VOTACAO: '🗳️ Votação em Andamento', ENCERRADO: '🏆 Encerrado' };
+      const labels = { EM_BREVE: 'Inscrições em breve', INSCRICOES: 'Inscrições abertas', VOTACAO: 'Votação aberta', ENCERRADO: 'Evento encerrado' };
       statusPill.textContent = labels[fase] || fase;
       statusPill.className = `event-status-pill status-${(fase || '').toLowerCase()}`;
+    }
+    const votingIndicator = document.getElementById('event-voting-indicator');
+    if (votingIndicator) {
+      const indicator = fase === 'VOTACAO'
+        ? (meuVoto ? ['fa-solid fa-check', 'Você já votou'] : ['fa-solid fa-check-to-slot', 'Votação aberta'])
+        : fase === 'ENCERRADO'
+          ? [data.resultado ? 'fa-solid fa-trophy' : 'fa-regular fa-clock', data.resultado ? 'Resultado anunciado' : 'Resultado em breve']
+          : ['fa-regular fa-clock', 'Votação em breve'];
+      votingIndicator.innerHTML = `<i class="${indicator[0]}"></i> ${indicator[1]}`;
+      votingIndicator.dataset.phase = String(fase || '').toLowerCase();
     }
 
     // Banner content
@@ -2006,8 +2057,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantsCount = document.getElementById('event-participants-count');
     const votesCount = document.getElementById('event-votes-count');
 
-    if (bannerTitle) bannerTitle.textContent = data.nome || data.titulo || '';
-    if (bannerDesc) bannerDesc.textContent = data.descricao || '';
+    if (bannerTitle) bannerTitle.textContent = isNewYear ? 'Réveillon Saboré 2027' : 'Natal Saboré 2026';
+    if (bannerDesc) {
+      bannerDesc.textContent = isNewYear
+        ? 'Celebre a virada com sua receita especial e concorra ao emblema da comunidade.'
+        : 'Compartilhe sua melhor receita natalina e concorra ao emblema exclusivo do evento.';
+    }
     if (hashtagBadge) hashtagBadge.textContent = data.hashtag || '';
     const dtInicio = data.inicioEm || data.comecaEm;
     const dtFim = data.fimEm || data.encerraEm;
@@ -2048,11 +2103,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Prize names
     const prizeBadgeName = document.getElementById('event-prize-badge-name');
-    const prizeFrameName = document.getElementById('event-prize-frame-name');
     const nomeEmblema = data.emblema || data.emblemaId || 'Emblema Especial';
-    const nomeMoldura = data.molduraNome || data.molduraPerfil || data.molduraId || 'Moldura Exclusiva';
     if (prizeBadgeName) prizeBadgeName.textContent = nomeEmblema;
-    if (prizeFrameName) prizeFrameName.textContent = nomeMoldura.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
     // User action card
     const actionCard = document.getElementById('event-user-action-card');
@@ -2061,25 +2113,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (actionCard) {
       if (fase === 'EM_BREVE') {
         actionCard.style.display = '';
-        if (actionInfo) actionInfo.innerHTML = '<h3>Inscrições em Breve</h3><p>As inscrições para este evento ainda não começaram. Fique atento às datas.</p>';
+        if (actionInfo) actionInfo.innerHTML = '<h3>Inscrições em breve</h3><p>Confira o período do evento acima.</p>';
         if (openEntryBtn) openEntryBtn.style.display = 'none';
       } else if (fase === 'INSCRICOES') {
         actionCard.style.display = '';
         if (openEntryBtn) openEntryBtn.style.display = '';
         if (minhaEntrada) {
-          if (actionInfo) actionInfo.innerHTML = `<h3>✅ Você já está inscrito!</h3><p>Sua receita está na galeria aguardando votação. Você pode substituí-la até o início da votação.</p>`;
+          if (actionInfo) actionInfo.innerHTML = `<h3><i class="fa-solid fa-circle-check"></i> Você já está participando</h3><p>Sua receita está na galeria. Você pode trocá-la até o início da votação.</p>`;
           if (openEntryBtn) openEntryBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Substituir Inscrição';
         } else {
-          if (actionInfo) actionInfo.innerHTML = '<h3>Participe desta Competição Oficial</h3><p>Inscreva sua melhor receita na galeria oficial para disputar os votos da comunidade e o emblema exclusivo.</p>';
+          if (actionInfo) actionInfo.innerHTML = '<h3>Inscreva sua receita</h3><p>Concorra ao emblema exclusivo e ao destaque de vencedor.</p>';
           if (openEntryBtn) openEntryBtn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Participar do Evento';
         }
       } else if (fase === 'VOTACAO') {
         actionCard.style.display = '';
         if (openEntryBtn) openEntryBtn.style.display = 'none';
         if (meuVoto) {
-          if (actionInfo) actionInfo.innerHTML = '<h3>🗳️ Seu voto foi registrado!</h3><p>Obrigado por participar da votação. Acompanhe a contagem de votos na galeria.</p>';
+          if (actionInfo) actionInfo.innerHTML = '<h3><i class="fa-solid fa-circle-check"></i> Você já votou</h3><p>Acompanhe a contagem na galeria.</p>';
         } else {
-          if (actionInfo) actionInfo.innerHTML = '<h3>🗳️ Votação em Andamento</h3><p>Você tem 1 voto por evento. Vote na receita que mais te impressionou. O voto não pode ser alterado.</p>';
+          if (actionInfo) actionInfo.innerHTML = '<h3>Votação aberta</h3><p>Escolha sua receita favorita. Seu voto é único.</p>';
         }
       } else {
         // ENCERRADO
@@ -2124,7 +2176,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (subtitle) {
       if (fase === 'VOTACAO') subtitle.textContent = podeVotar ? `${galeria.length} receitas disputando — Vote na sua favorita!` : `${galeria.length} receitas — Votação em andamento.`;
-      else if (fase === 'ENCERRADO') subtitle.textContent = `${galeria.length} receitas participaram desta competição.`;
+      else if (fase === 'ENCERRADO') subtitle.textContent = `${galeria.length} receitas participaram do evento.`;
       else subtitle.textContent = `${galeria.length} receitas inscritas oficialmente.`;
     }
 
@@ -2134,8 +2186,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const canVoteThis = podeVotar && !isOwn;
 
       const authorInitial = String(entry.autor?.nome || 'S').trim().charAt(0).toUpperCase();
-      const proTag = entry.autor?.plano === 'PRO' ? renderSaboreProBadge('PRO') : '';
-      const frameClass = entry.autor?.molduraAtiva ? `has-frame ${entry.autor.molduraAtiva}` : '';
 
       return `
         <div class="event-gallery-card" data-entry-id="${entry.id}">
@@ -2146,9 +2196,9 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="gallery-card-body">
             <div class="gallery-author-line">
-              <div class="gallery-author-avatar ${frameClass}" aria-hidden="true">${authorInitial}</div>
+              <div class="gallery-author-avatar" aria-hidden="true">${authorInitial}</div>
               <div class="gallery-author-info">
-                <span class="gallery-author-name">${entry.autor?.nome || 'Chef'}${proTag}</span>
+                <span class="gallery-author-name">${api.renderUserIdentity(entry.autor?.nome || 'Chef', entry.autor?.plano)}</span>
                 ${isOwn ? '<span class="own-entry-pill">Sua inscrição</span>' : ''}
               </div>
             </div>
@@ -2210,16 +2260,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ? entry.modoPreparo.split('\n').filter(p => p.trim()).map((passo, i) => `<li><span class="step-num">${i + 1}</span>${passo}</li>`).join('')
       : '<li>Modo de preparo não informado.</li>';
 
-    const proTag = entry.autor?.plano === 'PRO' ? renderSaboreProBadge('PRO') : '';
     const authorInitial = String(entry.autor?.nome || 'S').trim().charAt(0).toUpperCase();
-    const frameClass = entry.autor?.molduraAtiva ? `has-frame ${entry.autor.molduraAtiva}` : '';
 
     content.innerHTML = `
       ${entry.imagem ? `<div class="event-recipe-modal-banner"><img src="${entry.imagem}" alt="${entry.titulo}"></div>` : ''}
       <div class="event-recipe-modal-header">
         <div class="gallery-author-line" style="margin-bottom: 10px;">
-          <div class="gallery-author-avatar ${frameClass}" style="width:40px;height:40px;font-size:1.1rem;">${authorInitial}</div>
-          <span class="gallery-author-name">${entry.autor?.nome || 'Chef'}${proTag}</span>
+          <div class="gallery-author-avatar" style="width:40px;height:40px;font-size:1.1rem;">${authorInitial}</div>
+          <span class="gallery-author-name">${api.renderUserIdentity(entry.autor?.nome || 'Chef', entry.autor?.plano)}</span>
         </div>
         <h2 style="font-family: 'Playfair Display', serif; color: var(--secondary); margin: 0 0 6px;">${entry.titulo}</h2>
         ${entry.descricao ? `<p style="color: rgba(242,244,243,.75); font-size: 0.9rem;">${entry.descricao}</p>` : ''}

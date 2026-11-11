@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navAvatar = document.querySelector('.user-avatar');
     if (navAvatar && user.foto) navAvatar.src = user.foto;
     const navName = document.querySelector('.user-name');
-    if (navName) navName.textContent = user.nome;
+    if (navName) api.renderUserName(navName, user);
     try {
       const profileData = await api.get("/usuarios/perfil");
       userState.isPro = profileData.plano === "PRO";

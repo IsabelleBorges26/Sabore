@@ -21,7 +21,7 @@ const btnCadastro = document.getElementById('btnCadastro');
 const btnGoogle = document.querySelector('.btn-social');
 const passwordInput = document.getElementById('senha');
 const toggleBtn = document.getElementById('togglePassword');
-const defaultGoogleButton = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';
+const defaultGoogleButton = '<img src="../assets/branding/Logo Google.png" alt="Google" class="social-icon-img"> Google';
 
 const finishAuthentication = async (session) => {
   api.setToken(session.access_token);
@@ -64,7 +64,7 @@ const handleCadastroSubmit = async (e) => {
   const password = passwordInput.value;
   if (!nome || !email || !password) return alert('Por favor, preencha todos os campos.');
   if (!document.getElementById('terms').checked) return alert('Você precisa aceitar os Termos de Uso e Política de Privacidade.');
-  if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+  if (!authClient) return alert(window.SABORE_SUPABASE_CONFIG_ERROR || 'Supabase Auth não inicializado. Atualize a página e tente novamente.');
 
   btnCadastro.textContent = 'Criando conta...';
   btnCadastro.disabled = true;
@@ -93,7 +93,7 @@ if (formCadastro) {
 
 if (btnGoogle) {
   btnGoogle.addEventListener('click', async () => {
-    if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+    if (!authClient) return alert(window.SABORE_SUPABASE_CONFIG_ERROR || 'Supabase Auth não inicializado. Atualize a página e tente novamente.');
     btnGoogle.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Conectando...';
     btnGoogle.disabled = true;
     const { error } = await authClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: getRedirectUrl() } });

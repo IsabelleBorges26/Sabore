@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const navAvatar = document.querySelector('.user-avatar');
   if (navAvatar && user.foto) navAvatar.src = user.foto;
   const navName = document.querySelector('.user-name');
-  if (navName && user.nome) navName.textContent = user.nome.split(' ')[0];
+  if (navName && user.nome) api.renderUserName(navName, user);
 
   const monthInput = document.getElementById('fechamento-mes-input');
   if (monthInput) {
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ranking.forEach(r => {
       const tr = document.createElement('tr');
-      const avatarSrc = r.foto || '../../assets/LOGO SABORÉ.png';
+      const avatarSrc = r.foto || '../../assets/branding/LOGO SABORÉ.png';
       tr.innerHTML = `
         <td><strong class="rank-num">#${r.posicao}</strong> ${r.posicao <= 5 ? '<i class="fa-solid fa-crown" style="color: #FFD700; margin-left: 4px;"></i>' : ''}</td>
         <td>

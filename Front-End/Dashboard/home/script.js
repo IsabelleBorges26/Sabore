@@ -18,11 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   const welcomeName = document.getElementById('welcome-name');
   if (welcomeName && user.nome) {
-    welcomeName.textContent = user.nome.split(' ')[0];
+    welcomeName.textContent = user.nome;
   }
   const navUserName = document.querySelector('.user-name');
   if (navUserName && user.nome) {
-    navUserName.textContent = user.nome.split(' ')[0];
+    api.renderUserName(navUserName, user);
   }
   const customCursor = document.createElement('div');
   customCursor.className = 'custom-cursor';
@@ -669,10 +669,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const navAvatar = document.querySelector('.user-avatar');
     if (navAvatar && user.foto) navAvatar.src = user.foto;
     const navName = document.querySelector('.user-name');
-    if (navName) navName.textContent = user.nome;
+    if (navName) api.renderUserName(navName, user);
     try {
       const profileData = await api.get("/usuarios/perfil");
-      userState.isPro = false;
+      userState.isPro = profileData.plano === "PRO";
+      if (navName) api.renderUserName(navName, user, profileData.plano);
       userState.stats = {
         saved: profileData.stats.saved,
         created: profileData.stats.created,

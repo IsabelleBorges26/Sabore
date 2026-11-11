@@ -952,7 +952,7 @@
 
 .plan-benefits-list li {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 13px;
   background: rgba(18, 31, 28, 0.55);
   border: 1px solid rgba(242, 244, 243, 0.06);
@@ -966,8 +966,9 @@
 }
 
 .benefit-icon {
-  width: 34px;
-  height: 34px;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -1001,6 +1002,22 @@
   line-height: 1.45;
   color: rgba(242, 244, 243, 0.62);
 }
+
+.plan-benefits-list li > .benefit-icon {
+  display: inline-flex;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  padding: 0;
+  font-size: .95rem;
+  line-height: 1;
+}
+
+.plan-benefits-list li > .benefit-icon i { font-size: inherit; line-height: 1; }
+
+.plan-benefits-list li > div { flex: 1 1 auto; min-width: 0; }
+.plan-benefits-list li > div > span { display: block; }
 
 .plan-card-footer {
   padding-top: 14px;

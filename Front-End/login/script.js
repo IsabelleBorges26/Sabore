@@ -19,7 +19,7 @@ updateCursorHoverListeners();
 const authClient = window.supabaseClient;
 const btnLogin = document.getElementById('btnLogin');
 const btnGoogle = document.querySelector('.btn-social');
-const defaultGoogleButton = '<img src="../assets/Logo Google.png" alt="Google" class="social-icon-img"> Google';
+const defaultGoogleButton = '<img src="../assets/branding/Logo Google.png" alt="Google" class="social-icon-img"> Google';
 
 const setLoginButton = (loading) => {
   if (!btnLogin) return;
@@ -54,7 +54,7 @@ const handleLoginSubmit = async (e) => {
   const email = document.getElementById('email').value.trim();
   const password = passwordInput.value;
   if (!email || !password) return alert('Por favor, preencha todos os campos.');
-  if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+  if (!authClient) return alert(window.SABORE_SUPABASE_CONFIG_ERROR || 'Supabase Auth não inicializado. Atualize a página e tente novamente.');
 
   setLoginButton(true);
   try {
@@ -75,7 +75,7 @@ if (formLogin) {
 
 if (btnGoogle) {
   btnGoogle.addEventListener('click', async () => {
-    if (!authClient) return alert('Supabase Auth não configurado. Informe a chave publishable.');
+    if (!authClient) return alert(window.SABORE_SUPABASE_CONFIG_ERROR || 'Supabase Auth não inicializado. Atualize a página e tente novamente.');
     btnGoogle.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Conectando...';
     btnGoogle.disabled = true;
     const { error } = await authClient.auth.signInWithOAuth({

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const navAvatar = document.querySelector('.user-avatar');
   if (navAvatar && user.foto) navAvatar.src = user.foto;
   const navName = document.querySelector('.user-name');
-  if (navName && user.nome) navName.textContent = user.nome.split(' ')[0];
+  if (navName && user.nome) api.renderUserName(navName, user);
 
   const profileTrigger = document.getElementById('profile-dropdown-trigger');
   if (profileTrigger) {
@@ -39,10 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const renderSaboreProBadge = (plano) => {
-    if (String(plano || '').toUpperCase() !== 'PRO') return '';
-    return `<span class="sabore-pro-badge" title="Membro Saboré PRO" aria-label="PRO" style="margin-left: 5px;"><img src="../../assets/Emblemas/selo-pro.png" class="pro-icon-img" alt="PRO" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><svg class="pro-icon-svg" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M12 2l2.4 7.4h7.6l-6.1 4.5 2.3 7.1-6.2-4.5-6.2 4.5 2.3-7.1-6.1-4.5h7.6z"/></svg><span class="pro-text">PRO</span></span>`;
-  };
 
   // Modais
   function openModal(id) {
@@ -129,11 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!usuarioLogado) {
       if (stripName) stripName.textContent = user.nome || 'Você';
-      if (stripAvatar) stripAvatar.src = user.foto || '../../assets/LOGO SABORÉ.png';
+      if (stripAvatar) stripAvatar.src = user.foto || '../../assets/branding/LOGO SABORÉ.png';
       return;
     }
 
-    if (stripAvatar) stripAvatar.src = usuarioLogado.foto || '../../assets/LOGO SABORÉ.png';
+    if (stripAvatar) stripAvatar.src = usuarioLogado.foto || '../../assets/branding/LOGO SABORÉ.png';
     if (stripName) stripName.textContent = usuarioLogado.nome;
     if (stripPos) stripPos.textContent = `#${usuarioLogado.posicao}`;
     if (stripPts) stripPts.textContent = `${usuarioLogado.pontos} pts`;
@@ -189,17 +185,16 @@ document.addEventListener('DOMContentLoaded', () => {
     top5.forEach((item, idx) => {
       const card = document.createElement('div');
       card.className = `podium-card rank-${idx + 1}`;
-      const defaultAvatar = '../../assets/LOGO SABORÉ.png';
+      const defaultAvatar = '../../assets/branding/LOGO SABORÉ.png';
       const avatarSrc = item.foto || defaultAvatar;
-      const frameClass = item.molduraAtiva ? `has-frame ${item.molduraAtiva}` : '';
 
       card.innerHTML = `
         <div class="podium-rank-badge">${item.posicao}º</div>
-        <div class="podium-avatar-wrap ${frameClass}">
+        <div class="podium-avatar-wrap">
           <img src="${avatarSrc}" alt="${item.nome}" class="podium-avatar">
           ${item.posicao === 1 ? '<i class="fa-solid fa-crown podium-crown-icon"></i>' : ''}
         </div>
-        <h4 class="podium-user-name" title="${item.nome}">${item.nome}${renderSaboreProBadge(item.plano)}</h4>
+        <h4 class="podium-user-name" title="${item.nome}">${api.renderUserIdentity(item.nome, item.plano)}</h4>
         <div class="podium-points-tag">${item.pontos} pts</div>
         <div class="podium-recipe-count"><i class="fa-solid fa-utensils"></i> ${item.receitasValidas} receitas no mês</div>
         <span class="podium-pro-target"><i class="fa-solid fa-gem"></i> Zona PRO</span>
@@ -229,9 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isMe) tr.classList.add('current-user-row');
       if (r.naZonaPro) tr.classList.add('zone-pro-row');
 
-      const avatarSrc = r.foto || '../../assets/LOGO SABORÉ.png';
+      const avatarSrc = r.foto || '../../assets/branding/LOGO SABORÉ.png';
       const crownIcon = r.posicao <= 5 ? '<i class="fa-solid fa-star" style="color: #FFD700; font-size: 0.8rem; margin-left: 4px;" title="Zona PRO"></i>' : '';
-      const frameClass = r.molduraAtiva ? `has-frame ${r.molduraAtiva}` : '';
 
       tr.innerHTML = `
         <td>
@@ -242,10 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
         </td>
         <td>
           <div class="user-cell">
-            <div class="avatar-frame-wrap ${frameClass}" style="width: 32px; height: 32px; display: inline-flex;">
+            <div style="width: 32px; height: 32px; display: inline-flex; overflow: hidden; border-radius: 50%;">
               <img src="${avatarSrc}" alt="${r.nome}" class="user-cell-avatar">
             </div>
-            <span class="user-cell-name">${r.nome}${renderSaboreProBadge(r.plano)}</span>
+            <span class="user-cell-name">${api.renderUserIdentity(r.nome, r.plano)}</span>
             ${isMe ? '<span class="user-cell-me-tag">Você</span>' : ''}
           </div>
         </td>
