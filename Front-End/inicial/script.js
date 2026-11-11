@@ -258,7 +258,7 @@ const renderGuestNavigation = () => {
 const signOutFromLanding = () => {
   api.clearSession();
   if (!auth) return window.location.reload();
-  return auth.auth.signOut().catch(() => undefined).finally(() => window.location.reload());
+  return auth.auth.signOut({ scope: 'local' }).catch(() => undefined).finally(() => window.location.reload());
 };
 
 const renderNavigation = async () => {
@@ -291,3 +291,4 @@ if (localUser) {
 };
 
 renderNavigation();
+window.addEventListener('sabore:session-changed', renderNavigation);

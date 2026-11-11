@@ -1,5 +1,5 @@
 const prisma = require("../data/prisma");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { MODELS } = require("../services/openrouterModels");
 const systemPrompt = `Você é o Chef Saboré IA. Responda exclusivamente com JSON válido, sem Markdown ou texto fora do objeto.
 Para conversa, use isRecipe:false e preencha apenas message. Para uma receita solicitada explicitamente, use isRecipe:true e siga este formato:
 {"isRecipe":true,"message":"","title":"","description":"","ingredients":[""],"steps":[""],"time":0,"difficulty":"Fácil","category":""}
@@ -47,9 +47,7 @@ async function generatePhotoRecipeContent(systemInstruction, userInstruction) {
         try {
             const sdk = await import("@openrouter/sdk");
             const openrouter = new sdk.OpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
-            const models = ["google/gemma-4-26b-a4b-it:free", "openrouter/free"];
-
-            for (const model of models) {
+            for (const model of MODELS) {
                 for (let attempt = 1; attempt <= 2; attempt += 1) {
                     try {
                         console.log(`[IA Vision Recipe] Tentando OpenRouter: ${model} (tentativa ${attempt})`);
@@ -58,7 +56,6 @@ async function generatePhotoRecipeContent(systemInstruction, userInstruction) {
                                 model,
                                 temperature: 0.25,
                                 maxCompletionTokens: 2200,
-                                responseFormat: { type: "json_object" },
                                 messages: [
                                     { role: "system", content: systemInstruction },
                                     { role: "user", content: userInstruction }
@@ -66,8 +63,12 @@ async function generatePhotoRecipeContent(systemInstruction, userInstruction) {
                             }
                         });
                         const content = extractModelContent(response);
-                        if (content) return JSON.stringify(parseJSONRecipe(content));
-                        throw new Error("O modelo retornou uma resposta vazia.");
+                        if (!content) throw new Error("O modelo retornou uma resposta vazia.");
+                        const parsed = parseJSONRecipe(content);
+                        if (!Array.isArray(parsed.ingredients) || !parsed.ingredients.length || !Array.isArray(parsed.steps) || !parsed.steps.length) {
+                            throw new Error("O modelo retornou uma receita incompleta.");
+                        }
+                        return JSON.stringify(parsed);
                     } catch (error) {
                         const detail = error?.message || String(error);
                         failures.push(`OpenRouter/${model}: ${detail}`);
@@ -80,32 +81,6 @@ async function generatePhotoRecipeContent(systemInstruction, userInstruction) {
             const detail = error?.message || String(error);
             failures.push(`OpenRouter SDK: ${detail}`);
             console.warn("[IA Vision Recipe] OpenRouter indisponível:", detail);
-        }
-    }
-
-    if (process.env.GEMINI_API_KEY) {
-        const googleAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
-        for (const modelName of models) {
-            try {
-                console.log(`[IA Vision Recipe] Tentando Gemini direto: ${modelName}`);
-                const model = googleAI.getGenerativeModel({
-                    model: modelName,
-                    systemInstruction,
-                    generationConfig: {
-                        temperature: 0.25,
-                        responseMimeType: "application/json"
-                    }
-                });
-                const result = await model.generateContent(userInstruction);
-                const content = result?.response?.text?.().trim();
-                if (content) return JSON.stringify(parseJSONRecipe(content));
-                throw new Error("O Gemini retornou uma resposta vazia.");
-            } catch (error) {
-                const detail = error?.message || String(error);
-                failures.push(`Gemini/${modelName}: ${detail}`);
-                console.warn(`[IA Vision Recipe] Falha no ${modelName}:`, detail);
-            }
         }
     }
 
@@ -170,12 +145,6 @@ Diretrizes de resposta:
 1. Se a mensagem do usuário for uma saudação, dúvida culinária, bate-papo geral OU solicitação de ideias, opções, sugestões ou listas de receitas (ex: "me dê ideias do que cozinhar com frango", "quais receitas posso fazer?"), defina "isRecipe" como false. Interaja amigavelmente e liste as sugestões/ideias no campo "message" como texto conversacional estruturado (usando listas com '-' ou '1.'). Não monte uma receita estruturada.
 2. Se o usuário pedir explicitamente para criar, detalhar os ingredientes e passo a passo de uma receita específica (ex: "me dê a receita de frango grelhado", "monte uma receita com os ingredientes da geladeira"), defina "isRecipe" como true e preencha os respectivos campos de receita ("title", "description", "ingredients", "steps", etc.).
 3. Adapte o tom da conversa ("message" ou "description") com base no perfil e preferências do usuário.`;
-    const modelsToTry = [
-        "openrouter/free",
-        "nvidia/nemotron-3.5-lightning:free",
-        "liquid/lfm-2.5-2.6b:free",
-        "google/gemma-4-26b-a4b-it:free"
-    ];
     try {
         const sdk = await import("@openrouter/sdk");
         const openrouter = new sdk.OpenRouter({
@@ -183,7 +152,7 @@ Diretrizes de resposta:
         });
         let recipe = null;
         let lastError = null;
-        for (const model of modelsToTry) {
+        for (const model of MODELS) {
             try {
                 console.log(`[Chef IA] Enviando requisição para o modelo ${model}...`);
                 const response = await openrouter.chat.send({
@@ -201,7 +170,13 @@ Diretrizes de resposta:
                     throw new Error("O modelo retornou uma resposta vazia.");
                 }
                 try {
-                    recipe = parseJSONRecipe(content);
+                    const parsed = parseJSONRecipe(content);
+                    if (typeof parsed?.isRecipe !== "boolean") throw new Error("Resposta incompleta do modelo.");
+                    if (parsed.isRecipe && (!parsed.title || !Array.isArray(parsed.ingredients) || !parsed.ingredients.length || !Array.isArray(parsed.steps) || !parsed.steps.length)) {
+                        throw new Error("Receita incompleta do modelo.");
+                    }
+                    if (!parsed.isRecipe && !String(parsed.message || "").trim()) throw new Error("Mensagem vazia do modelo.");
+                    recipe = parsed;
                     console.log(`[Chef IA] Sucesso com o modelo ${model}!`);
                     break;
                 } catch (parseError) {
@@ -248,8 +223,8 @@ const analisarFoto = async (req, res) => {
         const imageBuffer = Buffer.from(base64Data, "base64");
         const hfToken = process.env.HF_TOKEN;
         const hfClassificationModels = [
-            "nateraw/food",               // food-specific classifier (melhor)
-            "google/vit-base-patch16-224", // classificador geral (fallback)
+            "nateraw/food",
+            "google/vit-base-patch16-224",
         ];
         let imageCaption = null;
         if (hfToken) {
@@ -309,31 +284,30 @@ const analisarFoto = async (req, res) => {
             const gemmaPrompt = `Você é um chef culinário especialista. Uma IA de visão computacional analisou uma foto de comida e identificou os seguintes rótulos em inglês: "${imageCaption}"
 Com base nesses rótulos, identifique com precisão o prato culinário e retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto extra, sem markdown, sem blocos de código. Apenas o JSON bruto:
 ${jsonSchema}`;
-            try {
-                const gemmaResponse = await openrouter.chat.send({
-                    chatRequest: {
-                        model: "google/gemma-4-26b-a4b-it:free",
-                        messages: [{ role: "user", content: gemmaPrompt }]
-                    }
-                });
-                content = gemmaResponse.choices?.[0]?.message?.content?.trim();
-                if (content) console.log("[IA Vision] Sucesso via HuggingFace + Gemma!");
-            } catch (err) {
-                console.warn("[IA Vision] Gemma falhou, tentando visão direta:", err.message);
-                lastError = err;
+            for (const model of MODELS) {
+                try {
+                    const response = await openrouter.chat.send({
+                        chatRequest: {
+                            model,
+                            messages: [{ role: "user", content: gemmaPrompt }]
+                        }
+                    });
+                    const parsed = parseJSONRecipe(extractModelContent(response));
+                    if (!parsed?.title && !parsed?.dishName) throw new Error("Resposta incompleta do modelo.");
+                    content = JSON.stringify(parsed);
+                    console.log(`[IA Vision] Sucesso via HuggingFace + ${model}!`);
+                    break;
+                } catch (err) {
+                    console.warn(`[IA Vision] Falha com ${model}:`, err.message);
+                    lastError = err;
+                }
             }
         }
         if (!content) {
             console.log("[IA Vision] Fallback: enviando imagem diretamente para OpenRouter visão...");
             const visionPrompt = `Você é um chef culinário especialista. Identifique o prato culinário na imagem e retorne EXCLUSIVAMENTE um objeto JSON válido, sem texto extra, sem markdown, sem blocos de código. Apenas o JSON bruto:
 ${jsonSchema}`;
-            const visionModels = [
-                "openrouter/free",
-                "dots-studio/dots-3-note-preview:free",
-                "nvidia/nemotron-3.5-super-vl:free",
-                "google/gemini-2.5-flash"
-            ];
-            for (const model of visionModels) {
+            for (const model of MODELS) {
                 try {
                     console.log(`[IA Vision] Tentando modelo de visão: ${model}...`);
                     const fetchRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -359,7 +333,9 @@ ${jsonSchema}`;
                         const data = await fetchRes.json();
                         const candidate = data.choices?.[0]?.message?.content || data.choices?.[0]?.message?.reasoning;
                         if (candidate) {
-                            content = candidate;
+                            const parsed = parseJSONRecipe(candidate);
+                            if (!parsed?.title && !parsed?.dishName) throw new Error("Resposta incompleta do modelo.");
+                            content = JSON.stringify(parsed);
                             console.log(`[IA Vision] Sucesso via visão direta (${model})!`);
                             break;
                         }
@@ -394,7 +370,6 @@ ${jsonSchema}`;
         }
 
         if (!parsedData || typeof parsedData !== "object") {
-            // Se a IA respondeu texto descritivo sem formato estrito, extrai título e cria resposta válida
             const lines = content.split("\n").map(l => l.trim()).filter(Boolean);
             const titleLine = lines.find(l => !l.startsWith("`") && !l.startsWith("{") && l.length > 3) || "Prato Culinário Identificado";
             parsedData = {
@@ -407,7 +382,6 @@ ${jsonSchema}`;
             };
         }
 
-        // Garante que o retorno contenha os campos essenciais esperados pelo front-end
         if (!parsedData.title && parsedData.dishName) parsedData.title = parsedData.dishName.replace(/!$/, "");
         if (!parsedData.dishName && parsedData.title) parsedData.dishName = `${parsedData.title} Identificado!`;
         if (!Array.isArray(parsedData.detections)) parsedData.detections = [];
@@ -458,64 +432,7 @@ Exemplo: {"time":40,"servings":2,"difficulty":"Médio","diet":"none","ingredient
         }
         return res.status(200).json(JSON.parse(generatedJson[0].replace(/,(\s*[\]}])/g, '$1')));
 
-        const sdk = await import("@openrouter/sdk");
-        const openrouter = new sdk.OpenRouter({
-            apiKey: process.env.OPENROUTER_API_KEY
-        });
-        const configRestrictionText = diet || "Nenhuma restrição";
-        const numServings = servings || "2";
-        console.log(`[IA Vision Recipe] Gerando receita para o prato: ${dishName}...`);
-        const response = await openrouter.chat.send({
-            chatRequest: {
-                model: "google/gemma-4-26b-a4b-it:free",
-                messages: [
-                    {
-                        role: "system",
-                        content: `Você é o Chef Saboré IA. Crie uma receita deliciosa com base no prato identificado e seus ingredientes.
-Preferências Culinárias do Usuário:
-- Restrições Alimentares: ${configRestrictionText}
-- Rendimento Desejado: ${numServings} porções
-Diretrizes Importantes:
-1. Respeite rigorosamente as restrições alimentares do usuário: ${configRestrictionText}.
-2. Ajuste a quantidade de ingredientes para render exatamente ${numServings} porções.
-3. NUNCA use ou envie asteriscos (*) ou blocos de crase (\`\`\`) no texto da receita (especialmente nos nomes dos ingredientes ou etapas).
-3.a. Use tecnicas culinarias coerentes com o prato identificado. Para bolo, massa, cobertura, chocolate ou granulado: misture, bata, asse ou derreta conforme adequado; nunca grelhe chocolate, bolo cru, cobertura ou granulado.
-3.b. A foto nao confirma todos os ingredientes. Nao invente ingredientes, tecnicas, temperaturas ou tempos que contradigam o prato. Quando houver duvida, use um metodo classico, seguro e plausivel para o prato identificado.
-3.c. Escreva etapas curtas, cronologicas e executaveis. Para preparos assados, inclua forno, temperatura e teste de ponto; nao use forno para pratos que nao sao assados.
-4. Retorne a resposta em formato JSON válido contendo exatamente a seguinte estrutura, sem explicações extras:
-{
-  "time": 30, (tempo de preparo em minutos como número)
-  "servings": 2, (porções como número)
-  "difficulty": "Fácil", (Fácil, Médio ou Difícil)
-  "diet": "vegetariano", (se aplicável: vegano, vegetariano, lowcarb, glutenfree, fit, ou "none")
-  "ingredients": [
-    "Ingrediente 1",
-    "Ingrediente 2"
-  ],
-  "steps": [
-    "Passo 1",
-    "Passo 2"
-  ]
-}`
-                    },
-                    {
-                        role: "user",
-                        content: `Gere a receita para o prato "${dishName}" que contém estes ingredientes principais detectados: ${ingredientsList.join(', ')}.`
-                    }
-                ]
-            }
-        });
-        const content = response.choices[0]?.message?.content;
-        if (!content) {
-            throw new Error("Resposta vazia do OpenRouter");
-        }
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Nenhum objeto JSON encontrado na resposta da IA.");
-        }
-        const cleanJson = jsonMatch[0].replace(/,(\s*[\]}])/g, '$1');
-        const parsedData = JSON.parse(cleanJson);
-        res.status(200).json(parsedData);
+
     } catch (error) {
         console.error("[IA Vision Recipe] Erro ao gerar receita a partir da foto:", error);
         res.status(500).json({ 

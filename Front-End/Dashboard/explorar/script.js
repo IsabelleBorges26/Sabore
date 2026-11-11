@@ -492,45 +492,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return matchesSearch && matchesCategory && matchesFeedMode && matchesHashtag;
     });
-    // ALGORITMO SOCIAL DO FEED SABORÉ (ESTILO REDE SOCIAL)
-    // Ranqueamento inteligente: Likes (peso 4) + Avaliações/Comentários (peso 5) + Interesses + Seguidos
-    const interests = (JSON.parse(localStorage.getItem('sabore_user_preferences') || '[]'))
-      .map(item => String(item).trim().toLocaleLowerCase('pt-BR'))
-      .filter(Boolean);
-
-    // ALGORITMO SOCIAL DO FEED SABORÉ DINÂMICO
-    // Ponderação: Engajamento (Likes x4, Avaliações x5, Interesses) + Variação Dinâmica Real por Visita/Atualização
     filtered.sort((first, second) => {
-      const firstIsFresh = refreshedRecipeIds.has(String(first.id));
-      const secondIsFresh = refreshedRecipeIds.has(String(second.id));
-      if (firstIsFresh !== secondIsFresh) return firstIsFresh ? -1 : 1;
       if (activeFeedMode === 'recent') {
         return new Date(second.publishedAt || 0).getTime() - new Date(first.publishedAt || 0).getTime();
       }
-      const calculateSocialScore = (recipe) => {
-        const likesScore = (Number(recipe.likes) || 0) * 4;
-        const reviewsScore = (Number(recipe.avaliacoes) || 0) * 5;
-        
-        let interestScore = 0;
-        if (interests.length) {
-          const tags = (recipe.tags || []).join(' ').toLocaleLowerCase('pt-BR');
-          const categories = (recipe.categories || []).join(' ').toLocaleLowerCase('pt-BR');
-          const text = `${recipe.title || ''} ${recipe.description || ''}`.toLocaleLowerCase('pt-BR');
-          interestScore = interests.reduce((total, interest) => total
-            + (tags.includes(interest) ? 5 : 0)
-            + (categories.includes(interest) ? 3 : 0)
-            + (text.includes(interest) ? 1 : 0), 0);
-        }
-
-        const followingBonus = userState.followingIds.has(String(recipe.authorId)) ? 12 : 0;
-
-        const publishedAt = new Date(recipe.publishedAt || 0).getTime();
-        const ageInHours = publishedAt ? Math.max(0, (Date.now() - publishedAt) / 3600000) : Infinity;
-        const recencyScore = Math.max(0, 60 - ageInHours);
-        return likesScore + reviewsScore + interestScore + followingBonus + recencyScore;
-      };
-
-      return calculateSocialScore(second) - calculateSocialScore(first);
+      const priority = (recipe) => [
+        String(recipe.authorPlan || '').toUpperCase() === 'PRO' ? 1 : 0,
+        (Number(recipe.avaliacoes) || 0) + (Number(recipe.comentarios) || 0),
+        Number(recipe.likes) || 0,
+        Number(recipe.compartilhamentos) || 0
+      ];
+      const a = priority(first);
+      const b = priority(second);
+      for (let index = 0; index < a.length; index++) {
+        if (a[index] !== b[index]) return b[index] - a[index];
+      }
+      return new Date(second.publishedAt || 0).getTime() - new Date(first.publishedAt || 0).getTime()
+        || Number(second.id) - Number(first.id);
     });
     if (filtered.length === 0) {
       const emptyTitle = userState.recipes.length ? 'Nenhuma publicação corresponde aos filtros' : 'Ainda não há publicações disponíveis';
@@ -544,7 +522,6 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       return;
     }
-    // Feed Contínuo (Infinite Scroll): fatiar para renderizar progressivamente
     const visibleRecipes = filtered.slice(0, feedCurrentCount);
 
     visibleRecipes.forEach(rec => {
@@ -555,7 +532,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (rec.difficulty === 'Médio') diffClass = 'medium';
       else if (rec.difficulty === 'Difícil') diffClass = 'hard';
 
-      // Checa se o usuário curtiu (usando favorites)
       const isLiked = userState.favorites.includes(rec.id);
       const isSaved = false;
 
@@ -583,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span><i class="fa-regular fa-clock"></i> ${rec.time || 30} min</span>
             <span class="recipe-difficulty ${diffClass}">${rec.difficulty || 'Fácil'}</span>
             <button type="button" class="card-comment-action-btn" title="Ver comentários">
-              <i class="fa-regular fa-comment-dots"></i> ${rec.avaliacoes || 0}
+              <i class="fa-regular fa-comment-dots"></i> ${rec.comentarios || 0}
             </button>
           </div>
           <div class="post-social-actions">
@@ -595,7 +571,6 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       showAuthorAvatar(card.querySelector('.author-avatar'), rec);
 
-      // 1. CURTIR (LIKE COM CORAÇÃO)
       const likeBtn = card.querySelector('.like-toggle-btn');
       likeBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -623,7 +598,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // 2. SALVAR NO LIVRO (ÍCONE DE SALVAR / BOOKMARK)
       const bookmarkBtn = card.querySelector('.bookmark-toggle-btn');
       bookmarkBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -632,7 +606,6 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal('save-to-book-modal');
       });
 
-      // 3. COMENTÁRIOS DO CARD
       const commentCardBtn = card.querySelector('.card-comment-action-btn');
       if (commentCardBtn) {
         commentCardBtn.addEventListener('click', (e) => {
@@ -690,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.querySelector('.share-post-btn').addEventListener('click', async (event) => {
         event.stopPropagation();
         if (window.SaboreShareRecipe) {
-          await window.SaboreShareRecipe(rec);
+          if (await window.SaboreShareRecipe(rec)) renderRecipes();
         } else {
           const url = new URL(`../../receita/?id=${rec.id}`, window.location.href).href;
           const shareData = { title: rec.title, text: `Veja a receita ${rec.title}, publicada por ${rec.author} no Saboré.`, url };
@@ -702,14 +675,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      card.querySelector('.whatsapp-post-btn').addEventListener('click', (event) => {
+      card.querySelector('.whatsapp-post-btn').addEventListener('click', async (event) => {
         event.stopPropagation();
+        if (window.SaboreShareRecipe) {
+          if (await window.SaboreShareRecipe(rec, { platform: 'whatsapp' })) renderRecipes();
+          return;
+        }
         const url = new URL(`../../receita/?id=${rec.id}`, window.location.href).href;
         const message = `Veja a receita ${rec.title}, publicada por ${rec.author} no Saboré. ${url}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
       });
 
-      // ABRIR PUBLICAÇÃO COMPLETA AO CLICAR NO CARD
       card.addEventListener('click', () => {
         openRecipeDetailsModal(rec);
       });
@@ -732,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isInfiniteScrollActive) return;
     const trigger = document.querySelector('.infinite-scroll-trigger');
     const scrollContainer = document.querySelector('.dashboard-body') || window;
-    
+
     const handleScroll = () => {
       if (feedCurrentCount >= totalAvailable) return;
       const targetEl = document.querySelector('.infinite-scroll-trigger');
@@ -842,7 +818,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return num + ' seguidores';
   }
-  // Desafio da Semana (sistema culinário com participação, pontos e histórico)
   let selectedDesafioPhotoDataUrl = null;
   let desafioPhotoProcessing = false;
 
@@ -874,7 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
         error: 'O arquivo selecionado está vazio. Escolha outra imagem.'
       };
     }
-    const maxBytes = 10 * 1024 * 1024; // 10 MB
+    const maxBytes = 10 * 1024 * 1024;
     if (file.size > maxBytes) {
       return {
         valid: false,
@@ -1072,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const summary = String(desafio.descricao || '').trim();
       descEl.textContent = summary.length > 112 ? `${summary.slice(0, 109).trimEnd()}…` : summary;
     }
-    
+
     if (badgeTextEl) {
       if (isEncerrado) {
         badgeTextEl.textContent = `DESAFIO ENCERRADO • ${desafio.tema.toUpperCase()}`;
@@ -1090,7 +1065,6 @@ document.addEventListener('DOMContentLoaded', () => {
         activeHashtagFilter = (activeHashtagFilter === desafio.hashtag) ? null : desafio.hashtag;
         renderTags();
         renderRecipes();
-        // Switch to feed tab if on events tab
         const feedView = document.getElementById('view-comunidade-feed');
         const evView = document.getElementById('view-comunidade-eventos');
         if (feedView && evView && evView.style.display !== 'none') {
@@ -1118,7 +1092,6 @@ document.addEventListener('DOMContentLoaded', () => {
       participantsEl.innerHTML = `<i class="fa-solid fa-user-group"></i> ${total} ${total === 1 ? 'participante' : 'participantes'}`;
     }
 
-    // Show/hide completed banner
     const completedBanner = document.getElementById('challenge-completed-banner');
     if (completedBanner) completedBanner.style.display = participou ? '' : 'none';
 
@@ -1337,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateTrendingHashtags() {
     const map = new Map();
     userState.recipes.forEach(rec => {
-      const interactions = (Number(rec.likes) || 0) + (Number(rec.avaliacoes) || 0);
+      const interactions = (Number(rec.likes) || 0) + (Number(rec.avaliacoes) || 0) + (Number(rec.comentarios) || 0);
       const tags = rec.tags || extractRecipeTags(rec);
       tags.forEach(tag => {
         const norm = tag.toLowerCase();
@@ -1350,7 +1323,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Exibir APENAS as hashtags que realmente estão em alta com base nas interações dos usuários (> 0)
     const officialChallengeTag = normalizeHashtag(currentWeeklyChallengeData?.desafio?.hashtag || currentWeeklyChallengeData?.hashtag);
     if (officialChallengeTag && !map.has(officialChallengeTag.toLowerCase())) {
       map.set(officialChallengeTag.toLowerCase(), { name: officialChallengeTag.toLowerCase(), interactions: 0, count: 0, official: true });
@@ -1456,9 +1428,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     }
-    selectedRating = 5;
-    updateStarsUI(5);
-    loadRecipeCommentsAndRatings(rec.id);
+    selectedRating = 0;
+    ratingEdited = false;
+    currentRating = null;
+    updateStarsUI(0);
+    if (submitRatingBtn) submitRatingBtn.hidden = true;
+    if (deleteRatingBtn) deleteRatingBtn.hidden = true;
+    if (ownRatingStatus) ownRatingStatus.textContent = 'Carregando sua avaliação...';
+    if (commentsCountBadge) commentsCountBadge.textContent = Number(rec.comentarios) || 0;
+    const ratingsCountBadge = document.getElementById('recipe-ratings-count');
+    if (ratingsCountBadge) ratingsCountBadge.textContent = Number(rec.avaliacoes) || 0;
+    loadRecipeComments(rec.id);
+    loadRecipeRating(rec.id);
     openModal('recipe-details-modal');
   }
   const saveOptionsContainer = document.getElementById('save-book-options-container');
@@ -1523,7 +1504,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedLoadId = ++latestFeedLoad;
     const isCurrentFeedLoad = () => feedLoadId === latestFeedLoad;
     try {
-      // Informações secundárias não podem impedir o carregamento das receitas públicas.
       const [profileResult, booksResult, favoritesResult, recipesResult] = await Promise.allSettled([
         api.get("/usuarios/perfil"),
         api.get("/livros/listar"),
@@ -1564,12 +1544,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const freshIds = new Set(relevantFreshRecipes.map(recipe => String(recipe.id)));
           publicRecipes = [...relevantFreshRecipes, ...userState.recipes.filter(recipe => !freshIds.has(String(recipe.id)))];
         } else if (userState.recipes.length) {
-          // Uma atualização sem posts novos mantém o feed visível; não transforma
-          // uma resposta válida da API em um estado vazio.
           publicRecipes = userState.recipes.map(recipe => ({
             id: recipe.id, title: recipe.title, description: recipe.description,
             time: recipe.time, difficulty: recipe.difficulty, category: recipe.category,
-            likes: recipe.likes, avaliacoes: recipe.avaliacoes, image: recipe.image,
+            likes: recipe.likes, avaliacoes: recipe.avaliacoes, comentarios: recipe.comentarios,
+            compartilhamentos: recipe.compartilhamentos, image: recipe.image,
             authorId: recipe.authorId, author: recipe.author, authorAvatar: recipe.authorAvatar,
             authorPlan: recipe.authorPlan,
             publishedAt: recipe.publishedAt, ingredients: recipe.ingredients, steps: recipe.steps,
@@ -1590,6 +1569,8 @@ document.addEventListener('DOMContentLoaded', () => {
           category: rec.category,
           likes: Number(rec.likes) || 0,
           avaliacoes: Number(rec.avaliacoes) || 0,
+          comentarios: Number(rec.comentarios) || 0,
+          compartilhamentos: Number(rec.compartilhamentos) || 0,
           image: rec.image,
           authorId: rec.authorId,
           author: rec.author,
@@ -1631,12 +1612,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ]);
         userState.followingIds = new Set((seguindo || []).map(item => String(item.id)));
         userState.chefs = usuarios
-          .filter(u => u.id !== currentUser.id) // Exclui o próprio usuário logado
+          .filter(u => u.id !== currentUser.id)
           .map(u => ({
             id: u.id,
             name: u.nome,
             plan: u.plano,
-            recipes: 0, // Será preenchido quando houver rota de contagem
+            recipes: 0,
             avatar: u.foto || null,
             followed: false,
             recipes: u.receitasPublicas || 0,
@@ -1646,18 +1627,31 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (!isCurrentFeedLoad()) return;
       renderChefs();
-      // Os cards podem ter sido renderizados antes do retorno dos perfis sociais.
-      // Renderize novamente para refletir corretamente quem o usuário já segue.
       renderRecipes();
       renderTags();
       return { ok: true, newPostsCount };
     } catch (err) {
       console.error('NÃ£o foi possÃ­vel atualizar o feed da comunidade:', err);
+      if (isCurrentFeedLoad() && userState.recipes.length === 0) {
+        const container = document.getElementById('explore-recipes-container');
+        if (container) {
+          container.innerHTML = '<div class="book-detail-empty" style="grid-column: 1 / -1; padding: 60px 20px;"><div class="empty-icon-glow"><i class="fa-solid fa-triangle-exclamation"></i></div><h3>Não foi possível carregar as publicações</h3><p>Verifique sua conexão e tente novamente.</p><button type="button" id="retry-community-feed" class="feed-filter-btn">Tentar novamente</button></div>';
+          container.querySelector('#retry-community-feed')?.addEventListener('click', () => loadInitialData());
+        }
+        if (!options.retryAttempt) {
+          setTimeout(() => { if (api.getUser() && isCurrentFeedLoad()) loadInitialData({ retryAttempt: true }); }, 16_000);
+        }
+      }
       return { ok: false, newPostsCount: 0, error: err };
     }
   }
-  let selectedRating = 5;
+  let selectedRating = 0;
+  let ratingEdited = false;
+  let currentRating = null;
   const ratingStarsContainer = document.getElementById('recipe-rating-stars');
+  const submitRatingBtn = document.getElementById('recipe-submit-rating');
+  const deleteRatingBtn = document.getElementById('recipe-delete-rating');
+  const ownRatingStatus = document.getElementById('recipe-own-rating-status');
   const commentForm = document.getElementById('recipe-comment-form');
   const commentInput = document.getElementById('recipe-comment-input');
   const commentsListContainer = document.getElementById('recipe-comments-list');
@@ -1671,9 +1665,62 @@ document.addEventListener('DOMContentLoaded', () => {
       star.addEventListener('click', () => {
         const rating = parseInt(star.dataset.rating) || 5;
         selectedRating = rating;
+        ratingEdited = true;
         updateStarsUI(rating);
+        if (submitRatingBtn) {
+          submitRatingBtn.textContent = currentRating ? 'Salvar alteração' : 'Enviar avaliação';
+          submitRatingBtn.hidden = false;
+        }
       });
     });
+
+    if (submitRatingBtn) {
+      submitRatingBtn.addEventListener('click', async () => {
+        const rec = userState.selectedExploreRecipe;
+        if (!rec || !selectedRating || submitRatingBtn.disabled) return;
+        submitRatingBtn.disabled = true;
+        submitRatingBtn.textContent = 'Salvando...';
+        try {
+          currentRating = await api.post('/avaliacoes/cadastrar', { receitaId: rec.id, nota: selectedRating });
+          submitRatingBtn.hidden = true;
+          if (deleteRatingBtn) deleteRatingBtn.hidden = false;
+          ratingEdited = false;
+          await loadRecipeRating(rec.id);
+          await refreshRecipeEngagement(rec);
+          if (ownRatingStatus) ownRatingStatus.textContent = `Sua avaliação foi salva: ${selectedRating} de 5 estrelas.`;
+        } catch (err) {
+          alert('Não foi possível salvar a avaliação: ' + err.message);
+        } finally {
+          submitRatingBtn.disabled = false;
+          submitRatingBtn.textContent = currentRating ? 'Salvar alteração' : 'Enviar avaliação';
+        }
+      });
+    }
+
+    if (deleteRatingBtn) {
+      deleteRatingBtn.addEventListener('click', async () => {
+        const rec = userState.selectedExploreRecipe;
+        if (!rec || !currentRating || deleteRatingBtn.disabled) return;
+        if (!confirm('Excluir sua avaliação desta receita? Seus comentários continuarão publicados.')) return;
+        deleteRatingBtn.disabled = true;
+        try {
+          await api.delete(`/avaliacoes/excluir/${rec.id}`);
+          currentRating = null;
+          selectedRating = 0;
+          ratingEdited = false;
+          updateStarsUI(0);
+          deleteRatingBtn.hidden = true;
+          if (submitRatingBtn) submitRatingBtn.hidden = true;
+          await loadRecipeRating(rec.id);
+          await refreshRecipeEngagement(rec);
+          if (ownRatingStatus) ownRatingStatus.textContent = 'Sua avaliação foi excluída.';
+        } catch (err) {
+          alert('Não foi possível excluir sua avaliação: ' + err.message);
+        } finally {
+          deleteRatingBtn.disabled = false;
+        }
+      });
+    }
 
     if (commentForm) {
       commentForm.addEventListener('submit', async (e) => {
@@ -1690,25 +1737,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-          await api.post("/avaliacoes/cadastrar", {
-            receitaId: rec.id,
-            nota: selectedRating || 5,
-            comentario: text
-          });
+          await api.post('/comentarios/cadastrar', { receitaId: rec.id, texto: text });
 
           if (commentInput) commentInput.value = '';
-          rec.avaliacoes = (rec.avaliacoes || 0) + 1;
-          
           if (commentFeedbackStatus) {
             commentFeedbackStatus.textContent = 'Comentário publicado!';
             commentFeedbackStatus.style.display = 'inline';
             setTimeout(() => { if (commentFeedbackStatus) commentFeedbackStatus.style.display = 'none'; }, 3000);
           }
 
-          // Atualizar lista de comentários e receita em tempo real
-          await loadRecipeCommentsAndRatings(rec.id);
-          renderRecipes();
-          updateTrendingHashtags();
+          await loadRecipeComments(rec.id);
+          await refreshRecipeEngagement(rec);
         } catch (err) {
           alert("Não foi possível enviar o comentário: " + err.message);
         } finally {
@@ -1721,26 +1760,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function loadRecipeCommentsAndRatings(recipeId) {
-    if (!commentsListContainer) return;
-    commentsListContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 10px;">Carregando comentários...</div>';
-    
+  async function refreshRecipeEngagement(rec) {
+    try {
+      const updatedRecipe = await api.get(`/receitas/publicas/${rec.id}`);
+      rec.avaliacoes = Number(updatedRecipe.avaliacoes) || 0;
+      rec.comentarios = Number(updatedRecipe.comentarios) || 0;
+    } catch {
+      const commentsCount = Number(commentsCountBadge?.textContent);
+      const ratingsCount = Number(document.getElementById('recipe-ratings-count')?.textContent);
+      if (Number.isFinite(commentsCount)) rec.comentarios = commentsCount;
+      if (Number.isFinite(ratingsCount)) rec.avaliacoes = ratingsCount;
+    }
+    if (commentsCountBadge) commentsCountBadge.textContent = rec.comentarios;
+    const ratingsCountBadge = document.getElementById('recipe-ratings-count');
+    if (ratingsCountBadge) ratingsCountBadge.textContent = rec.avaliacoes;
+    renderRecipes();
+    updateTrendingHashtags();
+  }
+
+  async function loadRecipeRating(recipeId) {
+    if (!ratingStarsContainer) return;
     try {
       const ratings = await api.get(`/avaliacoes/listar?receitaId=${recipeId}`);
+      if (String(userState.selectedExploreRecipe?.id) !== String(recipeId)) return;
       const list = Array.isArray(ratings) ? ratings : [];
-      
+      const ratingsCountBadge = document.getElementById('recipe-ratings-count');
+      if (ratingsCountBadge) ratingsCountBadge.textContent = list.length;
+      const currentUser = api.getUser();
+      const userRating = list.find(item => String(item.usuarioId) === String(currentUser?.id));
+      currentRating = userRating || null;
+      if (deleteRatingBtn) deleteRatingBtn.hidden = !currentRating;
+      if (ownRatingStatus) ownRatingStatus.textContent = currentRating
+        ? `Sua avaliação atual: ${currentRating.nota} de 5 estrelas.`
+        : 'Você ainda não avaliou esta receita.';
+      if (ratingEdited) {
+        if (submitRatingBtn) submitRatingBtn.textContent = currentRating ? 'Salvar alteração' : 'Enviar avaliação';
+        return;
+      }
+      selectedRating = userRating ? userRating.nota : 0;
+      updateStarsUI(selectedRating);
+      ratingStarsContainer.title = '';
+      if (submitRatingBtn) submitRatingBtn.hidden = true;
+    } catch {
+      if (String(userState.selectedExploreRecipe?.id) !== String(recipeId)) return;
+      ratingStarsContainer.title = 'Não foi possível carregar sua avaliação. Tente novamente.';
+      if (ownRatingStatus) ownRatingStatus.textContent = 'Não foi possível verificar sua avaliação agora.';
+    }
+  }
+
+  async function loadRecipeComments(recipeId) {
+    if (!commentsListContainer) return;
+    commentsListContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 10px;">Carregando comentários...</div>';
+
+    try {
+      const comments = await api.get(`/comentarios/listar?receitaId=${recipeId}`);
+      if (String(userState.selectedExploreRecipe?.id) !== String(recipeId)) return;
+      const list = Array.isArray(comments) ? comments : [];
+
       if (commentsCountBadge) {
         commentsCountBadge.textContent = list.length;
-      }
-
-      const currentUser = api.getUser();
-      const userRating = list.find(r => r.usuarioId === currentUser?.id);
-      if (userRating) {
-        selectedRating = userRating.nota || 5;
-        updateStarsUI(selectedRating);
-      } else {
-        selectedRating = 5;
-        updateStarsUI(5);
       }
 
       if (list.length === 0) {
@@ -1752,23 +1830,18 @@ document.addEventListener('DOMContentLoaded', () => {
       list.forEach(item => {
         const commentCard = document.createElement('div');
         commentCard.className = 'recipe-comment-item';
-        commentCard.style.cssText = 'display: flex; gap: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); align-items: flex-start;';
-        
-        const userName = item.usuario?.nome || 'Usuário da Comunidade';
-        const starsHtml = Array.from({ length: 5 }, (_, i) => 
-          `<i class="fa-solid fa-star" style="font-size: 0.75rem; color: ${i < item.nota ? 'var(--accent)' : 'rgba(255,255,255,0.2)'};"></i>`
-        ).join('');
 
+        const userName = item.usuario?.nome || 'Usuário da Comunidade';
         commentCard.innerHTML = `
           <span class="comment-author-avatar" aria-hidden="true"></span>
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 600; font-size: 0.88rem; color: #fff; display: inline-flex; align-items: center; gap: 4px;">${api.renderUserIdentity(userName, item.usuario?.plano)}</span>
-              <div style="display: flex; gap: 2px;">${starsHtml}</div>
+          <div class="recipe-comment-body">
+            <div class="recipe-comment-header">
+              <span class="recipe-comment-author">${api.renderUserIdentity(userName, item.usuario?.plano)}</span>
             </div>
-            <p style="margin: 0; font-size: 0.84rem; color: #d4d4d8; line-height: 1.4;">${item.comentario || 'Deixou uma avaliação.'}</p>
+            <p class="recipe-comment-text"></p>
           </div>
         `;
+        commentCard.querySelector('.recipe-comment-text').textContent = item.texto || '';
         showAuthorAvatar(commentCard.querySelector('.comment-author-avatar'), {
           author: userName,
           authorAvatar: item.usuario?.foto,
@@ -1776,6 +1849,7 @@ document.addEventListener('DOMContentLoaded', () => {
         commentsListContainer.appendChild(commentCard);
       });
     } catch (err) {
+      if (String(userState.selectedExploreRecipe?.id) !== String(recipeId)) return;
       commentsListContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 10px;">Não foi possível carregar os comentários.</div>';
     }
   }
@@ -1800,7 +1874,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initSpecialEvents();
   initCommunityTabs();
 
-  // Função central para reembaralhar e recarregar o feed imediatamente
   async function refreshExploreFeed(showFeedback = true) {
     const refreshBtn = document.getElementById('btn-refresh-feed');
     if (refreshBtn && showFeedback) {
@@ -1827,7 +1900,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Botão de Atualizar Feed Manual
   const refreshFeedBtn = document.getElementById('btn-refresh-feed');
   if (refreshFeedBtn) {
     refreshFeedBtn.addEventListener('click', (e) => {
@@ -1837,7 +1909,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Recarregar feed sempre que o usuário retornar à página (pageshow sem restrição persisted)
   window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
       refreshExploreFeed(false);
@@ -1850,14 +1921,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Atualizar quando a janela ganha foco
   window.addEventListener('focus', () => {
     refreshExploreFeed(false);
   });
 
-  /* =====================================================================
-     COMMUNITY TABS – Feed ↔ Eventos Especiais
-  ===================================================================== */
+
   function initCommunityTabs() {
     const btnFeed = document.getElementById('btn-tab-feed');
     const btnEventos = document.getElementById('btn-tab-eventos');
@@ -1887,15 +1955,12 @@ document.addEventListener('DOMContentLoaded', () => {
     btnEventos.addEventListener('click', showEventosTab);
   }
 
-  /* =====================================================================
-     SPECIAL EVENTS – Eventos Especiais
-  ===================================================================== */
+
   let currentEventData = null;
   let currentEventId = null;
   let pendingVoteEntradaId = null;
 
   function initSpecialEvents() {
-    // Entry Modal – tab switching
     const btnExisting = document.getElementById('btn-choice-existing');
     const btnCreate = document.getElementById('btn-choice-create');
     const panelExisting = document.getElementById('entry-panel-existing');
@@ -1913,13 +1978,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Open Entry Modal button
     const openEntryBtn = document.getElementById('btn-open-event-entry-modal');
     if (openEntryBtn) {
       openEntryBtn.addEventListener('click', () => openEventEntryModal());
     }
 
-    // Close Entry Modal
     const closeEntryModal = document.getElementById('close-event-entry-modal');
     const entryModal = document.getElementById('event-entry-modal');
     if (closeEntryModal && entryModal) {
@@ -1927,7 +1990,6 @@ document.addEventListener('DOMContentLoaded', () => {
       entryModal.addEventListener('click', (e) => { if (e.target === entryModal) entryModal.classList.remove('open'); });
     }
 
-    // Close Recipe Detail Modal
     const closeRecipeModal = document.getElementById('close-event-recipe-modal');
     const recipeModal = document.getElementById('event-recipe-detail-modal');
     if (closeRecipeModal && recipeModal) {
@@ -1935,7 +1997,6 @@ document.addEventListener('DOMContentLoaded', () => {
       recipeModal.addEventListener('click', (e) => { if (e.target === recipeModal) recipeModal.classList.remove('open'); });
     }
 
-    // Vote Confirm Modal – Cancel
     const cancelVoteBtn = document.getElementById('btn-cancel-vote');
     const voteModal = document.getElementById('event-vote-confirm-modal');
     if (cancelVoteBtn && voteModal) {
@@ -1943,7 +2004,6 @@ document.addEventListener('DOMContentLoaded', () => {
       voteModal.addEventListener('click', (e) => { if (e.target === voteModal) { pendingVoteEntradaId = null; voteModal.classList.remove('open'); } });
     }
 
-    // Vote Confirm Modal – Execute
     const executeVoteBtn = document.getElementById('btn-execute-vote');
     if (executeVoteBtn) {
       executeVoteBtn.addEventListener('click', async () => {
@@ -1954,10 +2014,8 @@ document.addEventListener('DOMContentLoaded', () => {
           await api.post(`/desafios/eventos/${currentEventId}/votar`, { entradaId: pendingVoteEntradaId });
           if (voteModal) voteModal.classList.remove('open');
           pendingVoteEntradaId = null;
-          // Show success message
           if (window.SaboreNotify) window.SaboreNotify('Seu voto foi registrado! Obrigado por participar.', 'success');
           else alert('Seu voto foi registrado! Obrigado por participar.');
-          // Reload event data
           await loadSpecialEventsView(currentEventId);
         } catch (err) {
           if (window.SaboreNotify) window.SaboreNotify(err.message || 'Não foi possível registrar seu voto.', 'error');
@@ -1969,7 +2027,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Event selector pills
     const selectorBar = document.getElementById('event-selector-bar');
     if (selectorBar) {
       selectorBar.addEventListener('click', (e) => {
@@ -1981,7 +2038,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // "Open composer for event" button inside entry modal
     const openCreateBtn = document.getElementById('btn-open-create-for-event');
     if (openCreateBtn) {
       openCreateBtn.addEventListener('click', () => {
@@ -1994,7 +2050,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function loadSpecialEventsView(eventId) {
-    // Default to first event if none specified
     const selectorBar = document.getElementById('event-selector-bar');
     if (!eventId && selectorBar) {
       const firstPill = selectorBar.querySelector('[data-event-id]');
@@ -2031,7 +2086,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (eventsView) eventsView.dataset.eventTheme = banner.dataset.theme;
     }
 
-    // Status pill
     const statusPill = document.getElementById('event-status-pill');
     if (statusPill) {
       const labels = { EM_BREVE: 'Inscrições em breve', INSCRICOES: 'Inscrições abertas', VOTACAO: 'Votação aberta', ENCERRADO: 'Evento encerrado' };
@@ -2049,7 +2103,6 @@ document.addEventListener('DOMContentLoaded', () => {
       votingIndicator.dataset.phase = String(fase || '').toLowerCase();
     }
 
-    // Banner content
     const bannerTitle = document.getElementById('event-banner-title');
     const bannerDesc = document.getElementById('event-banner-desc');
     const hashtagBadge = document.getElementById('event-hashtag-badge');
@@ -2075,7 +2128,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (participantsCount) participantsCount.textContent = `${participantesCount} ${participantesCount === 1 ? 'participante' : 'participantes'}`;
     if (votesCount) votesCount.textContent = `${totalVotos} ${totalVotos === 1 ? 'voto computado' : 'votos computados'}`;
 
-    // Timeline
     const stepInscricoes = document.getElementById('step-inscricoes');
     const stepVotacao = document.getElementById('step-votacao');
     const stepResultado = document.getElementById('step-resultado');
@@ -2095,18 +2147,15 @@ document.addEventListener('DOMContentLoaded', () => {
       stepResultadoDates.textContent = formatEventDate(nextDay.toISOString());
     }
 
-    // Highlight active step
     [stepInscricoes, stepVotacao, stepResultado].forEach(s => s?.classList.remove('active'));
     if (fase === 'INSCRICOES' && stepInscricoes) stepInscricoes.classList.add('active');
     else if (fase === 'VOTACAO' && stepVotacao) stepVotacao.classList.add('active');
     else if (fase === 'ENCERRADO' && stepResultado) stepResultado.classList.add('active');
 
-    // Prize names
     const prizeBadgeName = document.getElementById('event-prize-badge-name');
     const nomeEmblema = data.emblema || data.emblemaId || 'Emblema Especial';
     if (prizeBadgeName) prizeBadgeName.textContent = nomeEmblema;
 
-    // User action card
     const actionCard = document.getElementById('event-user-action-card');
     const actionInfo = document.getElementById('event-user-action-info');
     const openEntryBtn = document.getElementById('btn-open-event-entry-modal');
@@ -2134,12 +2183,10 @@ document.addEventListener('DOMContentLoaded', () => {
           if (actionInfo) actionInfo.innerHTML = '<h3>Votação aberta</h3><p>Escolha sua receita favorita. Seu voto é único.</p>';
         }
       } else {
-        // ENCERRADO
         actionCard.style.display = 'none';
       }
     }
 
-    // Winner card
     const winnerCard = document.getElementById('event-winner-card');
     if (winnerCard) {
       if (fase === 'ENCERRADO' && data.resultado) {
@@ -2156,7 +2203,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Render voting gallery
     renderEventGallery(galeria, fase, meuVoto, data.id || currentEventId);
   }
 
@@ -2218,12 +2264,9 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }).join('');
 
-    // Load author avatars
     container.querySelectorAll('.gallery-author-avatar[data-src]').forEach(el => {
-      // avatars are rendered as initials, upgrade if photo available
     });
 
-    // Bind "Ver Receita" buttons
     container.querySelectorAll('.btn-gallery-view').forEach(btn => {
       btn.addEventListener('click', () => {
         const entryId = Number(btn.dataset.entryId);
@@ -2232,7 +2275,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Bind "Votar" buttons
     container.querySelectorAll('.btn-gallery-vote').forEach(btn => {
       btn.addEventListener('click', () => {
         const entryId = Number(btn.dataset.entryId);
@@ -2309,7 +2351,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (titleEl) titleEl.textContent = `Inscrição Oficial – ${currentEventData.nome || currentEventData.titulo || 'Evento'}`;
     if (alertEl) alertEl.style.display = 'none';
 
-    // Load user's public recipes
     const listEl = document.getElementById('entry-existing-recipes-list');
     if (listEl) {
       listEl.innerHTML = '<p style="color:rgba(242,244,243,.6);font-size:.85rem;">Carregando suas receitas...</p>';
@@ -2332,7 +2373,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `).join('');
 
-          // Bind inscription buttons
           listEl.querySelectorAll('.btn-select-entry').forEach(btn => {
             btn.addEventListener('click', async () => {
               const receitaId = Number(btn.dataset.recipeId);
@@ -2360,7 +2400,6 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.add('open');
   }
 
-  // Atualizar quando a janela ganha foco
   window.addEventListener('focus', () => {
     refreshExploreFeed(false);
   });

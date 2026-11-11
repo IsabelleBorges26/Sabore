@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     updateCursorHoverListeners();
   }
-  async function loadInitialData() {
+  async function loadInitialData(retryAttempt = false) {
     const user = api.getUser();
     if (!user) {
       window.location.href = "../../login/index.html";
@@ -670,8 +670,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navAvatar && user.foto) navAvatar.src = user.foto;
     const navName = document.querySelector('.user-name');
     if (navName) api.renderUserName(navName, user);
-    try {
-      const profileData = await api.get("/usuarios/perfil");
+    const [profileResult, booksResult, favoritesResult, publicRecipesResult] = await Promise.allSettled([
+      api.get("/usuarios/perfil"),
+      api.get("/livros/listar"),
+      api.get("/favoritos/listar"),
+      api.get("/receitas/publicas")
+    ]);
+    if (profileResult.status === 'fulfilled') {
+      const profileData = profileResult.value;
       userState.isPro = profileData.plano === "PRO";
       if (navName) api.renderUserName(navName, user, profileData.plano);
       userState.stats = {
@@ -682,7 +688,9 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       updatePlanUI();
       updateStatsUI();
-      const books = await api.get("/livros/listar");
+    }
+    if (booksResult.status === 'fulfilled') {
+      const books = booksResult.value;
       userState.books = books.map(b => ({
         id: b.id,
         title: b.titulo,
@@ -691,12 +699,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tag: b.tag
       }));
       renderBooks();
-      const favorites = await api.get("/favoritos/listar");
-      renderFavorites(favorites);
-      const publicRecipes = await api.get("/receitas/publicas");
-      renderTrending(publicRecipes);
-      renderRecommendations(publicRecipes);
-    } catch (err) {
+    }
+    if (favoritesResult.status === 'fulfilled') renderFavorites(favoritesResult.value);
+    if (publicRecipesResult.status === 'fulfilled') {
+      renderTrending(publicRecipesResult.value);
+      renderRecommendations(publicRecipesResult.value);
+    }
+    if (!retryAttempt && [profileResult, booksResult, favoritesResult, publicRecipesResult].some(result => result.status === 'rejected')) {
+      setTimeout(() => { if (api.getUser()) loadInitialData(true); }, 16_000);
     }
   }
   loadInitialData();

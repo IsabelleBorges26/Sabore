@@ -215,7 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const social = await api.get('/social/meu-resumo');
       document.getElementById('profile-followers-count').textContent = social.seguidores;
       document.getElementById('profile-following-count').textContent = social.seguindo;
-      document.getElementById('profile-recipes-count').textContent = social.receitasPublicas;
       if (document.getElementById('followers-modal')?.classList.contains('open')) {
         loadSocialTab(currentSocialTab);
       }
@@ -312,25 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  // Estado de criações e abas estilo Instagram
   userState.creations = [];
-  userState.activeTab = 'todas';
-
-  // Configuração das abas estilo Instagram
-  const tabButtons = document.querySelectorAll('.insta-tab-btn');
-  tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetTab = btn.dataset.tab;
-      if (!targetTab || userState.activeTab === targetTab) return;
-      userState.activeTab = targetTab;
-      tabButtons.forEach(b => {
-        const isActive = b.dataset.tab === targetTab;
-        b.classList.toggle('active', isActive);
-        b.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      });
-      renderInstagramFeed();
-    });
-  });
 
   const closeInstaModalBtn = document.getElementById('close-insta-modal');
   if (closeInstaModalBtn) {
@@ -527,45 +508,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('creations-grid');
     if (!container) return;
 
-    // Atualiza contadores das abas
     const countAll = userState.creations.length;
-    const countPublic = userState.creations.filter(r => r.public).length;
-    const countPrivate = userState.creations.filter(r => !r.public).length;
-
     const elCountAll = document.getElementById('count-all-creations');
-    const elCountPub = document.getElementById('count-public-creations');
-    const elCountPriv = document.getElementById('count-private-creations');
-
     if (elCountAll) elCountAll.textContent = countAll;
-    if (elCountPub) elCountPub.textContent = countPublic;
-    if (elCountPriv) elCountPriv.textContent = countPrivate;
-
-    // Atualiza o contador de receitas no topo do perfil com dados reais!
     const profileRecipesCount = document.getElementById('profile-recipes-count');
     if (profileRecipesCount) {
       profileRecipesCount.textContent = countAll;
     }
 
-    // Filtra pela aba selecionada
-    let filtered = userState.creations;
-    if (userState.activeTab === 'publicas') {
-      filtered = userState.creations.filter(r => r.public);
-    } else if (userState.activeTab === 'privadas') {
-      filtered = userState.creations.filter(r => !r.public);
-    }
-
     container.innerHTML = '';
 
-    if (filtered.length === 0) {
-      let emptyTitle = 'Ainda não há publicações';
-      let emptyDesc = 'Quando você criar receitas ou salvá-las nos seus livros, suas publicações aparecerão aqui no seu feed.';
-      if (userState.activeTab === 'publicas') {
-        emptyTitle = 'Nenhuma receita pública';
-        emptyDesc = 'Você ainda não compartilhou nenhuma das suas criações com a comunidade do Saboré.';
-      } else if (userState.activeTab === 'privadas') {
-        emptyTitle = 'Nenhuma receita privada';
-        emptyDesc = 'Todas as suas criações atuais estão publicadas na comunidade.';
-      }
+    if (userState.creations.length === 0) {
+      const emptyTitle = 'Ainda não há publicações';
+      const emptyDesc = 'Quando você criar receitas ou salvá-las nos seus livros, suas publicações aparecerão aqui no seu feed.';
 
       container.innerHTML = `
         <div class="insta-empty-feed">
@@ -582,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    filtered.forEach(rec => {
+    userState.creations.forEach(rec => {
       const card = document.createElement('article');
       card.className = 'insta-post-card';
       card.tabIndex = 0;
@@ -638,12 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCursorHoverListeners();
   }
 
-  async function loadCreations() {
+  async function loadCreations(retryAttempt = false) {
     try {
       const container = document.getElementById('creations-grid');
       if (!container) return;
 
-      // Chama a rota de receitas do usuário autenticado no backend
       const data = await api.get('/receitas/listar');
       userState.creations = Array.isArray(data) ? data : [];
       renderInstagramFeed();
@@ -663,8 +617,9 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         `;
         const retryBtn = document.getElementById('btn-retry-creations');
-        if (retryBtn) retryBtn.addEventListener('click', loadCreations);
+        if (retryBtn) retryBtn.addEventListener('click', () => loadCreations());
       }
+      if (!retryAttempt) setTimeout(() => { if (api.getUser()) loadCreations(true); }, 16_000);
     }
   }
 
@@ -687,11 +642,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (bioDisplay) bioDisplay.textContent = savedBio;
       const followersVal = document.getElementById('profile-followers-count');
       const followingVal = document.getElementById('profile-following-count');
-      const recipesVal = document.getElementById('profile-recipes-count');
       const social = await api.get('/social/meu-resumo');
       if (followersVal) followersVal.textContent = social.seguidores;
       if (followingVal) followingVal.textContent = social.seguindo;
-      if (recipesVal) recipesVal.textContent = social.receitasPublicas;
 
       try {
         const achievements = await api.get('/usuarios/conquistas');

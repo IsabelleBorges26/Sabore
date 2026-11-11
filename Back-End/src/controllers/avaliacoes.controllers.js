@@ -1,140 +1,71 @@
-const prisma = require("../data/prisma");
+const { withDirectDatabaseFallback } = require("../data/databaseFallback");
 
 const cadastrar = async (req, res) => {
     const usuarioId = req.usuario.id;
-    const { receitaId, nota, comentario } = req.body;
-    if (!receitaId) {
-        return res.status(400).json({ erro: "ID da receita é obrigatório." });
-    }
-    const finalNota = nota !== undefined ? Number(nota) : 5;
-    const finalComentario = typeof comentario === "string" ? comentario.trim() : "";
+    const receitaId = Number(req.body.receitaId);
+    const nota = Number(req.body.nota);
+    if (!Number.isSafeInteger(receitaId) || receitaId <= 0) return res.status(400).json({ erro: "ID da receita é obrigatório." });
+    if (!Number.isInteger(nota) || nota < 1 || nota > 5) return res.status(400).json({ erro: "A nota deve ser de 1 a 5." });
     try {
-        const receita = await prisma.receita.findUnique({
-            where: { id: Number(receitaId) },
-            select: { usuarioId: true }
-        });
-
-        const item = await prisma.avaliacao.upsert({
-            where: {
-                usuarioId_receitaId: {
-                    usuarioId,
-                    receitaId: Number(receitaId)
-                }
-            },
-            update: {
-                nota: finalNota,
-                comentario: finalComentario
-            },
-            create: {
-                usuarioId,
-                receitaId: Number(receitaId),
-                nota: finalNota,
-                comentario: finalComentario
-            },
-            include: {
-                usuario: {
-                    select: {
-                        id: true,
-                        nome: true,
-                        foto: true,
-                        plano: true
-                    }
-                }
-            }
-        });
-
-        // Pontua o autor da receita (se não for o próprio autor)
-        if (receita && receita.usuarioId !== usuarioId) {
+        const result = await withDirectDatabaseFallback(async (db) => {
+            const receita = await db.receita.findUnique({ where: { id: receitaId }, select: { usuarioId: true, publica: true, rascunho: true } });
+            if (!receita || (receita.usuarioId !== usuarioId && (!receita.publica || receita.rascunho))) return null;
+            const avaliacao = await db.avaliacao.upsert({
+                where: { usuarioId_receitaId: { usuarioId, receitaId } },
+                update: { nota },
+                create: { usuarioId, receitaId, nota }
+            });
+            return { receita, avaliacao };
+        }, "salvar avaliação", { write: true });
+        if (!result) return res.status(404).json({ erro: "Receita não encontrada." });
+        if (result.receita.usuarioId !== usuarioId) {
             try {
                 const { registrarAvaliacaoRecebida } = require("../services/engajamento.service");
-                await registrarAvaliacaoRecebida(receita.usuarioId, usuarioId, Number(receitaId));
-            } catch (engErr) {
-                console.error("[Engajamento] Erro ao pontuar avaliação recebida:", engErr.message);
+                await registrarAvaliacaoRecebida(result.receita.usuarioId, usuarioId, receitaId);
+            } catch (error) {
+                console.error("[Engajamento] Erro ao pontuar avaliação recebida:", error.message);
             }
         }
-
-        res.status(201).json(item);
+        return res.status(201).json(result.avaliacao);
     } catch (error) {
-        res.status(500).json({ erro: "Erro ao cadastrar avaliação/comentário.", detalhe: error.message });
+        return res.status(500).json({ erro: "Erro ao salvar avaliação.", detalhe: error.message });
     }
 };
 
 const listar = async (req, res) => {
-    const { receitaId } = req.query;
+    const receitaId = Number(req.query.receitaId);
+    if (!Number.isSafeInteger(receitaId) || receitaId <= 0) return res.status(400).json({ erro: "ID da receita é obrigatório." });
     try {
-        const filters = {};
-        if (receitaId) {
-            filters.receitaId = Number(receitaId);
-        }
-        const lista = await prisma.avaliacao.findMany({
-            where: filters,
-            include: {
-                usuario: {
-                    select: {
-                        id: true,
-                        nome: true,
-                        foto: true,
-                        plano: true
-                    }
-                }
-            },
-            orderBy: { createdAt: "desc" }
-        });
-        res.status(200).json(lista);
+        const lista = await withDirectDatabaseFallback((db) => db.avaliacao.findMany({
+            where: { receitaId },
+            select: { id: true, nota: true, usuarioId: true, receitaId: true, createdAt: true },
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }]
+        }), "listar avaliações");
+        res.set("Cache-Control", "no-store");
+        return res.status(200).json(lista);
     } catch (error) {
-        res.status(500).json({ erro: "Erro ao listar avaliações e comentários.", detalhe: error.message });
-    }
-};
-
-const buscar = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const item = await prisma.avaliacao.findUnique({
-            where: { id: Number(id) },
-            include: {
-                usuario: {
-                    select: {
-                        id: true,
-                        nome: true,
-                        foto: true
-                    }
-                }
-            }
-        });
-        if (!item) {
-            return res.status(404).json({ erro: "Avaliação não encontrada." });
-        }
-        res.status(200).json(item);
-    } catch (error) {
-        res.status(500).json({ erro: "Erro ao buscar avaliação.", detalhe: error.message });
+        return res.status(500).json({ erro: "Erro ao listar avaliações.", detalhe: error.message });
     }
 };
 
 const excluir = async (req, res) => {
-    const { id } = req.params;
+    const receitaId = Number(req.params.receitaId);
     const usuarioId = req.usuario.id;
+    if (!Number.isSafeInteger(receitaId) || receitaId <= 0) return res.status(400).json({ erro: "ID da receita inválido." });
     try {
-        const evalItem = await prisma.avaliacao.findUnique({
-            where: { id: Number(id) }
-        });
-        if (!evalItem) {
-            return res.status(404).json({ erro: "Avaliação não encontrada." });
-        }
-        if (evalItem.usuarioId !== usuarioId) {
-            return res.status(403).json({ erro: "Acesso negado. Você não é o autor desta avaliação." });
-        }
-        await prisma.avaliacao.delete({
-            where: { id: Number(id) }
-        });
-        res.status(200).json({ mensagem: "Avaliação/comentário excluído com sucesso." });
+        const excluida = await withDirectDatabaseFallback((db) => db.$transaction(async (tx) => {
+            const resultado = await tx.avaliacao.deleteMany({ where: { usuarioId, receitaId } });
+            if (!resultado.count) return false;
+            await tx.atividadeEngajamento.deleteMany({
+                where: { chaveUnica: `AVALIACAO_${usuarioId}_REC_${receitaId}` }
+            });
+            return true;
+        }), "excluir avaliação", { write: true });
+        if (!excluida) return res.status(404).json({ erro: "Você não possui avaliação nesta receita." });
+        return res.status(200).json({ mensagem: "Sua avaliação foi excluída." });
     } catch (error) {
-        res.status(500).json({ erro: "Erro ao excluir avaliação.", detalhe: error.message });
+        return res.status(500).json({ erro: "Erro ao excluir avaliação.", detalhe: error.message });
     }
 };
 
-module.exports = {
-    cadastrar,
-    listar,
-    buscar,
-    excluir
-};
+module.exports = { cadastrar, listar, excluir };

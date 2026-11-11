@@ -4,10 +4,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 prisma/migrations/*
-!prisma/migrations/20261104160000_add_challenge_participants/
-!prisma/migrations/20261104160000_add_challenge_participants/migration.sql
-!prisma/migrations/20261104170000_add_challenge_system/
-!prisma/migrations/20261104170000_add_challenge_system/migration.sql
+!prisma/migrations/20261111120000_separate_recipe_comments/
+!prisma/migrations/20261111120000_separate_recipe_comments/migration.sql
+!prisma/migrations/20261111140000_comments_without_rating/
+!prisma/migrations/20261111140000_comments_without_rating/migration.sql
 .env
 .env.local
 .env.development.local

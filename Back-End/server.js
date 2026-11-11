@@ -1,5 +1,4 @@
 const path = require("path");
-// Carrega explicitamente o .env localizado em Back-End/.env ou na raiz
 require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
@@ -25,6 +24,7 @@ const receitaIngredienteRoutes = require("./src/routes/receitaIngrediente.routre
 const receitaCategoriaRoutes = require("./src/routes/receitaCategoria.routes");
 const favoritosRoutes = require("./src/routes/favoritos.routes");
 const avaliacoesRoutes = require("./src/routes/avaliacoes.routes");
+const comentariosRoutes = require("./src/routes/comentarios.routes");
 const ingredienteDisponivelRoutes = require("./src/routes/ingredienteDisponivel.routes");
 const geracaoIARoutes = require("./src/routes/geracaoIA.routes");
 const importacaoRoutes = require("./src/routes/importacao.routes");
@@ -47,6 +47,7 @@ app.use("/receita-ingredientes", receitaIngredienteRoutes);
 app.use("/receita-categorias", receitaCategoriaRoutes);
 app.use("/favoritos", favoritosRoutes);
 app.use("/avaliacoes", avaliacoesRoutes);
+app.use("/comentarios", comentariosRoutes);
 app.use("/ingredientes-disponiveis", ingredienteDisponivelRoutes);
 app.use("/ia", geracaoIARoutes);
 app.use("/importacao", importacaoRoutes);
@@ -80,14 +81,12 @@ if (!process.env.VERCEL) {
     app.listen(porta, () => {
         console.log(`Online na porta ${porta}`);
 
-        // Agendamento periódico de verificação de fechamento mensal automático (a cada 12 horas)
         try {
             const { getSaoPauloDate, getMesReferencia, executarFechamentoMensal } = require("./src/services/engajamento.service");
             const checarFechamentoAutomatico = async () => {
                 const sp = getSaoPauloDate();
-                // Se for o 1º dia do mês (ou 2º), verifica se o mês anterior já foi fechado
                 if (sp.getDate() <= 2) {
-                    let mesAnteriorNum = sp.getMonth(); // 0 a 11, onde 0 é janeiro
+                    let mesAnteriorNum = sp.getMonth();
                     let anoAnterior = sp.getFullYear();
                     if (mesAnteriorNum === 0) {
                         mesAnteriorNum = 12;

@@ -205,8 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (logoutSettingsBtn) {
     logoutSettingsBtn.addEventListener('click', () => {
       if (confirm("Deseja realmente sair da sua conta?")) {
-        api.clearToken();
-        api.clearUser();
+        api.clearSession();
         window.location.href = '../../login/index.html';
       }
     });

@@ -1,5 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -44,6 +42,7 @@ model Usuario {
   receitas                Receita[]
   favoritos               Favorito[]
   avaliacoes              Avaliacao[]
+  comentarios             Comentario[]
   ingredientesDisponiveis IngredienteDisponivel[]
   livros                  Livro[]
   compartilhamentos       Compartilhamento[]
@@ -85,6 +84,7 @@ model Receita {
   hashtags          ReceitaHashtag[]
   favoritos         Favorito[]
   avaliacoes        Avaliacao[]
+  comentarios       Comentario[]
   compartilhamentos Compartilhamento[]
   desafiosEntradas  DesafioEntrada[]
 }
@@ -116,6 +116,7 @@ model Favorito {
   receita   Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
 
   @@unique([usuarioId, receitaId])
+  @@index([receitaId])
 }
 
 model Avaliacao {
@@ -129,6 +130,21 @@ model Avaliacao {
   receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
 
   @@unique([usuarioId, receitaId])
+  @@index([receitaId])
+}
+
+model Comentario {
+  id         Int      @id @default(autoincrement())
+  texto      String   @db.Text
+  nota       Int?
+  usuarioId  Int
+  receitaId  Int
+  createdAt  DateTime @default(now())
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  receita    Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
+
+  @@index([receitaId, createdAt])
+  @@index([usuarioId, receitaId])
 }
 
 model Categoria {
@@ -195,6 +211,8 @@ model Compartilhamento {
   createdAt DateTime @default(now())
   receita   Receita  @relation(fields: [receitaId], references: [id], onDelete: Cascade)
   usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([receitaId])
 }
 
 model Seguidor {
@@ -317,10 +335,10 @@ model AtividadeEngajamento {
   usuarioId      Int
   tipo           TipoEngajamento
   pontos         Int
-  chaveUnica     String?         @unique // Para evitar pontuações duplicadas e requisições repetidas
+  chaveUnica     String?         @unique
   descricao      String?
-  referenciaId   Int?            // ID da receita, avaliação, seguidor, etc.
-  mesReferencia  String          // Ex: "2026-10" no fuso America/Sao_Paulo
+  referenciaId   Int?
+  mesReferencia  String
   createdAt      DateTime        @default(now())
   usuario        Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
@@ -331,9 +349,9 @@ model AtividadeEngajamento {
 model ConcessaoPro {
   id            Int      @id @default(autoincrement())
   usuarioId     Int
-  mesReferencia String   // O mês em que o usuário foi premiado (ex: "2026-10")
-  mesVigencia   String   // O mês de fruição do benefício (ex: "2026-11")
-  posicao       Int      // 1 a 5
+  mesReferencia String
+  mesVigencia   String
+  posicao       Int
   pontos        Int
   inicioEm      DateTime
   expiraEm      DateTime
@@ -348,10 +366,10 @@ model ConcessaoPro {
 
 model FechamentoMensal {
   id              Int      @id @default(autoincrement())
-  mesReferencia   String   @unique // Ex: "2026-10"
+  mesReferencia   String   @unique
   executadoEm     DateTime @default(now())
   executadoPorId  Int?
-  topUsuarios     Json     // Detalhes dos 5 vencedores e pontuações
+  topUsuarios     Json
   totalApurado    Int      @default(0)
   observacoes     String?
   executadoPor    Usuario? @relation(fields: [executadoPorId], references: [id], onDelete: SetNull)
@@ -368,8 +386,8 @@ model UsoIA {
   usuarioId     Int
   modalidade    ModalidadeIA
   planoNoUso    Plano
-  mesReferencia String       // Ex: "2026-10"
-  semanaChave   String       // Ex: "2026-W44"
+  mesReferencia String
+  semanaChave   String
   createdAt     DateTime     @default(now())
   usuario       Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
@@ -380,7 +398,7 @@ model UsoIA {
 
 model DesafioSemana {
   id               Int                   @id @default(autoincrement())
-  semanaChave      String                @unique // Ex: "2026-W45"
+  semanaChave      String                @unique
   titulo           String
   descricao        String
   tema             String

@@ -1,10 +1,8 @@
 const prisma = require("../data/prisma");
+const { withDirectDatabaseFallback } = require("../data/databaseFallback");
 
-/**
- * Utilitários de data no fuso horário America/Sao_Paulo
- */
+
 function getSaoPauloDate(date = new Date()) {
-    // Converte a data para representação em America/Sao_Paulo
     const tzString = date.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" });
     return new Date(tzString);
 }
@@ -26,7 +24,6 @@ function getDiaChave(date = new Date()) {
 
 function getSemanaChave(date = new Date()) {
     const sp = getSaoPauloDate(date);
-    // Calcula a semana ISO baseada em America/Sao_Paulo
     const temp = new Date(sp.getTime());
     temp.setHours(0, 0, 0, 0);
     temp.setDate(temp.getDate() + 3 - (temp.getDay() + 6) % 7);
@@ -35,25 +32,22 @@ function getSemanaChave(date = new Date()) {
     return `${temp.getFullYear()}-W${String(weekNum).padStart(2, "0")}`;
 }
 
-// Configuração de pontuações
 const PONTOS_CONFIG = {
     RECEITA_VALIDA: 10,
     ACESSO_DIARIO: 2,
     FAVORITO_RECEBIDO: 2,
     AVALIACAO_RECEBIDA: 3,
+    COMENTARIO_RECEBIDO: 3,
     PERFIL_COMPLETO: 5,
     SEGUIR_USUARIO: 1
 };
 
-// Limites anti-abuso configuráveis
 const LIMITES_ENGAJAMENTO = {
     MAX_SEGUIR_PONTUADOS_POR_DIA: 20,
     MAX_RECEITAS_PONTUADAS_POR_DIA: 10
 };
 
-/**
- * Registra pontos de forma idempotente e segura
- */
+
 async function registrarPontos({ usuarioId, tipo, pontos, chaveUnica, descricao, referenciaId, data = new Date() }) {
     if (!usuarioId) return null;
     const finalPontos = pontos !== undefined ? pontos : (PONTOS_CONFIG[tipo] || 0);
@@ -62,7 +56,7 @@ async function registrarPontos({ usuarioId, tipo, pontos, chaveUnica, descricao,
     const mesReferencia = getMesReferencia(data);
 
     try {
-        const item = await prisma.atividadeEngajamento.create({
+        const item = await withDirectDatabaseFallback((db) => db.atividadeEngajamento.create({
             data: {
                 usuarioId,
                 tipo,
@@ -73,10 +67,9 @@ async function registrarPontos({ usuarioId, tipo, pontos, chaveUnica, descricao,
                 mesReferencia,
                 createdAt: data
             }
-        });
+        }), "registrar engajamento", { write: true });
         return item;
     } catch (err) {
-        // Se a chave única já existir (P2002), ignora silenciosamente garantindo idempotência
         if (err.code === "P2002") {
             return null;
         }
@@ -85,9 +78,7 @@ async function registrarPontos({ usuarioId, tipo, pontos, chaveUnica, descricao,
     }
 }
 
-/**
- * Registra o acesso diário (no máximo 1 vez por dia por usuário)
- */
+
 async function registrarAcessoDiario(usuarioId) {
     if (!usuarioId) return null;
     const diaChave = getDiaChave();
@@ -100,9 +91,7 @@ async function registrarAcessoDiario(usuarioId) {
     });
 }
 
-/**
- * Registra pontos ao publicar uma receita válida
- */
+
 async function registrarPublicacaoReceita(usuarioId, receitaId, titulo) {
     if (!usuarioId || !receitaId) return null;
     const chaveUnica = `RECEITA_${receitaId}`;
@@ -115,9 +104,7 @@ async function registrarPublicacaoReceita(usuarioId, receitaId, titulo) {
     });
 }
 
-/**
- * Registra pontos quando o autor recebe um favorito (impede auto-favorito)
- */
+
 async function registrarFavoritoRecebido(autorId, usuarioAcaoId, receitaId) {
     if (!autorId || !usuarioAcaoId || autorId === usuarioAcaoId) return null;
     const chaveUnica = `FAVORITO_${usuarioAcaoId}_REC_${receitaId}`;
@@ -130,9 +117,7 @@ async function registrarFavoritoRecebido(autorId, usuarioAcaoId, receitaId) {
     });
 }
 
-/**
- * Registra pontos quando o autor recebe uma avaliação (impede auto-avaliação)
- */
+
 async function registrarAvaliacaoRecebida(autorId, usuarioAcaoId, receitaId) {
     if (!autorId || !usuarioAcaoId || autorId === usuarioAcaoId) return null;
     const chaveUnica = `AVALIACAO_${usuarioAcaoId}_REC_${receitaId}`;
@@ -145,9 +130,19 @@ async function registrarAvaliacaoRecebida(autorId, usuarioAcaoId, receitaId) {
     });
 }
 
-/**
- * Registra pontos ao seguir outro usuário (1 vez por seguidor->seguido)
- */
+async function registrarComentarioRecebido(autorId, usuarioAcaoId, receitaId) {
+    if (!autorId || !usuarioAcaoId || autorId === usuarioAcaoId) return null;
+    const chaveUnica = `COMENTARIO_${usuarioAcaoId}_REC_${receitaId}`;
+    return registrarPontos({
+        usuarioId: autorId,
+        tipo: "COMENTARIO_RECEBIDO",
+        chaveUnica,
+        referenciaId: receitaId,
+        descricao: `Receita #${receitaId} comentada por outro usuário`
+    });
+}
+
+
 async function registrarSeguirUsuario(seguidorId, seguidoId) {
     if (!seguidorId || !seguidoId || seguidorId === seguidoId) return null;
     const chaveUnica = `SEGUIR_${seguidorId}_A_${seguidoId}`;
@@ -160,9 +155,7 @@ async function registrarSeguirUsuario(seguidorId, seguidoId) {
     });
 }
 
-/**
- * Registra pontos quando o usuário completa o perfil (1 vez por usuário)
- */
+
 async function registrarPerfilCompleto(usuarioId) {
     if (!usuarioId) return null;
     const chaveUnica = `PERFIL_COMPLETO_${usuarioId}`;
@@ -174,17 +167,11 @@ async function registrarPerfilCompleto(usuarioId) {
     });
 }
 
-/**
- * Calcula o Ranking Mensal respeitando regras de desempate:
- * 1. Pontuação total no mês (decrescente)
- * 2. Quantidade de receitas válidas no mês (decrescente)
- * 3. Quem alcançou a pontuação primeiro (createdAt da última atividade que atingiu o total acumulado)
- */
-async function obterRankingMensal(mesReferenciaParam = null) {
+
+async function obterRankingMensal(mesReferenciaParam = null, db = prisma) {
     const mesReferencia = mesReferenciaParam || getMesReferencia();
 
-    // Busca todas as atividades do mês
-    const atividades = await prisma.atividadeEngajamento.findMany({
+    const atividades = await db.atividadeEngajamento.findMany({
         where: { mesReferencia },
         include: {
             usuario: {
@@ -223,8 +210,7 @@ async function obterRankingMensal(mesReferenciaParam = null) {
         record.ultimaAtividadeAt = ativ.createdAt;
     }
 
-    // Inclui também outros usuários do sistema com 0 pontos para aparecerem no ranking geral
-    const todosUsuarios = await prisma.usuario.findMany({
+    const todosUsuarios = await db.usuario.findMany({
         select: { id: true, nome: true, foto: true, plano: true },
         take: 100
     });
@@ -246,7 +232,6 @@ async function obterRankingMensal(mesReferenciaParam = null) {
 
     const ranking = Array.from(mapa.values());
 
-    // Regras de desempate:
     ranking.sort((a, b) => {
         if (b.pontos !== a.pontos) {
             return b.pontos - a.pontos;
@@ -254,7 +239,6 @@ async function obterRankingMensal(mesReferenciaParam = null) {
         if (b.receitasValidas !== a.receitasValidas) {
             return b.receitasValidas - a.receitasValidas;
         }
-        // Quem alcançou a pontuação primeiro
         if (a.ultimaAtividadeAt && b.ultimaAtividadeAt) {
             return new Date(a.ultimaAtividadeAt).getTime() - new Date(b.ultimaAtividadeAt).getTime();
         }
@@ -263,7 +247,6 @@ async function obterRankingMensal(mesReferenciaParam = null) {
         return a.usuarioId - b.usuarioId;
     });
 
-    // Atribui posições
     const rankingComPosicoes = ranking.map((item, index) => ({
         ...item,
         posicao: index + 1,
@@ -277,15 +260,10 @@ async function obterRankingMensal(mesReferenciaParam = null) {
     };
 }
 
-/**
- * Realiza o fechamento mensal transacional e idempotente.
- * Seleciona os 5 mais engajados, cria ConcessaoPro válida para o mês seguinte,
- * atualiza os planos na tabela Usuario sem revogar antecipadamente.
- */
+
 async function executarFechamentoMensal(mesReferenciaParam = null, executadoPorId = null) {
     const mesReferencia = mesReferenciaParam || getMesReferencia();
 
-    // Calcula o mês de vigência (mês seguinte)
     const [anoStr, mesStr] = mesReferencia.split("-");
     let ano = parseInt(anoStr, 10);
     let mes = parseInt(mesStr, 10);
@@ -297,18 +275,14 @@ async function executarFechamentoMensal(mesReferenciaParam = null, executadoPorI
     }
     const mesVigencia = `${proxAno}-${String(proxMes).padStart(2, "0")}`;
 
-    // Data de início: primeiro dia do mês de vigência às 00:00:00 (America/Sao_Paulo)
     const inicioEm = new Date(Date.UTC(proxAno, proxMes - 1, 1, 3, 0, 0));
-    // Data de término: último dia do mês de vigência às 23:59:59 (America/Sao_Paulo)
     const ultimoDia = new Date(Date.UTC(proxAno, proxMes, 0, 23, 59, 59)).getDate();
     const expiraEm = new Date(Date.UTC(proxAno, proxMes - 1, ultimoDia, 26, 59, 59));
 
     const { ranking } = await obterRankingMensal(mesReferencia);
-    // Seleciona os Top 5 que possuem pontuação > 0
     const vencedores = ranking.filter(r => r.pontos > 0).slice(0, 5);
 
     return await prisma.$transaction(async (tx) => {
-        // Verifica se já houve fechamento para este mês de referência
         const existente = await tx.fechamentoMensal.findUnique({
             where: { mesReferencia }
         });
@@ -324,7 +298,6 @@ async function executarFechamentoMensal(mesReferenciaParam = null, executadoPorI
 
         const idsVencedores = [];
 
-        // Concede PRO aos 5 vencedores
         for (let i = 0; i < vencedores.length; i++) {
             const v = vencedores[i];
             idsVencedores.push(v.usuarioId);
@@ -355,15 +328,12 @@ async function executarFechamentoMensal(mesReferenciaParam = null, executadoPorI
                 }
             });
 
-            // Ativa o plano PRO do usuário
             await tx.usuario.update({
                 where: { id: v.usuarioId },
                 data: { plano: "PRO" }
             });
         }
 
-        // Para os usuários que NÃO estão entre os novos vencedores e cujo PRO expirou:
-        // Verifica concessões PRO ativas e vigentes antes de rebaixar para FREE
         const agora = new Date();
         const usuariosProAtuais = await tx.usuario.findMany({
             where: {
@@ -374,7 +344,6 @@ async function executarFechamentoMensal(mesReferenciaParam = null, executadoPorI
         });
 
         for (const u of usuariosProAtuais) {
-            // Checa se possui alguma outra concessão PRO ainda válida
             const concessaoValida = await tx.concessaoPro.findFirst({
                 where: {
                     usuarioId: u.id,
@@ -392,7 +361,6 @@ async function executarFechamentoMensal(mesReferenciaParam = null, executadoPorI
             }
         }
 
-        // Registra o fechamento
         const registroFechamento = await tx.fechamentoMensal.create({
             data: {
                 mesReferencia,
@@ -413,9 +381,7 @@ async function executarFechamentoMensal(mesReferenciaParam = null, executadoPorI
     });
 }
 
-/**
- * Retorna as datas de início e fim do mês corrente e quanto tempo falta
- */
+
 function getInfoPeriodoAtual() {
     const sp = getSaoPauloDate();
     const ano = sp.getFullYear();
@@ -446,6 +412,7 @@ module.exports = {
     registrarPublicacaoReceita,
     registrarFavoritoRecebido,
     registrarAvaliacaoRecebida,
+    registrarComentarioRecebido,
     registrarSeguirUsuario,
     registrarPerfilCompleto,
     obterRankingMensal,

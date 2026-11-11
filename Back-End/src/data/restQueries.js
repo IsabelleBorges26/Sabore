@@ -15,10 +15,15 @@ const recipeSelect = [
     "livroId",
     "usuarioId",
     "createdAt",
+    "publicadaEm",
     "updatedAt",
-    "usuario:Usuario(nome,foto)",
+    "usuario:Usuario(nome,foto,plano)",
     "ingredientes:ReceitaIngrediente(quantidade,ingrediente:Ingrediente(nome))",
-    "categorias:ReceitaCategoria(categoria:Categoria(nome))"
+    "categorias:ReceitaCategoria(categoria:Categoria(nome))",
+    "favoritos:Favorito(id)",
+    "avaliacoes:Avaliacao(id)",
+    "comentarios:Comentario(id)",
+    "compartilhamentos:Compartilhamento(id)"
 ].join(",");
 
 function encode(value) {
@@ -29,6 +34,7 @@ async function listRecipes(filters = {}) {
     const query = new URLSearchParams({ select: recipeSelect, order: "createdAt.desc" });
 
     if (filters.publica !== undefined) query.set("publica", `eq.${filters.publica}`);
+    if (filters.rascunho !== undefined) query.set("rascunho", `eq.${filters.rascunho}`);
     if (filters.usuarioId !== undefined) query.set("usuarioId", `eq.${filters.usuarioId}`);
     if (filters.livroId !== undefined) query.set("livroId", `eq.${filters.livroId}`);
 

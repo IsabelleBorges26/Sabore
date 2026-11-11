@@ -1,6 +1,14 @@
 const prisma = require("../data/prisma");
-const { withDatabaseFallback } = require("../data/databaseFallback");
+const { isDatabaseConnectionError, withDirectDatabaseFallback } = require("../data/databaseFallback");
 const { listRecipes } = require("../data/restQueries");
+const listWithFallback = async (operation, restOperation, label) => {
+    try {
+        return await withDirectDatabaseFallback(operation, label);
+    } catch (error) {
+        if (!isDatabaseConnectionError(error)) throw error;
+        return restOperation();
+    }
+};
 const normalizeHashtag = (value) => String(value || "")
     .trim().replace(/^#+/, "").normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR")
@@ -25,6 +33,7 @@ const parseIngredient = (input) => {
     return { quantidade: "", nome: cleanStr };
 };
 const formatRecipe = (recipe) => {
+    const count = (key) => recipe._count?.[key] ?? (Array.isArray(recipe[key]) ? recipe[key].length : 0);
     return {
         id: recipe.id,
         title: recipe.titulo,
@@ -46,11 +55,12 @@ const formatRecipe = (recipe) => {
         authorFrame: recipe.usuario?.molduraAtiva || null,
         authorAchievements: recipe.usuario?.conquistas || [],
         authorHasProfileFrame: Boolean(recipe.usuario?.molduraAtiva || recipe.usuario?.conquistas?.some(item => item.molduraPerfil)),
-        likes: recipe._count?.favoritos || 0,
+        likes: count("favoritos"),
+        comentarios: count("comentarios"),
+        compartilhamentos: count("compartilhamentos"),
         hashtags: recipe.hashtags ? recipe.hashtags.map(item => `#${item.hashtag.nome}`) : [],
-        publishedAt: recipe.publicadaEm || null,
-        avaliacoes: recipe._count?.avaliacoes || 0,
-        interacoes: (recipe._count?.favoritos || 0) + (recipe._count?.avaliacoes || 0),
+        avaliacoes: count("avaliacoes"),
+        interacoes: count("favoritos") + count("avaliacoes") + count("comentarios") + count("compartilhamentos"),
         category: recipe.categorias && recipe.categorias.length > 0 ? recipe.categorias[0].categoria.nome : "Geral",
         categories: recipe.categorias ? recipe.categorias.map(rc => rc.categoria.nome) : [],
         ingredients: recipe.ingredientes ? recipe.ingredientes.map(ri => {
@@ -191,7 +201,6 @@ const cadastrar = async (req, res) => {
             }
         });
 
-        // Contabiliza pontos de engajamento
         let desafioResultado = { concluiuDesafio: false };
         try {
             const { processarConclusaoDesafioPorReceita } = require("../services/desafiosSemanais.service");
@@ -200,8 +209,6 @@ const cadastrar = async (req, res) => {
             console.error("[Desafio Semanal] Erro ao processar desafio:", e.message);
         }
 
-        // Evitar pontuação duplicada: a publicação utilizada para concluir o desafio
-        // deve conceder 30 pontos no total, e não 30 pontos mais os 10 pontos normais de publicação.
         if (!desafioResultado.concluiuDesafio && !fullRecipe.rascunho && fullRecipe.titulo && fullRecipe.modoPreparo) {
             try {
                 const { registrarPublicacaoReceita } = require("../services/engajamento.service");
@@ -228,8 +235,8 @@ const listar = async (req, res) => {
         if (livroId) {
             filters.livroId = Number(livroId);
         }
-        const receitas = await withDatabaseFallback(
-            () => prisma.receita.findMany({
+        const receitas = await listWithFallback(
+            (db) => db.receita.findMany({
                 where: filters,
                 include: {
                     usuario: true,
@@ -240,7 +247,7 @@ const listar = async (req, res) => {
                         include: { categoria: true }
                     },
                     hashtags: { include: { hashtag: true } },
-                    _count: { select: { favoritos: true } }
+                    _count: { select: { favoritos: true, avaliacoes: true, comentarios: true, compartilhamentos: true } }
                 },
                 orderBy: { createdAt: "desc" }
             }),
@@ -260,11 +267,11 @@ const listarPublicas = async (req, res) => {
         ingredientes: { include: { ingrediente: true } },
         categorias: { include: { categoria: true } },
         ...(withHashtags ? { hashtags: { include: { hashtag: true } } } : {}),
-        _count: { select: { favoritos: true, avaliacoes: true } }
+        _count: { select: { favoritos: true, avaliacoes: true, comentarios: true, compartilhamentos: true } }
     });
     try {
-        const receitas = await withDatabaseFallback(
-            () => prisma.receita.findMany({
+        const receitas = await listWithFallback(
+            (db) => db.receita.findMany({
                 where: { 
                     publica: true, 
                     rascunho: false,
@@ -276,12 +283,11 @@ const listarPublicas = async (req, res) => {
                 include: includeRecipeRelations(),
                 orderBy: { createdAt: "desc" }
             }),
-            () => listRecipes({ publica: true }),
+            () => listRecipes({ publica: true, rascunho: false }),
             "listar receitas públicas"
         );
         const filtered = receitas.filter(rec => {
             const title = String(rec.titulo || rec.title || "").trim().toLowerCase();
-            // Remove apenas testes óbvios
             if (title === "teste" || title.startsWith("teste ") || title === "teste 2") return false;
             if (!title) return false;
             return true;
@@ -293,11 +299,11 @@ const listarPublicas = async (req, res) => {
     } catch (error) {
         if (error.code === "P2021" || /ReceitaHashtag|Hashtag.*does not exist|conquistas|Unknown field.*include|Unknown arg.*include/i.test(error.message || "")) {
             try {
-                const receitas = await prisma.receita.findMany({
+                const receitas = await withDirectDatabaseFallback((db) => db.receita.findMany({
                     where: { publica: true, rascunho: false },
                     include: includeRecipeRelations(false),
                     orderBy: { createdAt: "desc" }
-                });
+                }), "listar receitas públicas");
                 return res.status(200).json(receitas.map(formatRecipe));
             } catch (fallbackError) {
                 error = fallbackError;
@@ -312,15 +318,15 @@ const buscarPublica = async (req, res) => {
         return res.status(404).json({ erro: "Publicação não encontrada." });
     }
     try {
-        const recipe = await prisma.receita.findFirst({
+        const recipe = await withDirectDatabaseFallback((db) => db.receita.findFirst({
             where: { id, publica: true, rascunho: false },
             include: {
                 usuario: { select: { nome: true, foto: true } },
                 ingredientes: { include: { ingrediente: true } },
                 categorias: { include: { categoria: true } },
-                _count: { select: { favoritos: true, avaliacoes: true } }
+                _count: { select: { favoritos: true, avaliacoes: true, comentarios: true, compartilhamentos: true } }
             }
-        });
+        }), "buscar publicação");
         if (!recipe) return res.status(404).json({ erro: "Esta publicação não está disponível. Ela pode ter sido removida ou tornada privada." });
         res.set("Cache-Control", "no-store");
         res.status(200).json(formatRecipe(recipe));
@@ -344,7 +350,8 @@ const buscar = async (req, res) => {
                 categorias: {
                     include: { categoria: true }
                 },
-                hashtags: { include: { hashtag: true } }
+                hashtags: { include: { hashtag: true } },
+                _count: { select: { favoritos: true, avaliacoes: true, comentarios: true, compartilhamentos: true } }
             }
         });
         if (!recipe || (recipe.usuarioId !== req.usuario?.id && (!recipe.publica || recipe.rascunho))) {
@@ -474,7 +481,6 @@ const atualizar = async (req, res) => {
                 hashtags: { include: { hashtag: true } }
             }
         });
-        // Se a receita foi tornada pública e não é rascunho, processa eventual desafio semanal
         let desafioResultado = { concluiuDesafio: false };
         if (fullRecipe && fullRecipe.publica && !fullRecipe.rascunho) {
             try {
@@ -614,7 +620,7 @@ const listarHashtagsEmAlta = async (req, res) => {
                 categorias: {
                     include: { categoria: true }
                 },
-                _count: { select: { favoritos: true, avaliacoes: true } }
+                _count: { select: { favoritos: true, avaliacoes: true, comentarios: true } }
             }
         });
 
@@ -623,7 +629,8 @@ const listarHashtagsEmAlta = async (req, res) => {
         for (const rec of receitas) {
             const likes = rec._count?.favoritos || 0;
             const avaliacoes = rec._count?.avaliacoes || 0;
-            const interacoes = likes + avaliacoes;
+            const comentarios = rec._count?.comentarios || 0;
+            const interacoes = likes + avaliacoes + comentarios;
 
             const tags = new Set();
             if (rec.categorias) {
@@ -653,12 +660,10 @@ const listarHashtagsEmAlta = async (req, res) => {
             }
         }
 
-        // Exibir apenas as hashtags que realmente estão em alta (com interações > 0)
         const emAlta = Array.from(hashtagMap.values())
             .filter(item => item.interacoes > 0)
             .sort((a, b) => b.interacoes - a.interacoes || b.receitas - a.receitas);
 
-        // Integrar as hashtags dos desafios à seção Hashtags em Alta já existente
         try {
             const { obterDesafioSemanalAtivo } = require("../services/desafiosSemanais.service");
             const desafioAtivo = obterDesafioSemanalAtivo();

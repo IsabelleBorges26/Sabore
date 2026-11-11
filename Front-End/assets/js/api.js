@@ -1,4 +1,3 @@
-// Limpeza automática de classes/estados legados de tema e brilho para garantir integridade visual
 (() => {
     try {
         document.documentElement.classList.remove('no-neon-glow');
@@ -24,18 +23,29 @@ window.applySaboreTheme = () => {};
 window.applySaboreNeonGlow = () => {};
 window.initSaboreTheme = () => {};
 
-// URL base da API do Back-End. Localmente aponta para localhost:3000.
-// Na Vercel (mesmo domínio), usa automaticamente window.location.origin.
 const isLocalNetworkHost = /^(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})$/.test(window.location.hostname);
 const API_BASE_URL = window.API_BASE_URL || (
     isLocalNetworkHost && window.location.port !== "3000"
         ? `${window.location.protocol}//${window.location.hostname}:3000`
         : window.location.origin
 );
+const SESSION_IDLE_MS = 10 * 60 * 1000;
+const SESSION_ACTIVITY_KEY = "sabore_last_activity";
+let lastActivityWrite = 0;
+let sessionExpiredOnLoad = false;
 const api = {
     getToken: () => localStorage.getItem("sabore_token"),
-    setToken: (token) => localStorage.setItem("sabore_token", token),
-    clearToken: () => localStorage.removeItem("sabore_token"),
+    setToken: (token) => {
+        localStorage.setItem("sabore_token", token);
+        lastActivityWrite = Date.now();
+        localStorage.setItem(SESSION_ACTIVITY_KEY, String(lastActivityWrite));
+        sessionExpiredOnLoad = false;
+    },
+    clearToken: () => {
+        localStorage.removeItem("sabore_token");
+        localStorage.removeItem(SESSION_ACTIVITY_KEY);
+    },
+    get sessionExpiredOnLoad() { return sessionExpiredOnLoad; },
     getUser: () => {
         const user = localStorage.getItem("sabore_user");
         try {
@@ -83,11 +93,63 @@ const api = {
     clearSession: () => {
         localStorage.removeItem("sabore_token");
         localStorage.removeItem("sabore_user");
+        localStorage.removeItem(SESSION_ACTIVITY_KEY);
         Object.keys(localStorage)
             .filter((key) => key.startsWith("sb-") && key.endsWith("-auth-token"))
             .forEach((key) => localStorage.removeItem(key));
     },
+    expireSession: () => {
+        if (!api.getToken()) return;
+        sessionExpiredOnLoad = true;
+        const authClient = window.supabaseClient;
+        let signOutPromise;
+        if (authClient?.auth?.signOut) {
+            try {
+                signOutPromise = authClient.auth.signOut({ scope: "local" });
+            } catch {}
+        }
+        localStorage.removeItem("sabore_token");
+        localStorage.removeItem("sabore_user");
+        localStorage.removeItem(SESSION_ACTIVITY_KEY);
+        if (signOutPromise) {
+            Promise.resolve(signOutPromise).catch(() => {}).finally(() => {
+                if (!api.getToken()) api.clearSession();
+            });
+            window.setTimeout(() => { if (!api.getToken()) api.clearSession(); }, 3000);
+        } else {
+            api.clearSession();
+        }
+        if (window.location.pathname.includes("/Dashboard/")) {
+            window.location.replace("../../login/index.html?session=expired");
+        } else {
+            window.dispatchEvent(new Event("sabore:session-changed"));
+        }
+    },
+    isSessionActive: () => {
+        if (!api.getToken()) return false;
+        const now = Date.now();
+        const saved = localStorage.getItem(SESSION_ACTIVITY_KEY);
+        const lastActivity = Number(saved);
+        if (!saved || !Number.isFinite(lastActivity) || lastActivity <= 0 || lastActivity > now) {
+            localStorage.setItem(SESSION_ACTIVITY_KEY, String(now));
+            lastActivityWrite = now;
+            return true;
+        }
+        if (now - lastActivity >= SESSION_IDLE_MS) {
+            api.expireSession();
+            return false;
+        }
+        return true;
+    },
+    markActivity: () => {
+        if (!api.isSessionActive()) return;
+        const now = Date.now();
+        if (now - lastActivityWrite < 5000) return;
+        lastActivityWrite = now;
+        localStorage.setItem(SESSION_ACTIVITY_KEY, String(now));
+    },
     hasUsableStoredSession: () => {
+        if (!api.isSessionActive()) return false;
         const token = api.getToken();
         const user = api.getUser();
         if (!token || !user) return false;
@@ -103,17 +165,21 @@ const api = {
             api.clearSession();
             return null;
         }
+        const token = api.getToken();
         try {
             const profile = await api.get("/usuarios/perfil");
+            if (api.getToken() !== token || !api.isSessionActive()) return null;
             const user = { ...api.getUser(), ...profile };
             api.setUser(user);
             return user;
         } catch {
-            api.clearSession();
-            return null;
+            return api.getUser();
         }
     },
     request: async (endpoint, options = {}) => {
+        if (api.getToken() && !api.isSessionActive() && window.location.pathname.includes("/Dashboard/")) {
+            throw new Error("Sua sessão expirou por inatividade. Entre novamente.");
+        }
         const url = `${API_BASE_URL}${endpoint}`;
         options.headers = options.headers || {};
         options.headers["Content-Type"] = "application/json";
@@ -125,13 +191,10 @@ const api = {
             const response = await fetch(url, options);
             if (response.status === 401) {
                 api.clearSession();
-                const currentPath = window.location.pathname;
-                if (!currentPath.includes("/login/") && !currentPath.includes("/cadastro/") && !currentPath.endsWith("inicial/index.html") && !currentPath.endsWith("inicial/") && !currentPath.endsWith("Front-End/")) {
-                    if (currentPath.includes("/Dashboard/")) {
-                        window.location.href = "../../login/index.html";
-                    } else {
-                        window.location.href = "../login/index.html";
-                    }
+                if (window.location.pathname.includes("/Dashboard/")) {
+                    window.location.href = "../../login/index.html";
+                } else {
+                    window.dispatchEvent(new Event("sabore:session-changed"));
                 }
                 const errData = await response.json().catch(() => ({}));
                 throw new Error(errData.erro || "Não autorizado.");
@@ -143,8 +206,6 @@ const api = {
             }
             return await response.json();
         } catch (error) {
-            // Erros de rede não chegam ao back-end e o navegador os descreve apenas
-            // como “Failed to fetch”, o que não explica ao usuário o que fazer.
             if (error instanceof TypeError && /failed to fetch|networkerror|load failed/i.test(error.message || "")) {
                 throw new Error("Não foi possível conectar ao servidor do Saboré. Abra o arquivo Back-End/iniciar_sabore.bat e mantenha a janela dele aberta enquanto usa o aplicativo.");
             }
@@ -164,7 +225,32 @@ const api = {
     }
 };
 
-// Sincroniza tags de plano, contadores de cota e bloqueios PRO em qualquer tela do Dashboard
+api.isSessionActive();
+["pointerdown", "keydown", "touchstart", "scroll", "mousemove"].forEach((eventName) => {
+    window.addEventListener(eventName, api.markActivity, { passive: true });
+});
+window.addEventListener("focus", api.markActivity);
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) api.markActivity();
+});
+window.addEventListener("storage", (event) => {
+    if (event.key === "sabore_user" && event.newValue && api.getToken() && !window.location.pathname.includes("/Dashboard/")) {
+        window.dispatchEvent(new Event("sabore:session-changed"));
+    }
+    if (event.key === "sabore_token" && event.oldValue && !event.newValue) {
+        if (window.supabaseClient?.auth?.signOut) {
+            Promise.resolve().then(() => window.supabaseClient.auth.signOut({ scope: "local" })).catch(() => {});
+        }
+        if (window.location.pathname.includes("/Dashboard/")) {
+            window.location.replace("../../login/index.html");
+        } else {
+            window.dispatchEvent(new Event("sabore:session-changed"));
+        }
+    }
+    if (event.key === SESSION_ACTIVITY_KEY && api.getToken()) api.isSessionActive();
+});
+window.setInterval(() => api.isSessionActive(), 10_000);
+
 window.SaboreSyncPlanUI = async function() {
     try {
         const info = await api.getPlanInfo();
@@ -173,27 +259,23 @@ window.SaboreSyncPlanUI = async function() {
         const isPro = info.isPro || info.plano === "PRO";
         const consumo = info.consumo;
 
-        // Atualiza tags na navbar
         const navbarTag = document.getElementById("navbar-plan-tag");
         if (navbarTag) {
             navbarTag.textContent = isPro ? "PRO" : "FREE";
             navbarTag.className = `user-plan-tag ${isPro ? "pro" : "free"}`;
         }
 
-        // Remove qualquer card lateral duplicado de upgrade PRO (mantendo apenas a aba Ranking PRO no menu lateral)
         const sidebarPromo = document.querySelector(".sidebar-footer-promo");
         if (sidebarPromo && !window.location.pathname.includes("/admin/")) {
             sidebarPromo.remove();
         }
 
-        // Atualiza links do menu PRO
         const proMenuLinks = document.querySelectorAll('.pro-menu-item, [data-target="pro"]');
         proMenuLinks.forEach(link => {
             link.href = "../ranking/index.html";
             link.innerHTML = '<i class="fa-solid fa-trophy"></i> Ranking PRO';
         });
 
-        // Se o usuário for administrador, adiciona link de admin no menu se ainda não existir
         if (info.isAdmin) {
             const sidebarMenu = document.querySelector(".sidebar-menu");
             if (sidebarMenu && !document.getElementById("sidebar-admin-link")) {
@@ -206,7 +288,6 @@ window.SaboreSyncPlanUI = async function() {
             }
         }
 
-        // Atualiza contadores de IA se os elementos existirem na tela
         const pillText = document.getElementById("ia-usage-counter-text");
         if (pillText && consumo) {
             if (isPro) {
@@ -218,7 +299,6 @@ window.SaboreSyncPlanUI = async function() {
             }
         }
 
-        // Controle de tela para IA de Fotos (2 créditos FREE) e Importação de Vídeos (2 créditos FREE)
         const proGate = document.getElementById("pro-gate-overlay");
         const mainGridFotos = document.getElementById("ia-fotos-main-grid");
         const mainGridVideo = document.getElementById("import-video-main-grid");
@@ -263,15 +343,26 @@ window.SaboreShareRecipe = async (recipe = {}, options = {}) => {
     const text = author
         ? `Veja a receita ${title}, publicada por ${author} no Saboré.`
         : `Veja a receita ${title} no Saboré.`;
+    const registerShare = async () => {
+        if (!api.getUser()) return;
+        try {
+            const result = await api.post(`/compartilhamento/registrar/${recipe.id}`, {});
+            recipe.compartilhamentos = Number(result.compartilhamentos) || 0;
+        } catch (error) {
+            console.warn("Não foi possível registrar o compartilhamento:", error);
+        }
+    };
 
     try {
         if (options.platform === "whatsapp") {
             const message = encodeURIComponent(`${text}\n${url}`);
             window.open(`https://wa.me/?text=${message}`, "_blank", "noopener,noreferrer");
+            await registerShare();
             return true;
         }
         if (!options.copyOnly && navigator.share) {
             await navigator.share({ title, text, url });
+            await registerShare();
             return true;
         }
         if (navigator.clipboard?.writeText) {
@@ -289,6 +380,7 @@ window.SaboreShareRecipe = async (recipe = {}, options = {}) => {
             if (!copied) throw new Error("copy_failed");
         }
         window.SaboreNotify?.("Link da publicação copiado.", "success");
+        await registerShare();
         return true;
     } catch (error) {
         if (error?.name !== "AbortError") {
@@ -424,7 +516,6 @@ api.openUserProfile = async (userId) => {
             if (overlay.dataset.userId !== String(id)) return;
             const achievementsToShow = Array.isArray(achievements) ? [...achievements] : [];
             const normalizedName = String(profile.nome || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-            // Prévia temporária para conferir a coleção de Paulo também no perfil público.
             if (normalizedName === "paulo moratorio") {
                 [
                     { titulo: "Espírito Natalino 2026", emblema: "/assets/Emblemas/espirito-natalino-2026.png" },
@@ -909,11 +1000,6 @@ document.addEventListener("DOMContentLoaded", () => {
     api.normalizeRenderedRecipeSteps();
     const recipesObserver = new MutationObserver(() => api.normalizeRenderedRecipeSteps());
     recipesObserver.observe(document.body, { childList: true, subtree: true });
-    if (window.location.pathname.includes("/Dashboard/")) {
-        document.querySelectorAll('a[href*="inicial/"]').forEach((link) => {
-            link.addEventListener("click", () => api.clearSession());
-        });
-    }
     const cursorStyleId = "sabore-cursor-global-style";
     if (!document.getElementById(cursorStyleId)) {
         const style = document.createElement("style");

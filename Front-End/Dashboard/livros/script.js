@@ -447,16 +447,30 @@ document.addEventListener('DOMContentLoaded', () => {
       recipeDetailSteps.appendChild(li);
     });
     selectedRating = 0;
+    ratingEdited = false;
+    currentRating = null;
     updateStarsUI(0);
     if (submitRatingBtn) submitRatingBtn.style.display = 'none';
+    if (deleteRatingBtn) deleteRatingBtn.style.display = 'none';
+    if (ownRatingStatus) ownRatingStatus.textContent = 'Carregando sua avaliação...';
     api.get(`/avaliacoes/listar?receitaId=${rec.id}`).then(ratings => {
+      if (String(userState.selectedRecipe?.id) !== String(rec.id)) return;
       const currentUser = api.getUser();
-      const existing = ratings.find(r => r.usuarioId === currentUser.id);
-      if (existing) {
-        selectedRating = existing.nota;
-        updateStarsUI(existing.nota);
+      currentRating = Array.isArray(ratings)
+        ? ratings.find(r => String(r.usuarioId) === String(currentUser?.id)) || null
+        : null;
+      if (!ratingEdited) {
+        selectedRating = currentRating?.nota || 0;
+        updateStarsUI(selectedRating);
       }
-    }).catch(err => {
+      if (submitRatingBtn && ratingEdited) submitRatingBtn.textContent = currentRating ? 'Salvar alteração' : 'Enviar avaliação';
+      if (deleteRatingBtn) deleteRatingBtn.style.display = currentRating ? 'inline-flex' : 'none';
+      if (ownRatingStatus) ownRatingStatus.textContent = currentRating
+        ? `Sua avaliação atual: ${currentRating.nota} de 5 estrelas.`
+        : 'Você ainda não avaliou esta receita.';
+    }).catch(() => {
+      if (String(userState.selectedRecipe?.id) !== String(rec.id)) return;
+      if (ownRatingStatus) ownRatingStatus.textContent = 'Não foi possível verificar sua avaliação agora.';
     });
     openModal('recipe-details-modal');
   }
@@ -487,8 +501,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   let selectedRating = 0;
+  let ratingEdited = false;
+  let currentRating = null;
   const ratingStarsContainer = document.getElementById('recipe-rating-stars');
   const submitRatingBtn = document.getElementById('recipe-submit-rating');
+  const deleteRatingBtn = document.getElementById('recipe-delete-rating');
+  const ownRatingStatus = document.getElementById('recipe-own-rating-status');
   function initRatingSystem() {
     if (!ratingStarsContainer || !submitRatingBtn) return;
     const stars = ratingStarsContainer.querySelectorAll('i');
@@ -496,25 +514,53 @@ document.addEventListener('DOMContentLoaded', () => {
       star.addEventListener('click', () => {
         const rating = parseInt(star.dataset.rating);
         selectedRating = rating;
+        ratingEdited = true;
         updateStarsUI(rating);
+        submitRatingBtn.textContent = currentRating ? 'Salvar alteração' : 'Enviar avaliação';
         submitRatingBtn.style.display = 'block';
       });
     });
     submitRatingBtn.addEventListener('click', async () => {
       const rec = userState.selectedRecipe;
-      if (!rec || selectedRating === 0) return;
+      if (!rec || selectedRating === 0 || submitRatingBtn.disabled) return;
+      submitRatingBtn.disabled = true;
       try {
-        await api.post("/avaliacoes/cadastrar", {
+        currentRating = await api.post("/avaliacoes/cadastrar", {
           receitaId: rec.id,
-          nota: selectedRating,
-          comentario: ""
+          nota: selectedRating
         });
-        alert("Avaliação enviada com sucesso!");
         submitRatingBtn.style.display = 'none';
+        ratingEdited = false;
+        if (deleteRatingBtn) deleteRatingBtn.style.display = 'inline-flex';
+        if (ownRatingStatus) ownRatingStatus.textContent = `Sua avaliação foi salva: ${selectedRating} de 5 estrelas.`;
       } catch (err) {
         alert("Erro ao enviar avaliação: " + err.message);
+      } finally {
+        submitRatingBtn.disabled = false;
       }
     });
+    if (deleteRatingBtn) {
+      deleteRatingBtn.addEventListener('click', async () => {
+        const rec = userState.selectedRecipe;
+        if (!rec || !currentRating || deleteRatingBtn.disabled) return;
+        if (!confirm('Excluir sua avaliação desta receita? Seus comentários continuarão publicados.')) return;
+        deleteRatingBtn.disabled = true;
+        try {
+          await api.delete(`/avaliacoes/excluir/${rec.id}`);
+          currentRating = null;
+          selectedRating = 0;
+          ratingEdited = false;
+          updateStarsUI(0);
+          deleteRatingBtn.style.display = 'none';
+          submitRatingBtn.style.display = 'none';
+          if (ownRatingStatus) ownRatingStatus.textContent = 'Sua avaliação foi excluída.';
+        } catch (err) {
+          alert('Não foi possível excluir sua avaliação: ' + err.message);
+        } finally {
+          deleteRatingBtn.disabled = false;
+        }
+      });
+    }
   }
   function updateStarsUI(rating) {
     if (!ratingStarsContainer) return;

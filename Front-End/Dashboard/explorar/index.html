@@ -68,7 +68,7 @@
         </div>
       </header>
       <div class="dashboard-body">
-        <!-- Abas de Navegação Principal da Comunidade -->
+
         <div class="community-tabs-nav" role="tablist">
           <button class="comm-tab-btn active" id="btn-tab-feed" type="button"><i class="fa-solid fa-compass"></i> Explorar Receitas</button>
           <button class="comm-tab-btn" id="btn-tab-eventos" type="button"><i class="fa-solid fa-calendar-days"></i> Eventos Especiais</button>
@@ -76,7 +76,7 @@
 
         <div class="dashboard-grid">
           <div class="main-column">
-            <!-- VISTA 1: FEED REGULAR E CATEGORIAS -->
+
             <div id="view-comunidade-feed">
               <section class="explore-hero-card">
                 <div class="explore-hero-glow"></div>
@@ -124,7 +124,7 @@
               </section>
             </div>
 
-            <!-- VISTA 2: EVENTOS ESPECIAIS -->
+
             <div id="view-comunidade-eventos" class="special-events-view" style="display: none;">
               <div class="event-page-atmosphere" aria-hidden="true">
                 <span class="event-snowfall-layer snow-far"></span>
@@ -134,13 +134,13 @@
                 <span class="event-firework firework-three"></span>
                 <span class="event-firework firework-four"></span>
               </div>
-              <!-- Seletor de Eventos Especiais -->
+
               <div class="event-selector-bar" id="event-selector-bar">
                 <button type="button" class="event-tab-pill active" data-event-id="1"><i class="fa-solid fa-gift"></i> Natal Saboré 2026</button>
                 <button type="button" class="event-tab-pill" data-event-id="2"><i class="fa-solid fa-champagne-glasses"></i> Réveillon Saboré 2027</button>
               </div>
 
-              <!-- Banner Temático do Evento -->
+
               <div class="event-banner-card" id="event-banner-card">
                 <div class="event-snow-layer" aria-hidden="true"></div>
                 <div class="event-lights-layer" aria-hidden="true"></div>
@@ -159,7 +159,7 @@
                 </div>
               </div>
 
-              <!-- Cronograma com Fuso America/Sao_Paulo -->
+
               <div class="event-timeline-strip">
                 <div class="timeline-step" id="step-inscricoes">
                   <div class="step-num">1</div>
@@ -186,7 +186,7 @@
                 </div>
               </div>
 
-              <!-- Informações de Regras e Premiação Exclusiva -->
+
               <div class="event-details-grid">
                 <section class="event-detail-box event-howto-summary">
                   <div class="detail-box-header"><i class="fa-solid fa-list-ol" aria-hidden="true"></i><h3>Como participar</h3></div>
@@ -202,7 +202,7 @@
                 </div>
               </div>
 
-              <!-- Banner de Ação de Inscrição Oficial -->
+
               <div class="event-user-action-card" id="event-user-action-card">
                 <div class="action-card-left" id="event-user-action-info">
                   <h3>Inscreva sua receita</h3>
@@ -215,7 +215,7 @@
                 </div>
               </div>
 
-              <!-- Banner do Vencedor (se evento encerrado) -->
+
               <div class="event-winner-card" id="event-winner-card" style="display: none;">
                 <div class="winner-trophy"><i class="fa-solid fa-trophy"></i></div>
                 <div class="winner-info">
@@ -229,7 +229,7 @@
                 </div>
               </div>
 
-              <!-- Galeria Oficial de Votação -->
+
               <section class="card-section event-gallery-section">
                 <div class="section-title-wrap">
                   <div class="title-details">
@@ -255,7 +255,7 @@
               <div class="tag-cloud-container" id="popular-tags-cloud">
               </div>
             </section>
-            <!-- DESAFIO DA SEMANA -->
+
             <section class="weekly-challenge-card" id="weekly-challenge-card">
               <div class="challenge-cover-container" id="challenge-cover-container">
                 <img id="challenge-cover-img" src="" alt="Imagem do Desafio" class="challenge-cover-img" style="display:none;">
@@ -325,14 +325,14 @@
             </ol>
           </div>
         </div>
-        <!-- Avaliação e Comentários da Comunidade -->
+
         <div class="recipe-social-section" style="padding: 18px 25px; border-top: 1px solid rgba(242, 244, 243, 0.1); margin-top: 15px; display: flex; flex-direction: column; gap: 14px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <h4 style="margin: 0; font-size: 1rem; color: var(--text-light); font-weight: 700; display: flex; align-items: center; gap: 8px;">
-              <i class="fa-solid fa-comments" style="color: var(--accent);"></i> Comentários & Avaliações (<span id="recipe-comments-count">0</span>)
+              <i class="fa-solid fa-comments" style="color: var(--accent);"></i> Comentários (<span id="recipe-comments-count">0</span>) · Avaliações (<span id="recipe-ratings-count">0</span>)
             </h4>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 0.82rem; color: var(--text-muted);">Sua nota:</span>
+            <div class="recipe-rating-control">
+              <span style="font-size: 0.82rem; color: var(--text-muted);">Sua avaliação:</span>
               <div class="rating-stars" id="recipe-rating-stars" style="display: flex; gap: 5px; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">
                 <i class="fa-solid fa-star" data-rating="1"></i>
                 <i class="fa-solid fa-star" data-rating="2"></i>
@@ -340,12 +340,18 @@
                 <i class="fa-solid fa-star" data-rating="4"></i>
                 <i class="fa-solid fa-star" data-rating="5"></i>
               </div>
+              <button type="button" id="recipe-submit-rating" class="recipe-submit-rating" hidden>Avaliar</button>
+              <button type="button" id="recipe-delete-rating" class="recipe-delete-rating" hidden>Excluir minha avaliação</button>
             </div>
           </div>
+          <div class="recipe-rating-info">
+            <span>Uma avaliação por usuário nesta receita. Você só pode editar ou excluir a sua. Clique nas estrelas para editar.</span>
+            <span id="recipe-own-rating-status" aria-live="polite"></span>
+          </div>
 
-          <!-- Formulário para Comentar -->
+
           <form id="recipe-comment-form" style="display: flex; flex-direction: column; gap: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 12px; border-radius: 10px;">
-            <textarea id="recipe-comment-input" rows="2" placeholder="O que achou deste prato? Escreva seu comentário ou dica..." style="width: 100%; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(0, 0, 0, 0.3); color: #fff; padding: 10px; font-size: 0.88rem; resize: vertical; outline: none; font-family: inherit;" required></textarea>
+            <textarea id="recipe-comment-input" rows="2" maxlength="2000" placeholder="O que achou deste prato? Escreva seu comentário ou dica..." style="width: 100%; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(0, 0, 0, 0.3); color: #fff; padding: 10px; font-size: 0.88rem; resize: vertical; outline: none; font-family: inherit;" required></textarea>
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span id="comment-feedback-status" style="font-size: 0.8rem; color: #10b981; display: none;"></span>
               <button type="submit" id="btn-submit-comment" class="btn-primary-modal" style="padding: 7px 16px; font-size: 0.82rem; border-radius: 6px; cursor: pointer; margin-left: auto;">
@@ -354,8 +360,8 @@
             </div>
           </form>
 
-          <!-- Lista de Comentários -->
-          <div id="recipe-comments-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+
+          <div id="recipe-comments-list" class="recipe-comments-list">
             <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 12px;">Carregando comentários...</div>
           </div>
         </div>
@@ -419,7 +425,7 @@
       <div id="desafio-history" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: rgba(242, 244, 243, 0.7);"></div>
     </div>
   </div>
-  <!-- MODAL DE INSCRIÇÃO OFICIAL EM EVENTO ESPECIAL (MODELO B) -->
+
   <div class="modal-overlay event-guide-overlay" id="event-guide-modal" aria-hidden="true">
     <section class="modal-card event-guide-modal-card" role="dialog" aria-modal="true" aria-labelledby="event-guide-title">
       <button class="modal-close-btn" id="close-event-guide-modal" type="button" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
@@ -455,21 +461,21 @@
         <p id="event-entry-modal-subtitle">Escolha uma receita pública para representar você no evento.</p>
       </div>
       <div class="entry-modal-alert" id="event-entry-modal-alert" style="display:none; padding: 10px 14px; border-radius: 10px; background: rgba(224, 133, 122, 0.15); border: 1px solid rgba(224, 133, 122, 0.35); color: #F0D5B6; font-size: 0.82rem; margin-bottom: 14px;"></div>
-      
+
       <div class="entry-choice-tabs">
         <button type="button" class="entry-choice-btn active" id="btn-choice-existing"><i class="fa-solid fa-book-bookmark"></i> Minhas Receitas Públicas</button>
         <button type="button" class="entry-choice-btn" id="btn-choice-create"><i class="fa-solid fa-pen-nib"></i> Criar Nova Publicação</button>
       </div>
 
-      <!-- Opção 1: Escolher entre receitas públicas do próprio usuário -->
+
       <div id="entry-panel-existing" class="choice-panel active" style="margin-top: 14px;">
         <p style="font-size: 0.82rem; color: rgba(242, 244, 243, 0.7); margin-bottom: 12px;">Selecione qual das suas receitas públicas será sua representante oficial na votação popular:</p>
         <div id="entry-existing-recipes-list" class="user-recipes-select-list">
-          <!-- Carregado via JS -->
+
         </div>
       </div>
 
-      <!-- Opção 2: Criar nova receita para o evento -->
+
       <div id="entry-panel-create" class="choice-panel" style="display:none; margin-top: 14px;">
         <p style="font-size: 0.82rem; color: rgba(242, 244, 243, 0.7); margin-bottom: 14px;">Abra o publicador da comunidade. A hashtag oficial do evento será vinculada automaticamente à sua receita.</p>
         <button type="button" class="btn-confirm-entry" id="btn-open-create-for-event" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--secondary); color: var(--dark-deep); font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -479,17 +485,17 @@
     </div>
   </div>
 
-  <!-- MODAL DE DETALHES DA RECEITA NA GALERIA DE VOTAÇÃO -->
+
   <div class="modal-overlay" id="event-recipe-detail-modal">
     <div class="modal-card" style="max-width: 640px; max-height: 90vh; overflow-y: auto;">
       <button class="modal-close-btn" id="close-event-recipe-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
       <div class="event-recipe-modal-content" id="event-recipe-modal-content">
-        <!-- Renderizado dinamicamente -->
+
       </div>
     </div>
   </div>
 
-  <!-- MODAL DE CONFIRMAÇÃO DE VOTO -->
+
   <div class="modal-overlay" id="event-vote-confirm-modal">
     <div class="modal-card small-modal" style="max-width: 440px; text-align: center;">
       <div style="font-size: 2.2rem; color: var(--accent); margin-bottom: 10px;"><i class="fa-solid fa-check-to-slot"></i></div>

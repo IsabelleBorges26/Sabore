@@ -20,6 +20,10 @@ const authClient = window.supabaseClient;
 const btnLogin = document.getElementById('btnLogin');
 const btnGoogle = document.querySelector('.btn-social');
 const defaultGoogleButton = '<img src="../assets/branding/Logo Google.png" alt="Google" class="social-icon-img"> Google';
+const expiredMessage = document.getElementById('session-expired-message');
+if (expiredMessage && (api.sessionExpiredOnLoad || new URLSearchParams(window.location.search).get('session') === 'expired')) {
+  expiredMessage.hidden = false;
+}
 
 const setLoginButton = (loading) => {
   if (!btnLogin) return;
@@ -90,14 +94,14 @@ if (btnGoogle) {
   });
 }
 
-if (authClient) {
+if (authClient && !api.sessionExpiredOnLoad && new URLSearchParams(window.location.search).get('session') !== 'expired') {
   authClient.auth.getSession().then(async ({ data, error }) => {
     if (error || !data.session) return;
     setLoginButton(true);
     try {
       await finishAuthentication(data.session);
     } catch (syncError) {
-      await authClient.auth.signOut();
+      await authClient.auth.signOut({ scope: 'local' });
       api.clearSession();
       alert('Login concluído, mas não foi possível abrir sua conta: ' + syncError.message);
       setLoginButton(false);

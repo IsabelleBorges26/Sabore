@@ -673,6 +673,39 @@ a {
   font-size: 0.85rem;
   font-weight: 700;
 }
+.recipe-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(45vh, 360px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.recipe-comment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.recipe-comment-body { flex: 1; min-width: 0; }
+.recipe-comment-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
+.recipe-comment-author { color: #fff; font-size: .88rem; font-weight: 600; overflow-wrap: anywhere; }
+.recipe-comment-text { margin: 6px 0 0; color: #d4d4d8; font-size: .84rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.recipe-rating-control { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.recipe-submit-rating { border: 1px solid rgba(224, 133, 122, .55); border-radius: 7px; background: rgba(224, 133, 122, .15); color: var(--accent); padding: 6px 12px; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; }
+.recipe-submit-rating:hover { background: rgba(224, 133, 122, .25); }
+.recipe-submit-rating:disabled { opacity: .6; cursor: wait; }
+.recipe-submit-rating[hidden] { display: none; }
+.recipe-delete-rating { border: 1px solid rgba(255, 133, 122, .35); border-radius: 7px; background: transparent; color: #e8a39c; padding: 6px 12px; font: inherit; font-size: .8rem; cursor: pointer; }
+.recipe-delete-rating:hover { background: rgba(255, 133, 122, .12); }
+.recipe-delete-rating:disabled { opacity: .6; cursor: wait; }
+.recipe-delete-rating[hidden] { display: none; }
+.recipe-rating-info { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; color: var(--text-muted); font-size: .8rem; line-height: 1.4; }
+#recipe-own-rating-status { color: var(--accent); font-weight: 600; }
 .author-name {
   font-size: 0.7rem;
   color: rgba(242, 244, 243, 0.5);
@@ -808,7 +841,7 @@ a {
 .post-social-actions button { min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border: 1px solid var(--glass-border); border-radius: 999px; padding: 8px 2px; background: transparent; color: var(--light); font: inherit; font-size: .65rem; font-weight: 700; white-space: nowrap; }
 @media (max-width: 390px) { .post-social-actions { gap: 3px; } .post-social-actions button { font-size: .60rem; gap: 3px; } }
 .post-social-actions .following { color: var(--accent); border-color: var(--accent); }
-/* Atividades recentes foram removidas da experiência de Explorar. */
+
 .side-column > .widget-card:last-child { display: none; }
 .community-composer-card { max-width: 680px; }
 .community-composer-form { display: grid; gap: 13px; padding: 0 4px 4px; }
@@ -822,7 +855,7 @@ a {
 .publish-from-book strong { color: var(--secondary); font-size: .88rem; }
 .publish-from-book span { margin-top: 3px; color: rgba(242,244,243,.62); font-size: .74rem; font-weight: 400; }
 .publish-from-book button { border: 0; border-radius: 10px; padding: 11px 13px; background: var(--accent); color: var(--dark-deep); font: inherit; font-size: .76rem; font-weight: 800; white-space: nowrap; }
-/* Feed em cartões: foto domina quando ela existe, e o conteúdo social fica acessível abaixo. */
+
 .explore-recipes-grid { grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 22px; align-items: start; }
 .explore-recipe-card { border-radius: 18px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,.16); }
 .explore-image-wrap { height: auto; min-height: 170px; aspect-ratio: 4 / 3; background: var(--dark-deep); }
@@ -833,7 +866,7 @@ a {
 @media (max-width: 580px) { .publish-from-book { grid-template-columns: 1fr; } .publish-from-book button { width: 100%; } }
 @media (max-width: 580px) { .composer-row { grid-template-columns: 1fr; } }
 
-/* O bloco de receita salva mantém cada controle dentro do modal em qualquer largura. */
+
 #create-post-modal .community-composer-card { width: min(680px, calc(100vw - 32px)); box-sizing: border-box; overflow-x: hidden; }
 #create-post-modal .community-composer-form,
 #create-post-modal .publish-from-book,
@@ -1565,7 +1598,7 @@ a {
   display: none !important;
 }
 
-/* ─── COMMUNITY COMPOSER & PUBLISH BUTTON ─── */
+
 .btn-create-post {
   background: var(--accent);
   color: var(--dark-deep);
@@ -1762,7 +1795,7 @@ a {
 }
 
 
-/* Ações sociais nos cards do feed */
+
 .card-top-actions {
   position: absolute;
   top: 10px;

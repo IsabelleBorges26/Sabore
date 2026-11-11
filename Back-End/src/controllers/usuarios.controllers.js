@@ -1,4 +1,5 @@
 const prisma = require("../data/prisma");
+const { withDirectDatabaseFallback } = require("../data/databaseFallback");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { registrarAcessoDiario, registrarPerfilCompleto } = require("../services/engajamento.service");
@@ -48,7 +49,6 @@ const cadastrar = async (req, res) => {
         });
         await criarLivrosPadrao(usuario.id);
 
-        // Pontua acesso diário no primeiro cadastro
         await registrarAcessoDiario(usuario.id).catch(() => {});
 
         const token = jwt.sign(
@@ -79,14 +79,13 @@ const login = async (req, res) => {
         return res.status(400).json({ erro: "E-mail e senha são obrigatórios." });
     }
     try {
-        const usuario = await prisma.usuario.findUnique({
+        const usuario = await withDirectDatabaseFallback((db) => db.usuario.findUnique({
             where: { email }
-        });
+        }), "efetuar login");
         if (!usuario || !bcrypt.compareSync(senha, usuario.senha)) {
             return res.status(401).json({ erro: "E-mail ou senha incorretos." });
         }
 
-        // Pontua acesso diário (no máximo 1 vez por dia)
         await registrarAcessoDiario(usuario.id).catch(() => {});
 
         const token = jwt.sign(
@@ -138,7 +137,6 @@ const loginGoogle = async (req, res) => {
             });
         }
 
-        // Pontua acesso diário
         await registrarAcessoDiario(usuario.id).catch(() => {});
 
         const token = jwt.sign(
@@ -166,10 +164,9 @@ const loginGoogle = async (req, res) => {
 const perfil = async (req, res) => {
     const usuarioId = req.usuario.id;
     try {
-        // Registra acesso diário caso acesse a aplicação logado
         await registrarAcessoDiario(usuarioId).catch(() => {});
 
-        const usuario = await prisma.usuario.findUnique({
+        const usuario = await withDirectDatabaseFallback((db) => db.usuario.findUnique({
             where: { id: usuarioId },
             include: {
                 _count: {
@@ -185,13 +182,12 @@ const perfil = async (req, res) => {
                     }
                 }
             }
-        });
+        }), "carregar perfil");
         if (!usuario) {
             return res.status(404).json({ erro: "Usuário não encontrado." });
         }
         const aiGeneratedCount = usuario.receitas.filter(r => r.criadaPorIA).length;
 
-        // Consulta pontuação do mês e ranking do usuário de forma segura
         let engajamentoInfo = {
             pontosMes: 0,
             posicaoRanking: 1,
@@ -204,13 +200,13 @@ const perfil = async (req, res) => {
             const { getMesReferencia, obterRankingMensal } = require("../services/engajamento.service");
             const mesAtual = getMesReferencia();
 
-            const [pontosAgregados, rankingData] = await Promise.all([
-                prisma.atividadeEngajamento.aggregate({
+            const [pontosAgregados, rankingData] = await withDirectDatabaseFallback((db) => Promise.all([
+                db.atividadeEngajamento.aggregate({
                     where: { usuarioId, mesReferencia: mesAtual },
                     _sum: { pontos: true }
                 }),
-                obterRankingMensal(mesAtual)
-            ]);
+                obterRankingMensal(mesAtual, db)
+            ]), "carregar engajamento");
 
             const pontosMes = pontosAgregados._sum.pontos || 0;
             const infoRanking = rankingData.ranking.find(r => r.usuarioId === usuarioId);
@@ -336,7 +332,6 @@ const buscar = async (req, res) => {
 const atualizar = async (req, res) => {
     const { id } = req.params;
     const { nome, email, senha, foto } = req.body;
-    // SEGURANÇA: Não aceita alteração de plano por aqui! O plano é conquistado por engajamento.
 
     if (req.usuario.id !== Number(id)) {
         return res.status(403).json({ erro: "Acesso negado. Você não pode atualizar os dados de outro usuário." });
@@ -354,7 +349,6 @@ const atualizar = async (req, res) => {
             data: dados
         });
 
-        // Se o usuário completou o perfil com foto e nome, concede 5 pontos de engajamento (1 vez)
         if (item.foto && item.nome && item.email) {
             await registrarPerfilCompleto(item.id).catch(() => {});
         }

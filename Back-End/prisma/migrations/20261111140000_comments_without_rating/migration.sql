@@ -1,0 +1,1 @@
+ALTER TABLE "Comentario" ALTER COLUMN "nota" DROP NOT NULL;

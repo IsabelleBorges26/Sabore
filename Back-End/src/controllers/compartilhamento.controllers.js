@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const prisma = require("../data/prisma");
+const { withDirectDatabaseFallback } = require("../data/databaseFallback");
 
 const gerarLink = async (req, res) => {
     const receitaId = Number(req.params.receitaId);
@@ -15,7 +16,6 @@ const gerarLink = async (req, res) => {
         if (!receita) {
             return res.status(404).json({ erro: "Somente receitas publicadas podem ser compartilhadas." });
         }
-        // Reaproveita o registro: o endereço público da receita é sempre o mesmo.
         let item = await prisma.compartilhamento.findFirst({ where: { receitaId, usuarioId } });
         if (!item) {
             item = await prisma.compartilhamento.create({
@@ -28,4 +28,28 @@ const gerarLink = async (req, res) => {
     }
 };
 
-module.exports = { gerarLink };
+const registrar = async (req, res) => {
+    const receitaId = Number(req.params.receitaId);
+    if (!Number.isSafeInteger(receitaId) || receitaId <= 0) {
+        return res.status(400).json({ erro: "Receita inválida." });
+    }
+    try {
+        const total = await withDirectDatabaseFallback(async (db) => {
+            const receita = await db.receita.findFirst({
+                where: { id: receitaId, publica: true, rascunho: false },
+                select: { id: true }
+            });
+            if (!receita) return null;
+            await db.compartilhamento.create({
+                data: { token: crypto.randomBytes(16).toString("hex"), receitaId, usuarioId: req.usuario.id }
+            });
+            return db.compartilhamento.count({ where: { receitaId } });
+        }, "registrar compartilhamento", { write: true });
+        if (total === null) return res.status(404).json({ erro: "Publicação não encontrada." });
+        res.status(201).json({ compartilhamentos: total });
+    } catch (error) {
+        res.status(500).json({ erro: "Não foi possível registrar o compartilhamento." });
+    }
+};
+
+module.exports = { gerarLink, registrar };

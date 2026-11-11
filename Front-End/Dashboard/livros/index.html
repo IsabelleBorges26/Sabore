@@ -264,7 +264,12 @@
             <i class="fa-regular fa-star" data-rating="4"></i>
             <i class="fa-regular fa-star" data-rating="5"></i>
           </div>
-          <button class="btn-primary-modal" id="recipe-submit-rating" style="padding: 8px 16px; font-size: 0.8rem; border-radius: 6px; display: none;">Enviar Nota</button>
+          <p style="margin: 0; color: var(--text-muted); font-size: .8rem; line-height: 1.4;">Uma avaliação por usuário nesta receita. Você só pode editar ou excluir a sua. Clique nas estrelas para editar.</p>
+          <span id="recipe-own-rating-status" role="status" style="color: var(--accent); font-size: .8rem;"></span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button class="btn-primary-modal" id="recipe-submit-rating" style="padding: 8px 16px; font-size: 0.8rem; border-radius: 6px; display: none;">Enviar avaliação</button>
+            <button class="btn-secondary-modal" id="recipe-delete-rating" style="padding: 8px 16px; font-size: 0.8rem; border-radius: 6px; display: none;">Excluir minha avaliação</button>
+          </div>
         </div>
         <div class="recipe-result-footer">
           <button class="btn-primary-modal" id="recipe-detail-close-btn" style="width: 100%; text-align: center; display: block;">Fechar Receita</button>

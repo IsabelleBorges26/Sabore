@@ -1,11 +1,15 @@
 const path = require("path");
 const dotenv = require("dotenv");
+const { PrismaClient } = require("@prisma/client");
+const prisma = require("./prisma");
 
 dotenv.config({ path: path.resolve(__dirname, "../../.env"), quiet: true });
 
 const FALLBACK_WINDOW_MS = 5 * 60_000;
 let databaseUnavailableUntil = 0;
 let connectivityCheck = null;
+let directClient = null;
+let directPreferredUntil = 0;
 
 function isDatabaseConnectionError(error) {
     const message = `${error?.code || ""} ${error?.message || ""}`;
@@ -101,8 +105,41 @@ async function withDatabaseFallback(prismaOperation, restOperation, label) {
     }
 }
 
+async function withDirectDatabaseFallback(operation, label, options = {}) {
+    const canRetry = (error) => options.write
+        ? /P1001|P1002|Can't reach database server/i.test(`${error?.code || ""} ${error?.message || ""}`)
+        : isDatabaseConnectionError(error);
+    if (Date.now() < directPreferredUntil && directClient) {
+        try {
+            return await operation(directClient);
+        } catch (error) {
+            if (!canRetry(error)) throw error;
+            directPreferredUntil = 0;
+            return operation(prisma);
+        }
+    }
+    try {
+        return await operation(prisma);
+    } catch (error) {
+        if (!canRetry(error) || !process.env.DIRECT_URL || process.env.DIRECT_URL === process.env.DATABASE_URL) {
+            throw error;
+        }
+        if (!directClient) {
+            directClient = new PrismaClient({
+                datasources: { db: { url: process.env.DIRECT_URL } },
+                transactionOptions: { maxWait: 10000, timeout: 30000 }
+            });
+        }
+        const result = await operation(directClient);
+        directPreferredUntil = Date.now() + FALLBACK_WINDOW_MS;
+        console.warn(`[Banco] Acesso alternativo ativado em ${label}.`);
+        return result;
+    }
+}
+
 module.exports = {
     isDatabaseConnectionError,
     supabaseRest,
-    withDatabaseFallback
+    withDatabaseFallback,
+    withDirectDatabaseFallback
 };
