@@ -14,6 +14,9 @@ const optAuth = (req, res, next) => {
 router.get("/", optAuth, c.listar);
 router.get("/auditoria", auth, admin, c.auditoria);
 router.get("/:id", optAuth, c.detalhar);
+router.post("/:id/entrar", auth, c.entrar);
+router.post("/:id/receitas", auth, c.criarReceitaExclusiva);
+router.post("/:id/receitas/:entradaId/:tipo", auth, c.interagirReceitaExclusiva);
 
 // Inscrição Oficial (Modelo B)
 router.post("/:id/participar", auth, c.inscrever);

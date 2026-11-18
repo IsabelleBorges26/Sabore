@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     recipes: [],
     trendingTagsData: []
   };
+  let specialEventsList = [];
+  let feedRotationSeed = Math.floor(Math.random() * 100) + 1;
   let activeCategoryFilter = 'all';
   let activeFeedMode = 'for-you';
   let activeHashtagFilter = null;
@@ -35,6 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const authorId = recipe?.authorId ?? recipe?.usuarioId;
     return userId != null && authorId != null && String(authorId) === String(userId);
   };
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[character]);
 
   const showAuthorAvatar = (element, recipe) => {
     if (!element) return;
@@ -226,6 +232,55 @@ document.addEventListener('DOMContentLoaded', () => {
   userState.isPro = false;
   updatePlanUI();
 
+  async function readEventPhotos(files) {
+    const selected = Array.from(files || []);
+    if (selected.length > 5) throw new Error('Escolha no máximo 5 fotos.');
+    const photos = [];
+    for (const file of selected) {
+      if (!file.type.startsWith('image/')) throw new Error('Escolha apenas arquivos de imagem.');
+      const bitmap = await createImageBitmap(file);
+      const ratio = Math.min(1, 1000 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * ratio));
+      canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close();
+      const photo = canvas.toDataURL('image/jpeg', 0.7);
+      if (photo.length >= 700000) throw new Error('Uma das fotos é grande demais. Escolha uma imagem menor.');
+      photos.push(photo);
+    }
+    return photos;
+  }
+
+  async function readRecipeVideo(fileInput) {
+    const file = fileInput?.files?.[0];
+    if (!file) return null;
+    if (file.size > 4 * 1024 * 1024 || !['video/mp4', 'video/webm'].includes(file.type)) {
+      throw new Error('Escolha um vídeo MP4 ou WebM de até 4 MB.');
+    }
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Não foi possível ler o vídeo selecionado.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function previewImageFiles(input, container) {
+    if (!input || !container) return;
+    container.querySelectorAll('img').forEach((image) => {
+      if (image.src.startsWith('blob:')) URL.revokeObjectURL(image.src);
+    });
+    container.replaceChildren();
+    Array.from(input.files || []).slice(0, 5).forEach((file) => {
+      const image = document.createElement('img');
+      image.src = URL.createObjectURL(file);
+      image.alt = `Prévia de ${file.name}`;
+      image.className = 'recipe-media-preview-image';
+      container.appendChild(image);
+    });
+  }
+
   function setupCommunityComposer() {
     const heroContent = document.querySelector('.explore-hero-content');
     if (!heroContent || document.getElementById('create-post-btn')) return;
@@ -248,12 +303,26 @@ document.addEventListener('DOMContentLoaded', () => {
             <label>Título da receita<input id="post-title" required maxlength="100" placeholder="Ex.: Bolo de chocolate da vovó"></label>
             <label>Descrição<textarea id="post-description" required maxlength="400" placeholder="Conte o que torna esta receita especial."></textarea></label>
             <div class="composer-row"><label>Tempo (min)<input id="post-time" type="number" min="1" value="30" required></label><label>Dificuldade<select id="post-difficulty"><option>Fácil</option><option>Médio</option><option>Difícil</option></select></label><label>Categoria<input id="post-category" required placeholder="Sobremesas"></label></div>
-            <label>Imagem da receita (opcional)<input id="post-image" type="url" placeholder="https://..."></label>
+            <label id="post-event-photos-wrap" class="pilot-photo-upload">Fotos da receita (até 5)<input id="post-event-photos" type="file" accept="image/*" multiple><span>Escolha fotos do seu dispositivo. Elas serão exibidas em carrossel.</span></label>
+            <div id="post-photos-preview" class="recipe-media-preview-strip" aria-live="polite"></div>
+            <label class="pilot-photo-upload">Vídeo da receita (opcional)<input id="post-video" type="file" accept="video/mp4,video/webm"><span>Envie um arquivo MP4 ou WebM de até 4 MB.</span></label>
             <label>Hashtags<input id="post-hashtags" maxlength="150" placeholder="#bolo #sobremesa #receitafacil"></label>
             <label>Ingredientes — um por linha<textarea id="post-ingredients" required placeholder="2 xícaras de farinha&#10;1 xícara de leite"></textarea></label>
             <label>Modo de preparo — um passo por linha<textarea id="post-steps" required placeholder="Misture os ingredientes.&#10;Asse até dourar."></textarea></label>
             <button type="submit" class="btn-primary-modal-full"><i class="fa-solid fa-paper-plane"></i> Publicar na comunidade</button>
           </form>
+        </div>
+      </div>
+    `);
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="modal-overlay" id="publish-book-media-modal">
+        <div class="modal-card community-composer-card">
+          <button class="modal-close-btn" id="close-book-media-modal" type="button" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+          <div class="modal-header-simple"><h3><i class="fa-solid fa-images"></i> Publicar receita do livro</h3><p>Adicione até 5 fotos e um vídeo. As mídias são opcionais e podem ser incluídas depois pela edição.</p></div>
+          <label class="pilot-photo-upload">Fotos da receita (até 5)<input id="book-publish-photos" type="file" accept="image/*" multiple><span>Escolha as fotos no seu dispositivo.</span></label>
+          <div id="book-publish-photos-preview" class="recipe-media-preview-strip" aria-live="polite"></div>
+          <label class="pilot-photo-upload">Vídeo da receita (opcional)<input id="book-publish-video" type="file" accept="video/mp4,video/webm"><span>MP4 ou WebM, até 4 MB.</span></label>
+          <button type="button" id="confirm-book-publish" class="btn-primary-modal-full"><i class="fa-solid fa-paper-plane"></i> Publicar na comunidade</button>
         </div>
       </div>
     `);
@@ -264,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
       recipes.filter(recipe => !recipe.communityPublished).forEach(recipe => {
         const option = document.createElement('option');
         option.value = recipe.id;
+        option.dataset.hashtags = JSON.stringify(recipe.hashtags || []);
         option.textContent = `${recipe.title} · ${recipe.category || 'Geral'}`;
         select.appendChild(option);
       });
@@ -271,6 +341,9 @@ document.addEventListener('DOMContentLoaded', () => {
     openCommunityComposer = async (challenge = null) => {
       await loadBookRecipes();
       challengePublicationContext = challenge;
+      const eventPhotosWrap = document.getElementById('post-event-photos-wrap');
+      // fotos sempre liberadas
+      if (eventPhotosWrap) eventPhotosWrap.hidden = false;
       const hashtagsInput = document.getElementById('post-hashtags');
       if (challenge?.hashtag && hashtagsInput && !hashtagsInput.value.includes(challenge.hashtag)) {
         hashtagsInput.value = `${hashtagsInput.value.trim()} ${challenge.hashtag}`.trim();
@@ -285,13 +358,57 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     document.getElementById('close-create-post-modal').addEventListener('click', () => closeModal('create-post-modal'));
-    document.getElementById('publish-existing-recipe-btn').addEventListener('click', async () => {
+    document.getElementById('post-event-photos')?.addEventListener('change', (event) => previewImageFiles(event.currentTarget, document.getElementById('post-photos-preview')));
+    document.getElementById('book-publish-photos')?.addEventListener('change', (event) => previewImageFiles(event.currentTarget, document.getElementById('book-publish-photos-preview')));
+    document.getElementById('close-book-media-modal')?.addEventListener('click', () => closeModal('publish-book-media-modal'));
+    document.getElementById('publish-existing-recipe-btn').addEventListener('click', () => {
       const recipeId = Number(document.getElementById('post-existing-recipe').value);
       if (!recipeId) return alert('Selecione uma receita de um livro para publicar.');
+      openModal('publish-book-media-modal');
+    });
+    document.getElementById('confirm-book-publish').addEventListener('click', async (event) => {
+      const recipeId = Number(document.getElementById('post-existing-recipe').value);
+      if (!recipeId) return alert('Selecione uma receita de um livro para publicar.');
+      const publishButton = event.currentTarget;
       try {
-        const resUpdate = await api.put(`/receitas/atualizar/${recipeId}`, { publica: true });
+        const select = document.getElementById('post-existing-recipe');
+        const selectedOption = select.options[select.selectedIndex];
+        const eventId = challengePublicationContext?.eventoId;
+        const eventPhotos = await readEventPhotos(document.getElementById('book-publish-photos')?.files);
+        const video = await readRecipeVideo(document.getElementById('book-publish-video'));
+        const hashtags = JSON.parse(selectedOption?.dataset.hashtags || '[]');
+        if (eventId && challengePublicationContext?.hashtag && !hashtags.includes(challengePublicationContext.hashtag)) {
+          hashtags.push(challengePublicationContext.hashtag);
+        }
+        const updatePayload = { publica: true };
+        if (eventId) updatePayload.hashtags = hashtags;
+        if (eventPhotos.length) {
+          updatePayload.fotos = eventPhotos;
+          updatePayload.imagem = eventPhotos[0];
+        }
+        if (video) updatePayload.video = video;
+        publishButton.disabled = true;
+        const resUpdate = await api.put(`/receitas/atualizar/${recipeId}`, updatePayload);
+        let eventEnrollmentError = null;
+        if (eventId) {
+          try {
+            await api.post(`/desafios/eventos/${eventId}/inscrever`, { receitaId: recipeId, fotos: eventPhotos });
+          } catch (error) {
+            eventEnrollmentError = error;
+          }
+        }
         closeModal('create-post-modal');
-        if (resUpdate?.desafioInfo?.concluiuDesafio) {
+        closeModal('publish-book-media-modal');
+        document.getElementById('book-publish-photos').value = '';
+        document.getElementById('book-publish-video').value = '';
+        document.getElementById('book-publish-photos-preview').replaceChildren();
+        challengePublicationContext = null;
+        if (eventEnrollmentError) {
+          alert(`A receita foi publicada, mas não entrou no evento: ${eventEnrollmentError.message}`);
+        } else if (eventId) {
+          if (window.SaboreNotify) window.SaboreNotify('Receita publicada e inscrita no evento.', 'success');
+          else alert('Receita publicada e inscrita no evento.');
+        } else if (resUpdate?.desafioInfo?.concluiuDesafio) {
           if (window.SaboreNotify) window.SaboreNotify('🎉 +30 pontos conquistados no Ranking Mensal! Desafio concluído com sucesso.', 'success');
           else alert('🎉 +30 pontos conquistados no Ranking Mensal! Desafio concluído com sucesso.');
         } else {
@@ -299,7 +416,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         await refreshExploreFeed(false);
         await loadDesafioOfTheWeek();
+        if (eventId) await loadSpecialEventsView(eventId);
       } catch (error) {
+        publishButton.disabled = false;
         alert(`Não foi possível publicar a receita do livro: ${error.message}`);
       }
     });
@@ -309,23 +428,47 @@ document.addEventListener('DOMContentLoaded', () => {
       const ingredients = value('post-ingredients').split('\n').map(item => item.trim()).filter(Boolean);
       const steps = value('post-steps').split('\n').map(item => item.trim()).filter(Boolean);
       const hashtags = value('post-hashtags').split(/\s+/).map(item => item.replace(/^#/, '').trim()).filter(Boolean);
+      if (challengePublicationContext?.hashtag) {
+        const ctxNorm = challengePublicationContext.hashtag.replace(/^#/, '').trim();
+        if (ctxNorm && !hashtags.some(h => h.toLowerCase() === ctxNorm.toLowerCase())) {
+          hashtags.push(ctxNorm);
+        }
+      }
       try {
+        const eventPhotos = await readEventPhotos(document.getElementById('post-event-photos')?.files);
+        const video = await readRecipeVideo(document.getElementById('post-video'));
         const createdRecipe = await api.post('/receitas/cadastrar', {
           titulo: value('post-title'), descricao: value('post-description'), tempoPreparo: Number(value('post-time')),
-          dificuldade: value('post-difficulty'), categorias: [value('post-category')], hashtags, imagem: value('post-image') || null,
+          dificuldade: value('post-difficulty'), categorias: [value('post-category')], hashtags, imagem: eventPhotos[0] || null, fotos: eventPhotos, video,
           ingredientes: ingredients, modoPreparo: steps.join('\n'), criadaPorIA: false, publica: true
         });
+        const eventId = challengePublicationContext?.eventoId;
+        let eventEnrollmentError = null;
+        if (eventId) {
+          try {
+            await api.post(`/desafios/eventos/${eventId}/inscrever`, { receitaId: createdRecipe.id, fotos: eventPhotos });
+          } catch (error) {
+            eventEnrollmentError = error;
+          }
+        }
         closeModal('create-post-modal');
         challengePublicationContext = null;
-        if (createdRecipe?.desafioInfo?.concluiuDesafio) {
+        if (eventEnrollmentError) {
+          alert(`A publicação foi criada, mas não entrou no evento: ${eventEnrollmentError.message}`);
+        } else if (eventId) {
+          if (window.SaboreNotify) window.SaboreNotify('Receita publicada e inscrita no evento.', 'success');
+          else alert('Receita publicada e inscrita no evento.');
+        } else if (createdRecipe?.desafioInfo?.concluiuDesafio) {
           if (window.SaboreNotify) window.SaboreNotify('🎉 +30 pontos conquistados no Ranking Mensal! Desafio concluído com sucesso.', 'success');
           else alert('🎉 +30 pontos conquistados no Ranking Mensal! Desafio concluído com sucesso.');
         } else {
           alert('Publicação criada. Ela já está visível para a comunidade.');
         }
         event.target.reset();
+        document.getElementById('post-photos-preview')?.replaceChildren();
         await refreshExploreFeed(false);
         await loadDesafioOfTheWeek();
+        if (eventId) await loadSpecialEventsView(eventId);
       } catch (error) {
         alert(`Não foi possível publicar: ${error.message}`);
       }
@@ -468,6 +611,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   const recipesContainer = document.getElementById('explore-recipes-container');
+  if (recipesContainer && !recipesContainer.dataset.recipeDetailsBound) {
+    recipesContainer.dataset.recipeDetailsBound = 'true';
+    recipesContainer.addEventListener('click', (event) => {
+      const button = event.target.closest('.view-recipe-details-btn');
+      if (!button || !recipesContainer.contains(button)) return;
+      event.preventDefault();
+      const recipe = button.closest('.explore-recipe-card')?._recipe;
+      if (recipe) openRecipeDetailsModal(recipe);
+    });
+  }
   function renderRecipes() {
     if (!recipesContainer) return;
     recipesContainer.innerHTML = '';
@@ -496,17 +649,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activeFeedMode === 'recent') {
         return new Date(second.publishedAt || 0).getTime() - new Date(first.publishedAt || 0).getTime();
       }
-      const priority = (recipe) => [
-        String(recipe.authorPlan || '').toUpperCase() === 'PRO' ? 1 : 0,
-        (Number(recipe.avaliacoes) || 0) + (Number(recipe.comentarios) || 0),
-        Number(recipe.likes) || 0,
-        Number(recipe.compartilhamentos) || 0
-      ];
-      const a = priority(first);
-      const b = priority(second);
-      for (let index = 0; index < a.length; index++) {
-        if (a[index] !== b[index]) return b[index] - a[index];
-      }
+      // Rotação dinâmica de feed social:
+      // Combina a relevância da receita (plano PRO, avaliações, curtidas) com rotação dinâmica
+      // para que a cada atualização ou retorno ao site, receitas de diferentes usuários ganhem destaque no topo.
+      const calcDynamicScore = (recipe) => {
+        const isPro = String(recipe.authorPlan || '').toUpperCase() === 'PRO' ? 12 : 0;
+        const socialInteractions = (Number(recipe.avaliacoes) || 0) * 3 + (Number(recipe.comentarios) || 0) * 2 + (Number(recipe.likes) || 0);
+        const numId = Math.abs(Number(recipe.id) || 0) || 7;
+        const seedVariance = ((numId * 41 + feedRotationSeed * 89) % 37);
+        return isPro + socialInteractions + seedVariance;
+      };
+
+      const diff = calcDynamicScore(second) - calcDynamicScore(first);
+      if (diff !== 0) return diff;
       return new Date(second.publishedAt || 0).getTime() - new Date(first.publishedAt || 0).getTime()
         || Number(second.id) - Number(first.id);
     });
@@ -528,6 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
       seenRecipeIds.add(String(rec.id));
       const card = document.createElement('article');
       card.className = 'explore-recipe-card';
+      card._recipe = rec;
       let diffClass = 'easy';
       if (rec.difficulty === 'Médio') diffClass = 'medium';
       else if (rec.difficulty === 'Difícil') diffClass = 'hard';
@@ -562,6 +718,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <i class="fa-regular fa-comment-dots"></i> ${rec.comentarios || 0}
             </button>
           </div>
+          <button type="button" class="view-recipe-details-btn">
+            <i class="fa-solid fa-book-open"></i> Ver receita, fotos e vÃ­deos
+          </button>
           <div class="post-social-actions">
             ${rec.authorId && rec.authorId !== api.getUser()?.id ? `<button class="follow-author-btn"><i class="fa-solid fa-user-plus"></i> Seguir</button>` : ''}
             <button class="share-post-btn"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
@@ -569,6 +728,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
       `;
+      const viewRecipeButton = card.querySelector('.view-recipe-details-btn');
+      if (viewRecipeButton) {
+        viewRecipeButton.innerHTML = '<i class="fa-solid fa-book-open" aria-hidden="true"></i> Ver receita';
+      }
       showAuthorAvatar(card.querySelector('.author-avatar'), rec);
 
       const likeBtn = card.querySelector('.like-toggle-btn');
@@ -686,7 +849,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
       });
 
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (event) => {
+        if (event.target.closest('button, a, input, select, textarea, .recipe-author-line')) return;
         openRecipeDetailsModal(rec);
       });
 
@@ -1309,28 +1473,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateTrendingHashtags() {
     const map = new Map();
-    userState.recipes.forEach(rec => {
+    (userState.recipes || []).forEach(rec => {
       const interactions = (Number(rec.likes) || 0) + (Number(rec.avaliacoes) || 0) + (Number(rec.comentarios) || 0);
       const tags = rec.tags || extractRecipeTags(rec);
       tags.forEach(tag => {
-        const norm = tag.toLowerCase();
-        if (!map.has(norm)) {
-          map.set(norm, { name: norm, interactions: 0, count: 0 });
+        const norm = normalizeHashtag(tag);
+        if (!norm) return;
+        const key = norm.toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, { name: norm, interactions: 0, count: 0, official: false, type: 'community' });
         }
-        const item = map.get(norm);
+        const item = map.get(key);
         item.interactions += interactions;
         item.count += 1;
       });
     });
 
+    // Adiciona hashtags oficiais de eventos especiais (como #NatalSabore2026, #ReveillonSabore2027, etc.)
+    (specialEventsList || []).forEach(ev => {
+      if (ev.hashtag) {
+        const norm = normalizeHashtag(ev.hashtag);
+        if (norm) {
+          const key = norm.toLowerCase();
+          if (!map.has(key)) {
+            map.set(key, { name: norm, interactions: 0, count: 0, official: true, type: 'event', title: ev.titulo });
+          } else {
+            const item = map.get(key);
+            item.official = true;
+            item.type = 'event';
+            item.title = ev.titulo;
+          }
+        }
+      }
+    });
+
+    // Adiciona hashtag oficial do desafio semanal ativo
     const officialChallengeTag = normalizeHashtag(currentWeeklyChallengeData?.desafio?.hashtag || currentWeeklyChallengeData?.hashtag);
-    if (officialChallengeTag && !map.has(officialChallengeTag.toLowerCase())) {
-      map.set(officialChallengeTag.toLowerCase(), { name: officialChallengeTag.toLowerCase(), interactions: 0, count: 0, official: true });
+    if (officialChallengeTag) {
+      const key = officialChallengeTag.toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, { name: officialChallengeTag, interactions: 0, count: 0, official: true, type: 'challenge' });
+      } else {
+        const item = map.get(key);
+        item.official = true;
+        item.type = 'challenge';
+      }
     }
 
+    // Exibe qualquer hashtag oficial OU com receitas publicadas (count > 0) OU com interações
     userState.trendingTagsData = Array.from(map.values())
-      .filter(item => item.interactions > 0 || item.name === officialChallengeTag.toLowerCase())
-      .sort((a, b) => Number(Boolean(b.official)) - Number(Boolean(a.official)) || b.interactions - a.interactions || b.count - a.count);
+      .filter(item => item.official || item.count > 0 || item.interactions > 0)
+      .sort((a, b) => {
+        if (b.official !== a.official) return Number(Boolean(b.official)) - Number(Boolean(a.official));
+        const scoreA = (a.interactions * 3) + (a.count * 2);
+        const scoreB = (b.interactions * 3) + (b.count * 2);
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        return b.count - a.count;
+      });
 
     renderTags();
   }
@@ -1354,26 +1553,65 @@ document.addEventListener('DOMContentLoaded', () => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'tag-item-chip';
-      if (activeHashtagFilter === item.name) {
+      if (item.official) {
+        chip.classList.add('tag-official');
+      }
+      if (activeHashtagFilter && activeHashtagFilter.toLowerCase() === item.name.toLowerCase()) {
         chip.classList.add('active');
       }
+
+      let iconHtml = '<i class="fa-solid fa-hashtag"></i>';
+      let badgeLabel = '';
+      if (item.type === 'event') {
+        iconHtml = '<i class="fa-solid fa-trophy" style="color: #F0D5B6;"></i>';
+        badgeLabel = '<span class="tag-official-badge"><i class="fa-solid fa-star"></i> Evento</span>';
+      } else if (item.type === 'challenge') {
+        iconHtml = '<i class="fa-solid fa-medal" style="color: var(--accent);"></i>';
+        badgeLabel = '<span class="tag-official-badge"><i class="fa-solid fa-star"></i> Desafio</span>';
+      }
+
+      let metaHtml = '';
+      if (item.count > 0) {
+        metaHtml += `<span class="tag-recipes-count" title="${item.count} receitas com esta hashtag"><i class="fa-solid fa-utensils"></i> ${item.count}</span>`;
+      }
+      if (item.interactions > 0) {
+        metaHtml += `<span class="tag-fire-count" title="${item.interactions} interações dos usuários"><i class="fa-solid fa-fire"></i> ${item.interactions}</span>`;
+      }
+
       chip.innerHTML = `
+        ${iconHtml}
         <span>${item.name}</span>
-        <span class="tag-fire-count" title="${item.interactions} interações dos usuários"><i class="fa-solid fa-fire"></i> ${item.interactions}</span>
+        ${badgeLabel}
+        ${metaHtml}
       `;
+
       chip.addEventListener('click', () => {
-        if (activeHashtagFilter === item.name) {
+        if (activeHashtagFilter && activeHashtagFilter.toLowerCase() === item.name.toLowerCase()) {
           activeHashtagFilter = null;
         } else {
           activeHashtagFilter = item.name;
         }
         renderTags();
         renderRecipes();
+
+        // Se estiver na tela de eventos, alterna para o feed para visualizar as receitas filtradas
+        const feedView = document.getElementById('view-comunidade-feed');
+        const evView = document.getElementById('view-comunidade-eventos');
+        if (feedView && evView && evView.style.display !== 'none') {
+          evView.style.display = 'none';
+          feedView.style.display = '';
+          document.getElementById('btn-tab-feed')?.classList.add('active');
+          document.getElementById('btn-tab-eventos')?.classList.remove('active');
+        }
+
+        // Rolagem suave até a lista de receitas
+        recipesContainer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
       tagCloud.appendChild(chip);
     });
     updateCursorHoverListeners();
   }
+
   const detailAuthorAvatar = document.getElementById('recipe-detail-author-avatar');
   const detailAuthorName = document.getElementById('recipe-detail-author-name');
   const detailTitle = document.getElementById('recipe-detail-title');
@@ -1440,6 +1678,70 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ratingsCountBadge) ratingsCountBadge.textContent = Number(rec.avaliacoes) || 0;
     loadRecipeComments(rec.id);
     loadRecipeRating(rec.id);
+    
+    const carouselContainer = document.getElementById('recipe-detail-carousel-container');
+    if (carouselContainer) {
+      const mediaItems = [];
+      if (rec.video) {
+        mediaItems.push({ type: 'video', src: rec.video });
+      }
+      const rawPhotos = Array.isArray(rec.fotos) && rec.fotos.length ? rec.fotos : [rec.image].filter(Boolean);
+      rawPhotos.slice(0, 5).forEach(img => {
+        mediaItems.push({ type: 'image', src: img });
+      });
+
+      if (mediaItems.length > 1) {
+        carouselContainer.style.display = 'block';
+        carouselContainer.innerHTML = `
+          <div class="insta-carousel" style="border-radius: 14px; min-height: 280px; max-height: 380px; margin-bottom: 14px;">
+            <div class="insta-carousel-track">
+              ${mediaItems.map((item, index) => {
+                if (item.type === 'video') {
+                  return `
+                    <div class="insta-carousel-slide ${index === 0 ? 'active' : ''}" data-slide-index="${index}">
+                      <video class="insta-post-video" controls preload="metadata" playsinline src="${escapeHtml(item.src)}"></video>
+                    </div>
+                  `;
+                }
+                return `
+                  <div class="insta-carousel-slide ${index === 0 ? 'active' : ''}" data-slide-index="${index}">
+                    <img src="${escapeHtml(item.src)}" alt="${escapeHtml(rec.title)} — foto ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <button type="button" class="insta-carousel-btn prev" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" class="insta-carousel-btn next" aria-label="Próximo"><i class="fa-solid fa-chevron-right"></i></button>
+            <div class="insta-carousel-dots">
+              ${mediaItems.map((_, i) => `<span class="insta-carousel-dot ${i === 0 ? 'active' : ''}" data-dot-index="${i}"></span>`).join('')}
+            </div>
+          </div>
+        `;
+        const slides = carouselContainer.querySelectorAll('.insta-carousel-slide');
+        const dots = carouselContainer.querySelectorAll('.insta-carousel-dot');
+        const prevBtn = carouselContainer.querySelector('.insta-carousel-btn.prev');
+        const nextBtn = carouselContainer.querySelector('.insta-carousel-btn.next');
+        let currentSlide = 0;
+        const setSlide = (index) => {
+          currentSlide = (index + slides.length) % slides.length;
+          slides.forEach((s, idx) => s.classList.toggle('active', idx === currentSlide));
+          dots.forEach((d, idx) => d.classList.toggle('active', idx === currentSlide));
+        };
+        prevBtn?.addEventListener('click', (e) => { e.stopPropagation(); setSlide(currentSlide - 1); });
+        nextBtn?.addEventListener('click', (e) => { e.stopPropagation(); setSlide(currentSlide + 1); });
+        dots.forEach((dot, idx) => dot.addEventListener('click', (e) => { e.stopPropagation(); setSlide(idx); }));
+      } else if (mediaItems.length === 1) {
+        carouselContainer.style.display = 'block';
+        if (mediaItems[0].type === 'video') {
+          carouselContainer.innerHTML = `<video class="insta-post-video" style="border-radius: 14px; max-height: 380px; width: 100%; margin-bottom: 14px;" controls preload="metadata" playsinline src="${escapeHtml(mediaItems[0].src)}"></video>`;
+        } else {
+          carouselContainer.innerHTML = `<img src="${escapeHtml(mediaItems[0].src)}" alt="${escapeHtml(rec.title)}" style="width: 100%; max-height: 380px; object-fit: cover; border-radius: 14px; border: 1px solid var(--glass-border); margin-bottom: 14px;">`;
+        }
+      } else {
+        carouselContainer.style.display = 'none';
+        carouselContainer.innerHTML = '';
+      }
+    }
     openModal('recipe-details-modal');
   }
   const saveOptionsContainer = document.getElementById('save-book-options-container');
@@ -1549,6 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
             time: recipe.time, difficulty: recipe.difficulty, category: recipe.category,
             likes: recipe.likes, avaliacoes: recipe.avaliacoes, comentarios: recipe.comentarios,
             compartilhamentos: recipe.compartilhamentos, image: recipe.image,
+            fotos: recipe.fotos, video: recipe.video,
             authorId: recipe.authorId, author: recipe.author, authorAvatar: recipe.authorAvatar,
             authorPlan: recipe.authorPlan,
             publishedAt: recipe.publishedAt, ingredients: recipe.ingredients, steps: recipe.steps,
@@ -1572,6 +1875,8 @@ document.addEventListener('DOMContentLoaded', () => {
           comentarios: Number(rec.comentarios) || 0,
           compartilhamentos: Number(rec.compartilhamentos) || 0,
           image: rec.image,
+          fotos: Array.isArray(rec.fotos) ? rec.fotos : (rec.image ? [rec.image] : []),
+          video: rec.video || null,
           authorId: rec.authorId,
           author: rec.author,
           authorAvatar: rec.authorAvatar,
@@ -1882,18 +2187,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     feedCurrentCount = feedPageLimit;
+    // Rotaciona a semente do feed social para trazer novas publicações de outros usuários para o topo
+    feedRotationSeed++;
 
     try {
-      const result = await loadInitialData({ onlyNew: showFeedback });
+      await loadInitialData({ forceRotate: true });
+
+      // Aplica animação de transição suave nos cards recarregados
+      const cards = document.querySelectorAll('#recipes-container .recipe-card');
+      cards.forEach((card, idx) => {
+        card.classList.remove('feed-refreshed');
+        card.style.animationDelay = `${Math.min(idx * 0.04, 0.4)}s`;
+        void card.offsetWidth;
+        card.classList.add('feed-refreshed');
+      });
+
       if (refreshBtn && showFeedback) {
-        refreshBtn.innerHTML = result?.ok
-          ? (result.newPostsCount > 0 ? `<i class="fa-solid fa-check"></i> ${result.newPostsCount} nova(s)` : '<i class="fa-solid fa-arrows-rotate"></i> Sem novidades')
-          : '<i class="fa-solid fa-triangle-exclamation"></i> Falha ao atualizar';
+        refreshBtn.innerHTML = '<i class="fa-solid fa-check" style="color: #4cd137;"></i> Feed atualizado!';
+      }
+    } catch (err) {
+      if (refreshBtn && showFeedback) {
+        refreshBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Falha ao atualizar';
       }
     } finally {
       if (refreshBtn && showFeedback) {
-        refreshBtn.disabled = false;
         setTimeout(() => {
+          refreshBtn.disabled = false;
           refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar';
         }, 1500);
       }
@@ -1941,6 +2260,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.remove('community-events-mode');
       btnFeed.classList.add('active');
       btnEventos.classList.remove('active');
+      renderRecipes();
+      renderTags();
     }
     function showEventosTab() {
       viewFeed.style.display = 'none';
@@ -1958,36 +2279,214 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentEventData = null;
   let currentEventId = null;
+  let pilotActiveTab = 'all'; // 'all' | 'ranking' | 'saved'
+  let pilotShowSavedOnly = false;
   let pendingVoteEntradaId = null;
+  let specialEventsSelectorLoaded = false;
+  let pilotCountdownInterval = null;
+
+  async function loadSpecialEventsSelector() {
+    const selectorBar = document.getElementById('event-selector-bar');
+    if (!selectorBar || specialEventsSelectorLoaded) return null;
+    const events = await api.get('/desafios/eventos');
+    specialEventsList = Array.isArray(events) ? events : [];
+    updateTrendingHashtags();
+    const sortedEvents = (Array.isArray(events) ? events : []).sort((a, b) => Number(Boolean(b.temporario)) - Number(Boolean(a.temporario)));
+    selectorBar.replaceChildren();
+    sortedEvents.forEach(event => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'event-tab-pill';
+      button.dataset.eventId = event.id;
+      const icon = document.createElement('i');
+      icon.className = `fa-solid ${event.temporario ? 'fa-flask' : 'fa-trophy'}`;
+      button.append(icon, document.createTextNode(event.temporario ? ' Evento piloto · Teste' : ` ${event.titulo || 'Evento especial'}`));
+      selectorBar.append(button);
+    });
+    specialEventsSelectorLoaded = true;
+    return sortedEvents.find(event => event.temporario)?.id || sortedEvents[0]?.id || null;
+  }
 
   function initSpecialEvents() {
-    const btnExisting = document.getElementById('btn-choice-existing');
-    const btnCreate = document.getElementById('btn-choice-create');
-    const panelExisting = document.getElementById('entry-panel-existing');
-    const panelCreate = document.getElementById('entry-panel-create');
-    if (btnExisting && btnCreate) {
-      btnExisting.addEventListener('click', () => {
-        btnExisting.classList.add('active'); btnCreate.classList.remove('active');
-        if (panelExisting) panelExisting.style.display = '';
-        if (panelCreate) panelCreate.style.display = 'none';
-      });
-      btnCreate.addEventListener('click', () => {
-        btnCreate.classList.add('active'); btnExisting.classList.remove('active');
-        if (panelCreate) panelCreate.style.display = '';
-        if (panelExisting) panelExisting.style.display = 'none';
+    const openEntryBtn = document.getElementById('btn-open-event-entry-modal');
+    if (openEntryBtn) {
+      openEntryBtn.addEventListener('click', () => {
+        if (currentEventData?.temporario && !currentEventData.participando) {
+          joinPilotEvent(openEntryBtn);
+          return;
+        }
+        openEventEntryModal();
       });
     }
 
-    const openEntryBtn = document.getElementById('btn-open-event-entry-modal');
-    if (openEntryBtn) {
-      openEntryBtn.addEventListener('click', () => openEventEntryModal());
-    }
+    document.getElementById('pilot-feed-create')?.addEventListener('click', () => openEventEntryModal());
+    document.getElementById('btn-replace-my-competing')?.addEventListener('click', () => openEventEntryModal());
+    document.getElementById('btn-feed-filter-all')?.addEventListener('click', () => {
+      pilotActiveTab = 'all';
+      pilotShowSavedOnly = false;
+      document.getElementById('btn-feed-filter-all')?.classList.add('active');
+      document.getElementById('btn-feed-filter-ranking')?.classList.remove('active');
+      document.getElementById('btn-feed-filter-saved')?.classList.remove('active');
+      if (currentEventData) renderSpecialEvent(currentEventData);
+    });
+    document.getElementById('btn-feed-filter-ranking')?.addEventListener('click', () => {
+      pilotActiveTab = 'ranking';
+      pilotShowSavedOnly = false;
+      document.getElementById('btn-feed-filter-ranking')?.classList.add('active');
+      document.getElementById('btn-feed-filter-all')?.classList.remove('active');
+      document.getElementById('btn-feed-filter-saved')?.classList.remove('active');
+      if (currentEventData) renderSpecialEvent(currentEventData);
+    });
+    document.getElementById('btn-feed-filter-saved')?.addEventListener('click', () => {
+      pilotActiveTab = 'saved';
+      pilotShowSavedOnly = true;
+      document.getElementById('btn-feed-filter-saved')?.classList.add('active');
+      document.getElementById('btn-feed-filter-all')?.classList.remove('active');
+      document.getElementById('btn-feed-filter-ranking')?.classList.remove('active');
+      if (currentEventData) renderSpecialEvent(currentEventData);
+    });
+    document.getElementById('btn-refresh-ranking')?.addEventListener('click', async () => {
+      const btn = document.getElementById('btn-refresh-ranking');
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Atualizando...';
+        btn.disabled = true;
+      }
+      await loadSpecialEventsView(currentEventId);
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Atualizar';
+        btn.disabled = false;
+      }
+    });
+
+    // Abas do Modal de Inscrição
+    document.getElementById('tab-btn-choose-book')?.addEventListener('click', () => {
+      document.getElementById('tab-btn-choose-book')?.classList.add('active');
+      document.getElementById('tab-btn-create-new')?.classList.remove('active');
+      const pBook = document.getElementById('panel-choose-book');
+      const pCreate = document.getElementById('panel-create-new');
+      if (pBook) pBook.style.display = '';
+      if (pCreate) pCreate.style.display = 'none';
+    });
+    document.getElementById('tab-btn-create-new')?.addEventListener('click', () => {
+      document.getElementById('tab-btn-create-new')?.classList.add('active');
+      document.getElementById('tab-btn-choose-book')?.classList.remove('active');
+      const pBook = document.getElementById('panel-choose-book');
+      const pCreate = document.getElementById('panel-create-new');
+      if (pBook) pBook.style.display = 'none';
+      if (pCreate) pCreate.style.display = '';
+    });
+
+    // Preview de fotos selecionadas
+    document.getElementById('pilot-create-photos-input')?.addEventListener('change', (e) => {
+      const container = document.getElementById('pilot-create-photo-previews');
+      if (!container) return;
+      container.innerHTML = '';
+      const files = Array.from(e.target.files || []).slice(0, 5);
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        const img = document.createElement('img');
+        img.className = 'pilot-preview-thumb';
+        img.src = url;
+        container.appendChild(img);
+      });
+    });
+    document.getElementById('pilot-entry-photos')?.addEventListener('change', (e) => {
+      const container = document.getElementById('pilot-book-photo-previews');
+      if (!container) return;
+      container.innerHTML = '';
+      const files = Array.from(e.target.files || []).slice(0, 5);
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        const img = document.createElement('img');
+        img.className = 'pilot-preview-thumb';
+        img.src = url;
+        container.appendChild(img);
+      });
+    });
+
+    // Formulário de Criação de Receita do Evento
+    document.getElementById('pilot-recipe-create-form')?.addEventListener('submit', async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const submit = form.querySelector('[type="submit"]');
+      const error = document.getElementById('pilot-recipe-create-error');
+      if (error) error.hidden = true;
+      submit.disabled = true;
+      try {
+        const values = new FormData(form);
+        const videoFile = values.get('video');
+        let video = null;
+        if (videoFile?.size) {
+          if (videoFile.size > 4 * 1024 * 1024 || !['video/mp4', 'video/webm'].includes(videoFile.type)) throw new Error('Escolha um vídeo MP4 ou WebM de até 4 MB.');
+          video = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('Não foi possível ler o vídeo.'));
+            reader.readAsDataURL(videoFile);
+          });
+        }
+        const fotos = await readEventPhotos(form.querySelector('[name="fotos"]')?.files);
+        if (!fotos.length) throw new Error('Selecione pelo menos uma foto para a receita.');
+
+        const payload = {
+          titulo: values.get('titulo'),
+          tempoPreparo: Number(values.get('tempoPreparo')),
+          ingredientes: values.get('ingredientes'),
+          modoPreparo: values.get('modoPreparo'),
+          fotos,
+          video
+        };
+
+        if (currentEventData?.minhaEntrada) {
+          pendingReplaceAction = { type: 'create', payload };
+          const replaceModal = document.getElementById('event-replace-confirm-modal');
+          const replaceMsg = document.getElementById('replace-confirm-message');
+          if (replaceMsg) {
+            replaceMsg.innerHTML = `Você já possui a receita <strong>"${escapeDesafioHtml(currentEventData.minhaEntrada.titulo || 'sua receita atual')}"</strong> concorrendo oficialmente neste evento.<br><br>Tem certeza de que deseja substituí-la por <strong>"${escapeDesafioHtml(payload.titulo)}"</strong>?<br><br><small style="color:#e0857a;">Atenção: A receita anterior deixará de concorrer e os comentários/avaliações serão reiniciados para manter a competição justa.</small>`;
+          }
+          if (replaceModal) replaceModal.classList.add('open');
+          return;
+        }
+
+        await executeCreateEnrollment(payload);
+      } catch (err) {
+        if (error) { error.textContent = err.message || 'Não foi possível inscrever a receita.'; error.hidden = false; }
+      } finally { submit.disabled = false; }
+    });
+
+    // Modal de Confirmação de Substituição de Receita
+    const replaceModal = document.getElementById('event-replace-confirm-modal');
+    document.getElementById('btn-cancel-replace')?.addEventListener('click', () => {
+      pendingReplaceAction = null;
+      if (replaceModal) replaceModal.classList.remove('open');
+    });
+    document.getElementById('btn-execute-replace')?.addEventListener('click', async () => {
+      if (!pendingReplaceAction) return;
+      const action = pendingReplaceAction;
+      pendingReplaceAction = null;
+      if (replaceModal) replaceModal.classList.remove('open');
+      if (action.type === 'book') {
+        await executeBookEnrollment(action.receitaId);
+      } else if (action.type === 'create') {
+        await executeCreateEnrollment(action.payload);
+      }
+    });
 
     const closeEntryModal = document.getElementById('close-event-entry-modal');
     const entryModal = document.getElementById('event-entry-modal');
     if (closeEntryModal && entryModal) {
-      closeEntryModal.addEventListener('click', () => entryModal.classList.remove('open'));
-      entryModal.addEventListener('click', (e) => { if (e.target === entryModal) entryModal.classList.remove('open'); });
+      const resetEntryModal = () => {
+        entryModal.classList.remove('open');
+        // Resetar step 2 ao fechar
+        const pBook = document.getElementById('panel-choose-book');
+        const pMedia = document.getElementById('panel-book-media-step');
+        if (pBook) pBook.style.display = '';
+        if (pMedia) pMedia.style.display = 'none';
+        const btnConfirm = document.getElementById('btn-confirm-book-entry');
+        if (btnConfirm) { btnConfirm.disabled = false; btnConfirm.innerHTML = '<i class="fa-solid fa-trophy"></i> Confirmar Inscrição no Evento'; }
+      };
+      closeEntryModal.addEventListener('click', resetEntryModal);
+      entryModal.addEventListener('click', (e) => { if (e.target === entryModal) resetEntryModal(); });
     }
 
     const closeRecipeModal = document.getElementById('close-event-recipe-modal');
@@ -2043,25 +2542,116 @@ document.addEventListener('DOMContentLoaded', () => {
       openCreateBtn.addEventListener('click', () => {
         if (entryModal) entryModal.classList.remove('open');
         if (openCommunityComposer && currentEventData) {
-          openCommunityComposer({ hashtag: currentEventData.hashtag });
+          openCommunityComposer({ hashtag: currentEventData.hashtag, eventoId: currentEventData.id });
         }
       });
     }
   }
 
+  async function joinPilotEvent(button) {
+    if (!currentEventId || button.disabled) return;
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
+    try {
+      await api.post(`/desafios/eventos/${currentEventId}/entrar`, {});
+      await loadSpecialEventsView(currentEventId);
+      button.disabled = false;
+      showEventJoinCelebration();
+    } catch (error) {
+      if (window.SaboreNotify) window.SaboreNotify(error.message || 'Não foi possível entrar no evento.', 'error');
+      else alert(error.message || 'Não foi possível entrar no evento.');
+      button.disabled = false;
+      button.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Participar do Evento';
+    }
+  }
+
+  function showEventJoinCelebration() {
+    const layer = document.getElementById('event-join-celebration');
+    if (!layer) return;
+    layer.replaceChildren();
+    const message = document.createElement('div');
+    message.className = 'event-join-message';
+    message.innerHTML = '<i class="fa-solid fa-circle-check"></i><strong>Você está participando!</strong><span>A galeria do evento já está liberada.</span>';
+    const confetti = document.createElement('div');
+    confetti.className = 'event-join-confetti';
+    const colors = ['#F0D5B6', '#E0857A', '#70D99B', '#8FC9D8', '#E5C85B'];
+    for (let i = 0; i < 32; i += 1) {
+      const piece = document.createElement('span');
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.backgroundColor = colors[i % colors.length];
+      piece.style.animationDelay = `${Math.random() * 0.45}s`;
+      piece.style.setProperty('--fall-duration', `${1.4 + Math.random() * 0.8}s`);
+      confetti.appendChild(piece);
+    }
+    layer.append(message, confetti);
+    layer.hidden = false;
+    requestAnimationFrame(() => layer.classList.add('show'));
+    window.setTimeout(() => {
+      layer.classList.remove('show');
+      window.setTimeout(() => { layer.hidden = true; }, 250);
+    }, 2200);
+  }
+
+  function updatePilotEventGuide() {
+    const steps = [
+      ['Entre no evento', 'Clique em Participar do Evento. A galeria será liberada na hora.'],
+      ['Inscreva uma receita', 'Essa etapa é opcional no início. Você pode enviar ou trocar sua receita até a votação.'],
+      ['Acompanhe o feed', 'Veja apenas as receitas concorrentes, com fotos, preparo e comentários.'],
+      ['Vote e veja o resultado', 'Na votação, escolha uma receita. Depois, acompanhe o anúncio do vencedor.']
+    ];
+    document.querySelectorAll('#event-guide-modal .event-howto-step').forEach((step, index) => {
+      if (!steps[index]) return;
+      const [title, description] = steps[index];
+      const heading = step.querySelector('h5');
+      const paragraph = step.querySelector('p');
+      if (heading) heading.textContent = title;
+      if (paragraph) paragraph.textContent = description;
+    });
+    const rules = [
+      ['Acesso à galeria', 'É preciso participar do evento para ver as receitas inscritas.'],
+      ['Uma receita oficial', 'Cada participante pode publicar uma receita exclusiva do evento para concorrer.'],
+      ['Troca de receita', 'Você pode trocar sua receita enquanto as inscrições estiverem abertas.'],
+      ['Voto único', 'Quem participa pode votar uma vez durante a votação.'],
+      ['Voto justo', 'Não é permitido votar na própria receita.'],
+      ['Quem vence', 'Ganha a receita com mais votos válidos.'],
+      ['Em caso de empate', 'Vence a inscrição aprovada primeiro.']
+    ];
+    document.querySelectorAll('#event-guide-modal .event-rule-list li').forEach((rule, index) => {
+      if (!rules[index]) return;
+      const [title, description] = rules[index];
+      const strong = rule.querySelector('strong');
+      const span = rule.querySelector('span');
+      if (strong) strong.textContent = title;
+      if (span) span.textContent = description;
+    });
+  }
+
   async function loadSpecialEventsView(eventId) {
     const selectorBar = document.getElementById('event-selector-bar');
+    let defaultEventId = null;
+    if (selectorBar && !specialEventsSelectorLoaded) {
+      try {
+        defaultEventId = await loadSpecialEventsSelector();
+      } catch (err) {
+        console.error('Erro ao carregar eventos especiais:', err);
+      }
+    }
     if (!eventId && selectorBar) {
-      const firstPill = selectorBar.querySelector('[data-event-id]');
-      if (firstPill) eventId = firstPill.dataset.eventId;
+      const firstPill = selectorBar.querySelector(`[data-event-id="${defaultEventId}"]`) || selectorBar.querySelector('[data-event-id]');
+      if (firstPill) {
+        eventId = firstPill.dataset.eventId;
+        firstPill.classList.add('active');
+      }
     }
     if (!eventId) eventId = 1;
+    if (String(currentEventId) !== String(eventId)) pilotShowSavedOnly = false;
     currentEventId = eventId;
 
     try {
       const user = api.getUser();
       const url = user?.id ? `/desafios/eventos/${eventId}?usuarioId=${user.id}` : `/desafios/eventos/${eventId}`;
       const data = await api.get(url);
+      if (data.temporario && data.participando) data.feedPosts = (data.galeria || []).map(entry => ({ ...entry, oficial: true })).sort((a, b) => new Date(b.inscritoEm || 0) - new Date(a.inscritoEm || 0));
       currentEventData = data;
       renderSpecialEvent(data);
     } catch (err) {
@@ -2079,9 +2669,95 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!data) return;
     const { fase, galeria = [], participantesCount = 0, totalVotos = 0, minhaEntrada, meuVoto } = data;
     const isNewYear = String(currentEventId || data.id) === '2' || /réveillon|reveillon/i.test(data.nome || data.titulo || '');
+    const isPilot = data.tema === 'piloto' || data.temporario === true;
+    const participando = Boolean(data.participando);
+    const eventsView = document.getElementById('view-comunidade-eventos');
+    if (eventsView) eventsView.dataset.participating = isPilot && participando ? 'true' : 'false';
+    const feedShell = document.getElementById('pilot-feed-shell');
+    if (feedShell) feedShell.hidden = !(isPilot && participando) || (isPilot && fase === 'ENCERRADO');
+    const feedTitle = document.getElementById('pilot-feed-title');
+    if (feedTitle && isPilot) feedTitle.textContent = (data.titulo || 'Evento piloto').split('—')[0].trim();
+    const feedCreate = document.getElementById('pilot-feed-create');
+    const feedActionsWrap = document.getElementById('pilot-feed-actions-wrap');
+    if (feedCreate) {
+      if (minhaEntrada) {
+        // Se já possui receita concorrendo, esconde o botão duplicado de cima
+        // mantendo apenas o botão do card de destaque "Sua Receita Concorrente"
+        if (feedActionsWrap) feedActionsWrap.style.display = 'none';
+        feedCreate.hidden = true;
+      } else {
+        if (feedActionsWrap) feedActionsWrap.style.display = '';
+        feedCreate.hidden = !isPilot || !participando || fase !== 'INSCRICOES';
+        feedCreate.innerHTML = '<i class="fa-solid fa-trophy"></i> Inscrever receita no evento';
+      }
+    }
+
+    const myCompetingCard = document.getElementById('pilot-my-competing-card');
+    const myCompetingTitle = document.getElementById('pilot-my-competing-title');
+    const myCompetingSub = document.getElementById('pilot-my-competing-sub');
+    const myCompetingImg = document.getElementById('pilot-my-competing-img');
+    const myCompetingPlaceholder = document.getElementById('pilot-my-competing-placeholder');
+    const btnReplaceCompeting = document.getElementById('btn-replace-my-competing');
+
+    if (myCompetingCard) {
+      if (isPilot && participando && minhaEntrada) {
+        myCompetingCard.style.display = 'flex';
+        if (myCompetingTitle) myCompetingTitle.textContent = minhaEntrada.titulo || 'Sua Receita Concorrente';
+        if (myCompetingSub) {
+          myCompetingSub.textContent = fase === 'VOTACAO'
+            ? 'Fase de votação em andamento · Receita bloqueada para votos comunitários'
+            : (fase === 'ENCERRADO' ? 'Competição encerrada' : 'Inscrita oficialmente no evento · Você pode substituí-la durante o período de inscrições');
+        }
+        if (minhaEntrada.imagem) {
+          if (myCompetingImg) { myCompetingImg.src = minhaEntrada.imagem; myCompetingImg.style.display = 'block'; }
+          if (myCompetingPlaceholder) myCompetingPlaceholder.style.display = 'none';
+        } else {
+          if (myCompetingImg) myCompetingImg.style.display = 'none';
+          if (myCompetingPlaceholder) myCompetingPlaceholder.style.display = 'grid';
+        }
+        if (btnReplaceCompeting) {
+          btnReplaceCompeting.style.display = (fase === 'INSCRICOES' && (!minhaEntrada.votos || minhaEntrada.votos === 0)) ? 'inline-flex' : 'none';
+        }
+      } else {
+        myCompetingCard.style.display = 'none';
+      }
+    }
+
+    const badgeCountAll = document.getElementById('badge-count-all');
+    const badgeCountSaved = document.getElementById('badge-count-saved');
+    const badgeCountRanking = document.getElementById('badge-count-ranking');
+    if (badgeCountAll) badgeCountAll.textContent = galeria.length;
+    if (badgeCountSaved) badgeCountSaved.textContent = galeria.filter(e => e.salvoPorMim).length;
+    if (badgeCountRanking) badgeCountRanking.textContent = galeria.length;
+
+    const btnFilterAll = document.getElementById('btn-feed-filter-all');
+    const btnFilterSaved = document.getElementById('btn-feed-filter-saved');
+    const btnFilterRanking = document.getElementById('btn-feed-filter-ranking');
+    if (btnFilterAll) btnFilterAll.classList.toggle('active', pilotActiveTab === 'all');
+    if (btnFilterRanking) btnFilterRanking.classList.toggle('active', pilotActiveTab === 'ranking');
+    if (btnFilterSaved) btnFilterSaved.classList.toggle('active', pilotActiveTab === 'saved');
+
+    // Exibição e atualização do painel de ranking
+    const rankingContainer = document.getElementById('pilot-ranking-container');
+    const gallerySection = document.getElementById('event-gallery-section');
+    if (rankingContainer) {
+      if (isPilot && participando && pilotActiveTab === 'ranking') {
+        rankingContainer.style.display = 'block';
+        if (gallerySection) gallerySection.style.display = 'none';
+        renderPilotRanking(galeria, fase, meuVoto);
+      } else {
+        rankingContainer.style.display = 'none';
+        if (gallerySection) gallerySection.style.display = '';
+      }
+    }
+
+    // Inicia / atualiza cronômetro de votação em tempo real
+    startPilotCountdown(data.votacaoFimEm || data.votacaoEncerraEm, fase);
+
+    if (isPilot) updatePilotEventGuide();
     const banner = document.getElementById('event-banner-card');
     if (banner) {
-      banner.dataset.theme = isNewYear ? 'reveillon' : 'natal';
+      banner.dataset.theme = isPilot ? 'piloto' : (isNewYear ? 'reveillon' : 'natal');
       const eventsView = document.getElementById('view-comunidade-eventos');
       if (eventsView) eventsView.dataset.eventTheme = banner.dataset.theme;
     }
@@ -2094,13 +2770,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const votingIndicator = document.getElementById('event-voting-indicator');
     if (votingIndicator) {
-      const indicator = fase === 'VOTACAO'
-        ? (meuVoto ? ['fa-solid fa-check', 'Você já votou'] : ['fa-solid fa-check-to-slot', 'Votação aberta'])
-        : fase === 'ENCERRADO'
-          ? [data.resultado ? 'fa-solid fa-trophy' : 'fa-regular fa-clock', data.resultado ? 'Resultado anunciado' : 'Resultado em breve']
-          : ['fa-regular fa-clock', 'Votação em breve'];
-      votingIndicator.innerHTML = `<i class="${indicator[0]}"></i> ${indicator[1]}`;
-      votingIndicator.dataset.phase = String(fase || '').toLowerCase();
+      if (fase === 'EM_BREVE') {
+        votingIndicator.style.display = 'none';
+      } else {
+        votingIndicator.style.display = '';
+        const indicator = fase === 'VOTACAO'
+          ? (meuVoto ? ['fa-solid fa-check', 'Você já votou'] : ['fa-solid fa-check-to-slot', 'Votação aberta'])
+          : fase === 'ENCERRADO'
+            ? [data.resultado ? 'fa-solid fa-trophy' : 'fa-regular fa-clock', data.resultado ? 'Resultado anunciado' : 'Resultado em breve']
+            : ['fa-regular fa-clock', 'Votação em breve'];
+        votingIndicator.innerHTML = `<i class="${indicator[0]}"></i> ${indicator[1]}`;
+        votingIndicator.dataset.phase = String(fase || '').toLowerCase();
+      }
     }
 
     const bannerTitle = document.getElementById('event-banner-title');
@@ -2110,13 +2791,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantsCount = document.getElementById('event-participants-count');
     const votesCount = document.getElementById('event-votes-count');
 
-    if (bannerTitle) bannerTitle.textContent = isNewYear ? 'Réveillon Saboré 2027' : 'Natal Saboré 2026';
-    if (bannerDesc) {
+    if (bannerTitle) bannerTitle.textContent = isPilot
+      ? (data.titulo || 'Evento piloto').split('—')[0].trim()
+      : (data.titulo || (isNewYear ? 'Réveillon Saboré 2027' : 'Natal Saboré 2026'));
+    if (bannerDesc && (data.descricao || isNewYear)) {
       bannerDesc.textContent = isNewYear
-        ? 'Celebre a virada com sua receita especial e concorra ao emblema da comunidade.'
-        : 'Compartilhe sua melhor receita natalina e concorra ao emblema exclusivo do evento.';
+        ? (data.descricao || 'Celebre a virada com sua receita especial e concorra ao emblema da comunidade.')
+        : data.descricao;
     }
-    if (hashtagBadge) hashtagBadge.textContent = data.hashtag || '';
+    if (hashtagBadge) {
+      hashtagBadge.textContent = data.hashtag || '';
+      hashtagBadge.title = 'Clique para ver todas as publicações com esta hashtag no feed';
+      hashtagBadge.style.cursor = 'pointer';
+      hashtagBadge.onclick = (e) => {
+        e.stopPropagation();
+        if (data.hashtag) {
+          activeHashtagFilter = (activeHashtagFilter === data.hashtag) ? null : data.hashtag;
+          renderTags();
+          renderRecipes();
+          const feedView = document.getElementById('view-comunidade-feed');
+          const evView = document.getElementById('view-comunidade-eventos');
+          if (feedView && evView) {
+            evView.style.display = 'none';
+            feedView.style.display = '';
+            document.getElementById('btn-tab-feed')?.classList.add('active');
+            document.getElementById('btn-tab-eventos')?.classList.remove('active');
+          }
+          recipesContainer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      };
+      const hashtagIcon = hashtagBadge.closest('.event-meta-item')?.querySelector('i');
+      if (hashtagIcon) hashtagIcon.className = isPilot ? 'fa-solid fa-link' : 'fa-solid fa-hashtag';
+    }
+    const hashtagHelp = document.getElementById('event-hashtag-help');
+    if (hashtagHelp) hashtagHelp.hidden = !isPilot;
     const dtInicio = data.inicioEm || data.comecaEm;
     const dtFim = data.fimEm || data.encerraEm;
     const dtInscInicio = data.inscricoesInicioEm || data.inscricoesIniciaEm;
@@ -2127,6 +2835,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (periodText) periodText.textContent = dtInicio && dtFim ? `${formatEventDate(dtInicio)} a ${formatEventDate(dtFim)}/${new Date(dtFim).getFullYear()}` : '';
     if (participantsCount) participantsCount.textContent = `${participantesCount} ${participantesCount === 1 ? 'participante' : 'participantes'}`;
     if (votesCount) votesCount.textContent = `${totalVotos} ${totalVotos === 1 ? 'voto computado' : 'votos computados'}`;
+    const votesMeta = document.getElementById('event-votes-meta');
+    if (votesMeta) votesMeta.hidden = isPilot && fase !== 'VOTACAO' && fase !== 'ENCERRADO';
 
     const stepInscricoes = document.getElementById('step-inscricoes');
     const stepVotacao = document.getElementById('step-votacao');
@@ -2159,8 +2869,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const actionCard = document.getElementById('event-user-action-card');
     const actionInfo = document.getElementById('event-user-action-info');
     const openEntryBtn = document.getElementById('btn-open-event-entry-modal');
+    if (gallerySection && pilotActiveTab !== 'ranking') {
+      gallerySection.style.display = isPilot && !data.acessoLiberado ? 'none' : '';
+    }
     if (actionCard) {
-      if (fase === 'EM_BREVE') {
+      if (isPilot) {
+        if (fase === 'ENCERRADO') {
+          actionCard.style.display = participando ? 'none' : '';
+          if (actionInfo && !participando) actionInfo.innerHTML = '<h3>Evento encerrado</h3><p>Este evento já terminou.</p>';
+          if (openEntryBtn) openEntryBtn.style.display = 'none';
+        } else if (fase === 'EM_BREVE') {
+          actionCard.style.display = '';
+          if (actionInfo) actionInfo.innerHTML = '<h3>Evento em breve</h3><p>Entre quando as inscrições começarem.</p>';
+          if (openEntryBtn) openEntryBtn.style.display = 'none';
+        } else if (!participando) {
+          actionCard.style.display = '';
+          if (actionInfo) actionInfo.innerHTML = '<h3>Entre para acompanhar o evento</h3><p>Ao participar, você libera a galeria e poderá enviar uma receita ou votar na etapa de votação.</p>';
+          if (openEntryBtn) {
+            openEntryBtn.style.display = '';
+            openEntryBtn.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Participar do Evento';
+          }
+        } else if (fase === 'VOTACAO') {
+          actionCard.style.display = '';
+          if (actionInfo) actionInfo.innerHTML = meuVoto
+            ? '<h3><i class="fa-solid fa-circle-check"></i> Você já votou</h3><p>Acompanhe os resultados na galeria.</p>'
+            : '<h3>Você está participando</h3><p>Escolha sua receita favorita na galeria para registrar seu voto.</p>';
+          if (openEntryBtn) openEntryBtn.style.display = 'none';
+        } else {
+          actionCard.style.display = '';
+          if (actionInfo) actionInfo.innerHTML = minhaEntrada
+            ? '<h3><i class="fa-solid fa-circle-check"></i> Você está no evento</h3><p>Sua receita está concorrendo. Você pode trocá-la até começar a votação.</p>'
+            : '<h3>Você está no evento</h3><p>Acompanhe as receitas ou inscreva uma sua quando quiser.</p>';
+          if (openEntryBtn) {
+            openEntryBtn.style.display = '';
+            openEntryBtn.innerHTML = minhaEntrada
+              ? '<i class="fa-solid fa-rotate"></i> Trocar minha receita'
+              : '<i class="fa-solid fa-utensils"></i> Inscrever uma receita';
+          }
+        }
+      } else if (fase === 'EM_BREVE') {
         actionCard.style.display = '';
         if (actionInfo) actionInfo.innerHTML = '<h3>Inscrições em breve</h3><p>Confira o período do evento acima.</p>';
         if (openEntryBtn) openEntryBtn.style.display = 'none';
@@ -2190,30 +2937,275 @@ document.addEventListener('DOMContentLoaded', () => {
     const winnerCard = document.getElementById('event-winner-card');
     if (winnerCard) {
       if (fase === 'ENCERRADO' && data.resultado) {
-        winnerCard.style.display = '';
+        winnerCard.style.display = 'flex';
         const r = data.resultado;
         const titleEl = document.getElementById('event-winner-recipe-title');
         const authorEl = document.getElementById('event-winner-author');
         const votesEl = document.getElementById('event-winner-votes');
+        const profileBtn = document.getElementById('event-winner-profile-btn');
+        const authorLink = document.getElementById('event-winner-author-link');
+        const emblemaImg = document.getElementById('event-winner-emblem');
         if (titleEl) titleEl.textContent = r.tituloReceita || 'Receita Campeã';
         if (authorEl) authorEl.textContent = r.nomeAutor || 'Chef Vencedor';
         if (votesEl) votesEl.textContent = r.totalVotos || 0;
+        const perfilUrl = `../perfil/index.html?id=${r.usuarioId || ''}`;
+        if (profileBtn) {
+          profileBtn.href = perfilUrl;
+          profileBtn.onclick = null;
+        }
+        if (authorLink) {
+          authorLink.href = perfilUrl;
+          authorLink.onclick = null;
+        }
+        if (emblemaImg && data.evento && data.evento.emblemaImg) emblemaImg.src = data.evento.emblemaImg;
+
+        // Timeline: ativa o passo 4 "Encerrado"
+        const stepEncerrado = document.getElementById('step-encerrado');
+        const arrowEncerrado = document.getElementById('timeline-arrow-encerrado');
+        const winnerLink = document.getElementById('step-encerrado-winner-link');
+        if (stepEncerrado) stepEncerrado.style.display = '';
+        if (arrowEncerrado) arrowEncerrado.style.display = '';
+        if (winnerLink) {
+          winnerLink.textContent = `Vencedor: ${r.nomeAutor || 'Chef Vencedor'}`;
+          winnerLink.href = perfilUrl;
+          winnerLink.onclick = null;
+        }
+        document.getElementById('step-resultado')?.classList.remove('active');
+        stepEncerrado?.classList.add('active');
+
+        // Se o usuário logado for o campeão, exibe pop-up de celebração com confetes
+        checkAndShowWinnerCelebration(data, r);
       } else {
         winnerCard.style.display = 'none';
+        // Oculta passo encerrado se não aplicável
+        const stepEncerrado = document.getElementById('step-encerrado');
+        const arrowEncerrado = document.getElementById('timeline-arrow-encerrado');
+        if (stepEncerrado) stepEncerrado.style.display = 'none';
+        if (arrowEncerrado) arrowEncerrado.style.display = 'none';
       }
     }
 
-    renderEventGallery(galeria, fase, meuVoto, data.id || currentEventId);
+    const galleryHeading = document.querySelector('#event-gallery-section .title-details h3');
+    if (galleryHeading) galleryHeading.textContent = isPilot && participando ? 'Publicações do evento' : 'Galeria de Receitas Inscritas';
+    const eventPosts = isPilot && participando ? (data.feedPosts || galeria) : galeria;
+
+    if (pilotActiveTab === 'ranking') {
+      const container = document.getElementById('event-gallery-grid');
+      if (container) container.innerHTML = '';
+      if (gallerySection) gallerySection.style.display = 'none';
+      if (rankingContainer) {
+        rankingContainer.style.display = 'block';
+        renderPilotRanking(galeria, fase, meuVoto);
+      }
+    } else {
+      if (rankingContainer) rankingContainer.style.display = 'none';
+      // Se o evento estiver EM_BREVE, não faz sentido exibir galeria vazia
+      if (fase === 'EM_BREVE') {
+        if (gallerySection) gallerySection.style.display = 'none';
+      } else {
+        if (gallerySection) gallerySection.style.display = '';
+        renderEventGallery(isPilot && pilotShowSavedOnly ? eventPosts.filter(entry => entry.salvoPorMim) : eventPosts, fase, meuVoto, data.id || currentEventId);
+      }
+    }
+  }
+
+  function checkAndShowWinnerCelebration(eventData, resultado) {
+    const user = api.getUser();
+    if (!user || !resultado) return;
+
+    // Verifica se o usuário logado é o vencedor
+    const isWinner = String(user.id) === String(resultado.usuarioId);
+    if (!isWinner) return;
+
+    // Evita exibir repetidamente se o usuário já viu permanentemente
+    const celebrationSeenKey = `sabore_winner_celebrated_ev_${eventData.id || currentEventId}_u_${user.id}`;
+    if (localStorage.getItem(celebrationSeenKey) || sessionStorage.getItem(celebrationSeenKey)) return;
+
+    const modal = document.getElementById('event-winner-celebration-modal');
+    if (!modal) return;
+
+    const badgeImg = document.getElementById('winner-modal-badge-img');
+    const badgeTitle = document.getElementById('winner-modal-badge-title');
+    const modalDesc = document.getElementById('winner-modal-desc');
+
+    if (badgeImg && eventData.emblemaImg) badgeImg.src = eventData.emblemaImg;
+    if (badgeTitle && eventData.emblema) badgeTitle.textContent = eventData.emblema;
+    if (modalDesc && resultado.tituloReceita) {
+      modalDesc.innerHTML = `Sua receita <strong>"${escapeDesafioHtml(resultado.tituloReceita)}"</strong> conquistou <strong>${resultado.totalVotos} votos válidos</strong> e foi a grande campeã oficial do evento!`;
+    }
+
+    // Dispara chuva de confetes animados
+    generateConfetti('celebration-confetti');
+
+    modal.style.display = 'flex';
+    modal.classList.add('open');
+
+    const closeBtn = document.getElementById('close-winner-celebration-modal');
+    const acceptBtn = document.getElementById('btn-celebrate-accept');
+
+    const dismissCelebration = () => {
+      modal.classList.remove('open');
+      modal.style.display = 'none';
+      localStorage.setItem(celebrationSeenKey, 'true');
+      sessionStorage.setItem(celebrationSeenKey, 'true');
+    };
+
+    if (closeBtn) closeBtn.onclick = dismissCelebration;
+    if (acceptBtn) {
+      acceptBtn.onclick = () => {
+        dismissCelebration();
+        window.location.href = '../perfil/index.html';
+      };
+    }
+  }
+
+  function generateConfetti(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    const colors = ['#FFD700', '#F0D5B6', '#27C93F', '#E0857A', '#FFFFFF', '#6AD1B2'];
+    for (let i = 0; i < 48; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'celebration-confetti-piece';
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = `${Math.random() * 2.5}s`;
+      piece.style.animationDuration = `${2.2 + Math.random() * 2}s`;
+      piece.style.transform = `scale(${0.6 + Math.random() * 0.8})`;
+      container.appendChild(piece);
+    }
+  }
+
+  function startPilotCountdown(endDateIso, fase) {
+    if (pilotCountdownInterval) {
+      clearInterval(pilotCountdownInterval);
+      pilotCountdownInterval = null;
+    }
+    const timerEl = document.getElementById('pilot-countdown-timer');
+    if (!timerEl) return;
+
+    if (fase === 'ENCERRADO') {
+      timerEl.textContent = 'VOTAÇÃO ENCERRADA';
+      timerEl.style.color = '#e0857a';
+      return;
+    }
+
+    if (!endDateIso) {
+      timerEl.textContent = '--:--:--';
+      return;
+    }
+
+    const endTarget = new Date(endDateIso).getTime();
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const diff = endTarget - now;
+      if (diff <= 0) {
+        timerEl.textContent = 'ENCERRADA';
+        timerEl.style.color = '#e0857a';
+        clearInterval(pilotCountdownInterval);
+        pilotCountdownInterval = null;
+        // Recarrega automaticamente a view para apurar o vencedor em tempo real
+        loadSpecialEventsView(currentEventId);
+        return;
+      }
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+      timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      timerEl.style.color = diff < 600000 ? '#e0857a' : '#ffd700'; // Vermelho nos últimos 10 min
+    };
+
+    updateTimer();
+    pilotCountdownInterval = setInterval(updateTimer, 1000);
+  }
+
+  function renderPilotRanking(galeria, fase, meuVoto) {
+    const listEl = document.getElementById('pilot-ranking-list');
+    if (!listEl) return;
+
+    if (!galeria || galeria.length === 0) {
+      listEl.innerHTML = '<p class="gallery-empty-state"><i class="fa-solid fa-trophy"></i><br>Nenhuma receita concorrendo no momento.</p>';
+      return;
+    }
+
+    // Ordena decrescente por votos
+    const sorted = [...galeria].sort((a, b) => (b.votos || 0) - (a.votos || 0) || new Date(a.inscritoEm || 0) - new Date(b.inscritoEm || 0));
+    const user = api.getUser();
+    const podeVotar = fase === 'VOTACAO' && !meuVoto;
+
+    listEl.innerHTML = sorted.map((entry, index) => {
+      const rankPos = index + 1;
+      const rankClass = rankPos === 1 ? 'rank-1' : (rankPos === 2 ? 'rank-2' : (rankPos === 3 ? 'rank-3' : ''));
+      const badgeIcon = rankPos === 1 ? '🥇' : (rankPos === 2 ? '🥈' : (rankPos === 3 ? '🥉' : `${rankPos}º`));
+      const isOwn = user && String(entry.autor?.id) === String(user.id);
+      const myVoteHere = meuVoto && meuVoto.entradaId === entry.id;
+      const title = escapeDesafioHtml(entry.titulo || 'Receita Concorrente');
+      const photo = (Array.isArray(entry.fotos) && entry.fotos[0]) || entry.imagem || null;
+
+      return `
+        <div class="pilot-rank-item ${rankClass}" data-entry-id="${entry.id}">
+          <div class="pilot-rank-badge">${badgeIcon}</div>
+          ${photo ? `<img class="pilot-rank-thumb" src="${escapeDesafioHtml(photo)}" alt="${title}">` : '<div class="pilot-rank-thumb-placeholder"><i class="fa-solid fa-utensils"></i></div>'}
+          <div class="pilot-rank-info">
+            <h4 class="pilot-rank-title">${title}</h4>
+            <div class="pilot-rank-author">
+              <span>Chef: <strong>${api.renderUserIdentity(entry.autor?.nome || 'Chef', entry.autor?.plano)}</strong></span>
+              ${isOwn ? '<span style="color:#f0d5b6;font-weight:700;">(Sua Receita)</span>' : ''}
+              ${myVoteHere ? '<span style="color:#ffd700;font-weight:700;"><i class="fa-solid fa-circle-check"></i> Seu Voto</span>' : ''}
+            </div>
+          </div>
+          <div class="pilot-rank-score-box">
+            <div class="pilot-rank-votes">
+              <i class="fa-solid fa-check-to-slot"></i>
+              <span>${entry.votos || 0}</span>
+              <small>${entry.votos === 1 ? 'voto' : 'votos'}</small>
+            </div>
+            <div style="display:flex;gap:6px;justify-content:flex-end;">
+              <button type="button" class="pilot-rank-item-btn btn-gallery-view" data-entry-id="${entry.id}">
+                <i class="fa-solid fa-book-open"></i> Ver
+              </button>
+              ${podeVotar && !isOwn ? `
+                <button type="button" class="pilot-rank-item-btn btn-rank-vote" data-entry-id="${entry.id}" data-entry-title="${title}" style="background:#f0d5b6;color:#14352f;font-weight:700;">
+                  <i class="fa-solid fa-check-to-slot"></i> Votar
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Reanexa handlers para o botão de votar a partir do ranking
+    listEl.querySelectorAll('.btn-rank-vote').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const entId = Number(btn.dataset.entryId);
+        const title = btn.dataset.entryTitle;
+        openVoteConfirmModal(entId, title);
+      });
+    });
+
+    // Reanexa handlers para o botão de ver receita completa a partir do ranking
+    listEl.querySelectorAll('.btn-gallery-view').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const entId = Number(btn.dataset.entryId);
+        const item = galeria.find(g => g.id === entId);
+        if (item) openEventRecipeModal(item);
+      });
+    });
   }
 
   function renderEventGallery(galeria, fase, meuVoto, eventoId) {
     const container = document.getElementById('event-gallery-grid');
     const subtitle = document.getElementById('event-gallery-subtitle');
     if (!container) return;
+    container.classList.toggle('pilot-feed-list', Boolean(currentEventData?.temporario && currentEventData?.participando));
 
     if (!galeria || galeria.length === 0) {
-      container.innerHTML = '<div class="gallery-empty-state"><i class="fa-solid fa-utensils"></i><p>Nenhuma receita inscrita ainda. Seja o primeiro a participar!</p></div>';
-      if (subtitle) subtitle.textContent = 'Apenas inscrições oficiais aprovadas aparecem na votação.';
+      container.innerHTML = currentEventData?.temporario
+        ? `<div class="gallery-empty-state"><i class="fa-solid fa-camera"></i><p>${pilotShowSavedOnly ? 'Você ainda não salvou nenhuma receita deste evento.' : 'Ainda não há receitas inscritas neste evento. Seja o primeiro a publicar.'}</p></div>`
+        : '<div class="gallery-empty-state"><i class="fa-solid fa-utensils"></i><p>Nenhuma receita inscrita ainda. Seja o primeiro a participar!</p></div>';
+      if (subtitle) subtitle.textContent = currentEventData?.temporario ? 'Apenas receitas inscritas no evento aparecem aqui.' : 'Apenas inscrições oficiais aprovadas aparecem na votação.';
       return;
     }
 
@@ -2221,17 +3213,132 @@ document.addEventListener('DOMContentLoaded', () => {
     const podeVotar = fase === 'VOTACAO' && !meuVoto;
 
     if (subtitle) {
-      if (fase === 'VOTACAO') subtitle.textContent = podeVotar ? `${galeria.length} receitas disputando — Vote na sua favorita!` : `${galeria.length} receitas — Votação em andamento.`;
-      else if (fase === 'ENCERRADO') subtitle.textContent = `${galeria.length} receitas participaram do evento.`;
-      else subtitle.textContent = `${galeria.length} receitas inscritas oficialmente.`;
+      if (currentEventData?.temporario) subtitle.textContent = `${galeria.length} ${galeria.length === 1 ? 'receita concorrente' : 'receitas concorrentes'} no evento.`;
+      else if (fase === 'VOTACAO') subtitle.textContent = podeVotar
+        ? `${galeria.length} ${galeria.length === 1 ? 'receita disputando' : 'receitas disputando'} — Vote na sua favorita!`
+        : `${galeria.length} ${galeria.length === 1 ? 'receita' : 'receitas'} — Votação em andamento.`;
+      else if (fase === 'ENCERRADO') subtitle.textContent = `${galeria.length} ${galeria.length === 1 ? 'receita participou' : 'receitas participaram'} do evento.`;
+      else subtitle.textContent = `${galeria.length} ${galeria.length === 1 ? 'receita inscrita' : 'receitas inscritas'} oficialmente.`;
     }
 
     container.innerHTML = galeria.map(entry => {
       const isOwn = user && String(entry.autor?.id) === String(user.id);
       const myVoteHere = meuVoto && meuVoto.entradaId === entry.id;
-      const canVoteThis = podeVotar && !isOwn;
+      const canVoteThis = podeVotar && !isOwn && (!currentEventData?.temporario || entry.oficial);
 
       const authorInitial = String(entry.autor?.nome || 'S').trim().charAt(0).toUpperCase();
+
+      if (currentEventData?.temporario) {
+        const title = escapeDesafioHtml(entry.titulo || 'Receita participante');
+        const rawPhotos = Array.isArray(entry.fotos) && entry.fotos.length ? entry.fotos : [entry.imagem].filter(Boolean);
+        
+        // Monta os itens de mídia do carrossel (se tiver vídeo, vem primeiro como solicitado pelo usuário)
+        const mediaItems = [];
+        if (entry.video) {
+          mediaItems.push({ type: 'video', src: entry.video });
+        }
+        rawPhotos.slice(0, 5).forEach(photo => {
+          mediaItems.push({ type: 'image', src: photo });
+        });
+
+        return `
+          <article class="pilot-feed-post" data-entry-id="${entry.id}">
+            <div class="pilot-post-author">
+              <span class="gallery-author-avatar" aria-hidden="true">${escapeDesafioHtml(authorInitial)}</span>
+              <div class="pilot-post-author-copy">
+                <strong>${api.renderUserIdentity(entry.autor?.nome || 'Chef', entry.autor?.plano)}</strong>
+                <small>
+                  <span class="pilot-concorrente-pill"><i class="fa-solid fa-trophy"></i> Concorrente Oficial</span>
+                  ${isOwn ? '<span style="color:#f0d5b6;font-weight:700;">· Sua receita</span>' : ''}
+                </small>
+              </div>
+              <span class="pilot-post-tag"><i class="fa-solid fa-hashtag"></i> ${escapeDesafioHtml(currentEventData.hashtag || 'Evento')}</span>
+            </div>
+            
+            <!-- Carrossel de Mídia Estilo Instagram (Vídeo + Fotos integrados em proporção quadrada 1:1) -->
+            <div class="pilot-carousel ${mediaItems.length ? '' : 'is-empty'}" data-slide="0">
+              <div class="pilot-carousel-track">
+                ${mediaItems.length ? mediaItems.map((item, index) => {
+                  if (item.type === 'video') {
+                    return `
+                      <div class="pilot-carousel-slide" data-slide-index="${index}" ${index ? 'hidden' : ''}>
+                        <video class="pilot-post-video" controls preload="metadata" playsinline src="${escapeDesafioHtml(item.src)}"></video>
+                      </div>
+                    `;
+                  }
+                  return `
+                    <div class="pilot-carousel-slide" data-slide-index="${index}" ${index ? 'hidden' : ''}>
+                      <img src="${escapeDesafioHtml(item.src)}" alt="${title} — mídia ${index + 1}" loading="lazy">
+                    </div>
+                  `;
+                }).join('') : '<div class="pilot-carousel-empty"><i class="fa-solid fa-utensils"></i><span>Receita do evento</span></div>'}
+              </div>
+              ${mediaItems.length > 1 ? `
+                <button type="button" class="pilot-carousel-prev" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                <button type="button" class="pilot-carousel-next" aria-label="Próximo"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="pilot-carousel-dots">
+                  ${mediaItems.map((_, i) => `<span class="pilot-dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+                </div>
+                <span class="pilot-carousel-count">1 / ${mediaItems.length}</span>
+              ` : ''}
+            </div>
+
+            <div class="pilot-post-content">
+              <div class="pilot-post-header-row">
+                <h4>${title}</h4>
+                <div class="pilot-post-meta-badges">
+                  ${entry.tempoPreparo ? `<span class="pilot-meta-pill"><i class="fa-regular fa-clock"></i> ${Number(entry.tempoPreparo)} min</span>` : ''}
+                  ${fase !== 'INSCRICOES' && entry.votos !== undefined ? `<span class="pilot-meta-pill" style="color:#ffd700;border-color:rgba(255,215,0,0.3);"><i class="fa-solid fa-check-to-slot"></i> ${entry.votos} ${entry.votos === 1 ? 'voto' : 'votos'}</span>` : ''}
+                </div>
+              </div>
+
+              <div class="pilot-post-actions">
+                <div class="pilot-actions-left">
+                  <button type="button" class="btn-pilot-view-recipe btn-gallery-view" data-entry-id="${entry.id}">
+                    <i class="fa-solid fa-book-open"></i> Ver receita completa
+                  </button>
+                  <button type="button" class="btn-pilot-action-chip pilot-post-save ${entry.salvoPorMim ? 'is-saved' : ''}" data-entry-id="${entry.id}" title="${entry.salvoPorMim ? 'Remover dos salvos' : 'Salvar nas suas receitas salvas do evento'}">
+                    <i class="${entry.salvoPorMim ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+                    <span>${entry.salvoPorMim ? 'Salva' : 'Salvar'}</span>
+                  </button>
+                  <button type="button" class="btn-pilot-action-chip pilot-post-comment-toggle" data-entry-id="${entry.id}">
+                    <i class="fa-regular fa-comment"></i>
+                    <span>${entry.comentarios?.length || 0} comentários</span>
+                  </button>
+                </div>
+
+                <div class="pilot-actions-right">
+                  <div class="pilot-post-rating-wrap" title="${isOwn ? 'Média das avaliações da sua receita' : 'Clique nas estrelas para avaliar esta receita'}">
+                    <div class="pilot-post-stars" data-entry-id="${entry.id}" data-is-own="${isOwn}">
+                      ${[1, 2, 3, 4, 5].map(n => {
+                        const isFilled = (entry.minhaAvaliacao && entry.minhaAvaliacao >= n) || (!entry.minhaAvaliacao && entry.avaliacaoMedia && Math.round(entry.avaliacaoMedia) >= n);
+                        return `<i class="${isFilled ? 'fa-solid' : 'fa-regular'} fa-star ${isFilled ? 'filled' : ''}" data-star="${n}"></i>`;
+                      }).join('')}
+                    </div>
+                    <div class="pilot-rating-summary">
+                      <span class="pilot-rating-score">${entry.avaliacaoMedia ? `★ ${entry.avaliacaoMedia}` : 'Sem nota'}</span>
+                      <span class="pilot-rating-count">(${entry.avaliacoesCount || 0})${entry.minhaAvaliacao ? `<span class="pilot-own-rating-indicator">${entry.minhaAvaliacao}★</span>` : ''}</span>
+                    </div>
+                  </div>
+
+                  ${canVoteThis ? `<button type="button" class="btn-pilot-vote btn-gallery-vote" data-entry-id="${entry.id}" data-entry-title="${title}"><i class="fa-solid fa-check-to-slot"></i> Votar</button>` : ''}
+                  ${myVoteHere ? '<span class="vote-already-pill"><i class="fa-solid fa-circle-check"></i> Seu voto</span>' : ''}
+                </div>
+              </div>
+
+              <div class="pilot-post-comments" hidden>
+                <div class="pilot-post-comment-list">
+                  ${(entry.comentarios || []).map(comment => `<p><strong>${escapeDesafioHtml(comment.autor)}:</strong> ${escapeDesafioHtml(comment.texto)}</p>`).join('') || '<p style="text-align:center;color:rgba(242,244,243,0.5);">Seja o primeiro a deixar um comentário!</p>'}
+                </div>
+                <form class="pilot-post-comment-form" data-entry-id="${entry.id}">
+                  <input name="texto" required minlength="2" maxlength="500" placeholder="Escreva seu comentário ou dica...">
+                  <button type="submit"><i class="fa-solid fa-paper-plane"></i> Enviar</button>
+                </form>
+              </div>
+            </div>
+          </article>
+        `;
+      }
 
       return `
         <div class="event-gallery-card" data-entry-id="${entry.id}">
@@ -2264,6 +3371,39 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }).join('');
 
+    container.querySelectorAll('.pilot-carousel').forEach(carousel => {
+      const slides = Array.from(carousel.querySelectorAll('.pilot-carousel-slide'));
+      if (slides.length < 2) return;
+      const dots = Array.from(carousel.querySelectorAll('.pilot-dot'));
+      const counter = carousel.querySelector('.pilot-carousel-count');
+
+      const change = step => {
+        const currentIdx = Number(carousel.dataset.slide || 0);
+        const currentSlide = slides[currentIdx];
+        const currentVideo = currentSlide?.querySelector('video');
+        if (currentVideo) currentVideo.pause();
+
+        const index = (currentIdx + step + slides.length) % slides.length;
+        slides.forEach((slide, idx) => {
+          slide.hidden = idx !== index;
+        });
+        dots.forEach((dot, idx) => {
+          dot.classList.toggle('active', idx === index);
+        });
+        carousel.dataset.slide = String(index);
+        if (counter) counter.textContent = `${index + 1} / ${slides.length}`;
+      };
+
+      carousel.querySelector('.pilot-carousel-prev')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        change(-1);
+      });
+      carousel.querySelector('.pilot-carousel-next')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        change(1);
+      });
+    });
+
     container.querySelectorAll('.gallery-author-avatar[data-src]').forEach(el => {
     });
 
@@ -2274,6 +3414,68 @@ document.addEventListener('DOMContentLoaded', () => {
         if (entry) openEventRecipeModal(entry);
       });
     });
+
+    container.querySelectorAll('.pilot-post-save').forEach(btn => btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      try {
+        const res = await api.post(`/desafios/eventos/${eventoId}/receitas/${btn.dataset.entryId}/salvar`, {});
+        if (window.SaboreNotify) window.SaboreNotify(res.mensagem || 'Receita salva com sucesso!', 'success');
+        await loadSpecialEventsView(eventoId);
+      } catch (err) {
+        alert(err.message || 'Não foi possível salvar.');
+        btn.disabled = false;
+      }
+    }));
+
+    container.querySelectorAll('.pilot-post-stars').forEach(starsWrap => {
+      const isOwn = starsWrap.dataset.isOwn === 'true';
+      if (isOwn) return;
+      const entryId = starsWrap.dataset.entryId;
+      const stars = starsWrap.querySelectorAll('i[data-star]');
+
+      stars.forEach(star => {
+        star.addEventListener('mouseenter', () => {
+          const rating = Number(star.dataset.star);
+          stars.forEach(s => {
+            const val = Number(s.dataset.star);
+            s.className = (val <= rating ? 'fa-solid' : 'fa-regular') + ' fa-star' + (val <= rating ? ' active' : '');
+          });
+        });
+        star.addEventListener('mouseleave', () => {
+          const entry = galeria.find(e => e.id === Number(entryId));
+          const currentNota = entry?.minhaAvaliacao || (entry?.avaliacaoMedia ? Math.round(entry.avaliacaoMedia) : 0);
+          stars.forEach(s => {
+            const val = Number(s.dataset.star);
+            const isFilled = val <= currentNota;
+            s.className = (isFilled ? 'fa-solid' : 'fa-regular') + ' fa-star' + (isFilled ? ' filled' : '');
+          });
+        });
+        star.addEventListener('click', async () => {
+          const rating = Number(star.dataset.star);
+          try {
+            await api.post(`/desafios/eventos/${eventoId}/receitas/${entryId}/avaliar`, { nota: rating });
+            if (window.SaboreNotify) window.SaboreNotify(`Sua avaliação de ${rating} estrelas foi registrada!`, 'success');
+            await loadSpecialEventsView(eventoId);
+          } catch (err) {
+            alert(err.message || 'Não foi possível avaliar a receita.');
+          }
+        });
+      });
+    });
+
+    container.querySelectorAll('.pilot-post-comment-toggle').forEach(btn => btn.addEventListener('click', () => {
+      const comments = btn.closest('.pilot-post-content')?.querySelector('.pilot-post-comments');
+      if (comments) comments.hidden = !comments.hidden;
+    }));
+    container.querySelectorAll('.pilot-post-comment-form').forEach(form => form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const btn = form.querySelector('button');
+      btn.disabled = true;
+      try {
+        await api.post(`/desafios/eventos/${eventoId}/receitas/${form.dataset.entryId}/comentario`, { texto: form.elements.texto.value });
+        await loadSpecialEventsView(eventoId);
+      } catch (err) { alert(err.message); btn.disabled = false; }
+    }));
 
     container.querySelectorAll('.btn-gallery-vote').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2288,6 +3490,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('event-recipe-detail-modal');
     const content = document.getElementById('event-recipe-modal-content');
     if (!modal || !content) return;
+
+    modal.classList.toggle('pilot-recipe-modal', Boolean(currentEventData?.temporario));
+
+    if (currentEventData?.temporario) {
+      const title = escapeDesafioHtml(entry.titulo || 'Receita participante');
+      const description = escapeDesafioHtml(entry.descricao || 'Uma receita participante do evento.');
+      const author = escapeDesafioHtml(entry.autor?.nome || 'Chef Saboré');
+      const initial = escapeDesafioHtml(author.charAt(0).toUpperCase());
+      const ingredients = Array.isArray(entry.ingredientes) && entry.ingredientes.length
+        ? entry.ingredientes.map(ingredient => {
+            const name = ingredient.ingrediente?.nome || ingredient.nome || ingredient;
+            return `<li>${escapeDesafioHtml([ingredient.quantidade, ingredient.unidade, name].filter(Boolean).join(' '))}</li>`;
+          }).join('')
+        : '<li>Ingredientes não informados.</li>';
+      const steps = String(entry.modoPreparo || '').split('\n').map(step => step.trim()).filter(Boolean);
+      const preparation = steps.length
+        ? steps.map((step, index) => {
+            const cleanStep = step.replace(/^\d{1,2}(?:[.)-]\s*|\s+(?=[A-Za-zÀ-ÿ])|(?=[A-ZÀ-Ý]))/, '').trim();
+            return `<li><span class="pilot-step-number">${index + 1}</span><span>${escapeDesafioHtml(cleanStep || step)}</span></li>`;
+          }).join('')
+        : '<li>Modo de preparo não informado.</li>';
+      content.innerHTML = `
+        <div class="pilot-recipe-hero ${entry.imagem ? 'has-image' : 'no-image'}">
+          ${entry.imagem ? `<img src="${escapeDesafioHtml(entry.imagem)}" alt="${title}">` : '<div class="pilot-recipe-hero-mark"><i class="fa-solid fa-utensils"></i><span>Receita do evento</span></div>'}
+        </div>
+        <div class="pilot-recipe-content">
+          <span class="pilot-card-eyebrow">Competição Culinária · ${escapeDesafioHtml(currentEventData?.titulo || 'Evento')}</span>
+          <h2>${title}</h2>
+          <div class="pilot-recipe-byline"><span class="gallery-author-avatar">${initial}</span><span>Receita de <strong>${author}</strong></span>${entry.tempoPreparo ? `<span class="pilot-recipe-time"><i class="fa-regular fa-clock"></i> ${Number(entry.tempoPreparo)} min</span>` : ''}</div>
+          <div class="pilot-recipe-sections">
+            <section class="pilot-recipe-section"><h3><i class="fa-solid fa-basket-shopping"></i> Ingredientes</h3><ul class="pilot-ingredient-list">${ingredients}</ul></section>
+            <section class="pilot-recipe-section"><h3><i class="fa-solid fa-fire-burner"></i> Modo de preparo</h3><ol class="pilot-preparation-list">${preparation}</ol></section>
+          </div>
+        </div>
+      `;
+      modal.classList.add('open');
+      return;
+    }
 
     const ingredientesHtml = Array.isArray(entry.ingredientes) && entry.ingredientes.length > 0
       ? entry.ingredientes.map(ing => {
@@ -2346,58 +3586,212 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('event-entry-modal');
     if (!modal) return;
 
-    const titleEl = document.getElementById('event-entry-modal-title');
     const alertEl = document.getElementById('event-entry-modal-alert');
-    if (titleEl) titleEl.textContent = `Inscrição Oficial – ${currentEventData.nome || currentEventData.titulo || 'Evento'}`;
     if (alertEl) alertEl.style.display = 'none';
+
+    // Garante que o painel inicial seja o do Livro de Receitas
+    const btnTabBook = document.getElementById('tab-btn-choose-book');
+    const btnTabCreate = document.getElementById('tab-btn-create-new');
+    const panelBook = document.getElementById('panel-choose-book');
+    const panelCreate = document.getElementById('panel-create-new');
+    if (btnTabBook && btnTabCreate && panelBook && panelCreate) {
+      btnTabBook.classList.add('active');
+      btnTabCreate.classList.remove('active');
+      panelBook.style.display = '';
+      panelCreate.style.display = 'none';
+    }
 
     const listEl = document.getElementById('entry-existing-recipes-list');
     if (listEl) {
-      listEl.innerHTML = '<p style="color:rgba(242,244,243,.6);font-size:.85rem;">Carregando suas receitas...</p>';
+      listEl.innerHTML = '<p style="color:rgba(242,244,243,.6);font-size:.85rem;padding:12px;text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Carregando suas receitas do livro...</p>';
       try {
-        const minhas = await api.get('/receitas/minhas');
-        const publicas = (minhas || []).filter(r => r.publica || r.isPublic || r.publicada);
-        if (publicas.length === 0) {
-          listEl.innerHTML = '<p style="color:rgba(242,244,243,.6);font-size:.85rem;">Você não possui receitas públicas. Crie uma nova publicação e inscreva-a.</p>';
+        const minhas = await api.get('/receitas/listar');
+        const listaReceitas = Array.isArray(minhas) ? minhas : (minhas?.receitas || []);
+        if (listaReceitas.length === 0) {
+          listEl.innerHTML = '<p class="event-entry-empty" style="padding:15px;text-align:center;color:rgba(242,244,243,.7);">Você ainda não tem receitas cadastradas no seu livro. Crie uma na aba "Criar Nova Receita"!</p>';
         } else {
-          listEl.innerHTML = publicas.map(r => `
-            <div class="entry-recipe-pick-item">
-              ${r.imagem ? `<img src="${r.imagem}" alt="${r.titulo}">` : '<div class="entry-recipe-pick-thumb no-img"><i class="fa-solid fa-utensils"></i></div>'}
-              <div class="entry-pick-info">
-                <strong>${r.titulo}</strong>
-                <span>${r.tempoPreparo ? r.tempoPreparo + ' min' : ''}</span>
+          listEl.innerHTML = listaReceitas.map(r => {
+            const title = escapeDesafioHtml(r.titulo || r.title || 'Receita sem título');
+            const img = r.imagem || r.image || null;
+            const time = r.tempoPreparo || r.time || null;
+            const isCurrent = currentEventData.minhaEntrada && String(currentEventData.minhaEntrada.receitaId) === String(r.id);
+            return `
+              <div class="entry-recipe-pick-item ${isCurrent ? 'is-current' : ''}">
+                ${img ? `<img src="${escapeDesafioHtml(img)}" alt="${title}">` : '<div class="entry-recipe-pick-thumb no-img"><i class="fa-solid fa-utensils"></i></div>'}
+                <div class="entry-pick-info">
+                  <strong>${title}</strong>
+                  <span>${time ? `<i class="fa-regular fa-clock"></i> ${time} min` : 'Receita do livro'}${isCurrent ? ' · 🏆 Sua escolha atual' : ''}</span>
+                </div>
+                <button type="button" class="btn-confirm-entry btn-select-entry" data-recipe-id="${r.id}" data-recipe-title="${title}" ${isCurrent ? 'disabled' : ''}>
+                  ${isCurrent ? 'Inscrita' : (currentEventData.minhaEntrada ? 'Substituir' : 'Escolher')}
+                </button>
               </div>
-              <button type="button" class="btn-confirm-entry btn-select-entry" data-recipe-id="${r.id}" data-recipe-title="${r.titulo}">
-                <i class="fa-solid fa-check"></i> Inscrever
-              </button>
-            </div>
-          `).join('');
+            `;
+          }).join('');
+
+          // Variável para guardar a receita selecionada no step 2
+          let _pendingBookReceitaId = null;
 
           listEl.querySelectorAll('.btn-select-entry').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.addEventListener('click', () => {
               const receitaId = Number(btn.dataset.recipeId);
-              btn.disabled = true;
-              btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-              try {
-                await api.post(`/desafios/eventos/${currentEventId}/inscrever`, { receitaId });
-                modal.classList.remove('open');
-                if (window.SaboreNotify) window.SaboreNotify('Receita inscrita com sucesso! Aguarde aprovação.', 'success');
-                else alert('Receita inscrita com sucesso! Aguarde aprovação.');
-                await loadSpecialEventsView(currentEventId);
-              } catch (err) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Inscrever';
-                if (alertEl) { alertEl.textContent = err.message || 'Erro ao inscrever receita.'; alertEl.style.display = ''; }
+              const recipeTitle = btn.dataset.recipeTitle;
+
+              if (currentEventData.minhaEntrada) {
+                pendingReplaceAction = { type: 'book', receitaId, title: recipeTitle };
+                const replaceModal = document.getElementById('event-replace-confirm-modal');
+                const replaceMsg = document.getElementById('replace-confirm-message');
+                if (replaceMsg) {
+                  replaceMsg.innerHTML = `Você já possui a receita <strong>"${escapeDesafioHtml(currentEventData.minhaEntrada.titulo || 'sua receita atual')}"</strong> concorrendo oficialmente neste evento.<br><br>Tem certeza de que deseja substituí-la por <strong>"${escapeDesafioHtml(recipeTitle)}"</strong>?<br><br><small style="color:#e0857a;">Atenção: A receita anterior deixará de concorrer e os comentários/avaliações serão reiniciados para manter a competição justa.</small>`;
+                }
+                if (replaceModal) replaceModal.classList.add('open');
+                return;
               }
+
+              // Avançar para step 2 de mídia
+              _pendingBookReceitaId = receitaId;
+              const infoEl = document.getElementById('book-media-selected-recipe-info');
+              if (infoEl) infoEl.textContent = `📖 ${recipeTitle}`;
+
+              // Limpar campos e preview do step anterior
+              const photosInput = document.getElementById('pilot-entry-photos');
+              if (photosInput) photosInput.value = '';
+              const videoInput = document.getElementById('pilot-entry-video');
+              if (videoInput) videoInput.value = '';
+              const prevEl = document.getElementById('pilot-book-photo-previews');
+              if (prevEl) prevEl.innerHTML = '';
+              const vidPrev = document.getElementById('pilot-book-video-preview');
+              if (vidPrev) vidPrev.innerHTML = '';
+              const errEl = document.getElementById('book-media-step-error');
+              if (errEl) errEl.style.display = 'none';
+
+              document.getElementById('panel-choose-book').style.display = 'none';
+              document.getElementById('panel-book-media-step').style.display = '';
             });
           });
+
+          // Botão voltar ao passo 1
+          const btnBack = document.getElementById('btn-back-to-book-list');
+          if (btnBack) {
+            btnBack.onclick = () => {
+              document.getElementById('panel-book-media-step').style.display = 'none';
+              document.getElementById('panel-choose-book').style.display = '';
+            };
+          }
+
+          // Preview de fotos no step 2
+          const photosInputStep2 = document.getElementById('pilot-entry-photos');
+          if (photosInputStep2) {
+            photosInputStep2.addEventListener('change', () => {
+              const prevEl = document.getElementById('pilot-book-photo-previews');
+              if (!prevEl) return;
+              prevEl.innerHTML = '';
+              Array.from(photosInputStep2.files).slice(0, 5).forEach(f => {
+                const img = document.createElement('img');
+                img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:8px;margin:4px;';
+                img.src = URL.createObjectURL(f);
+                prevEl.appendChild(img);
+              });
+            });
+          }
+
+          // Preview de vídeo no step 2
+          const videoInputStep2 = document.getElementById('pilot-entry-video');
+          if (videoInputStep2) {
+            videoInputStep2.addEventListener('change', () => {
+              const vidPrev = document.getElementById('pilot-book-video-preview');
+              if (!vidPrev) return;
+              vidPrev.innerHTML = '';
+              if (videoInputStep2.files[0]) {
+                const v = document.createElement('video');
+                v.src = URL.createObjectURL(videoInputStep2.files[0]);
+                v.controls = true;
+                v.style.cssText = 'max-width:100%;border-radius:10px;max-height:160px;';
+                vidPrev.appendChild(v);
+              }
+            });
+          }
+
+          // Botão confirmar inscrição no step 2
+          const btnConfirm = document.getElementById('btn-confirm-book-entry');
+          if (btnConfirm) {
+            btnConfirm.onclick = async () => {
+              if (!_pendingBookReceitaId) return;
+              const errEl = document.getElementById('book-media-step-error');
+              const photos = document.getElementById('pilot-entry-photos');
+              const videoInp = document.getElementById('pilot-entry-video');
+              try {
+                btnConfirm.disabled = true;
+                btnConfirm.textContent = 'Inscrevendo...';
+                let fotos = [];
+                if (photos?.files?.length) fotos = await readEventPhotos(photos.files);
+                let video = null;
+                if (videoInp?.files?.length) {
+                  const vf = videoInp.files[0];
+                  if (vf.size > 20 * 1024 * 1024) throw new Error('Vídeo muito grande. Máximo 20 MB.');
+                  video = await new Promise((res, rej) => {
+                    const r = new FileReader();
+                    r.onload = e => res(e.target.result);
+                    r.onerror = rej;
+                    r.readAsDataURL(vf);
+                  });
+                }
+                await executeBookEnrollment(_pendingBookReceitaId, fotos, video);
+              } catch (err) {
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = '<i class="fa-solid fa-trophy"></i> Confirmar Inscrição no Evento';
+                if (errEl) { errEl.textContent = err.message || 'Erro ao inscrever.'; errEl.style.display = ''; }
+              }
+            };
+          }
         }
       } catch (err) {
-        listEl.innerHTML = '<p style="color:rgba(242,244,243,.6);font-size:.85rem;">Não foi possível carregar suas receitas. Tente criar uma nova publicação.</p>';
+        listEl.innerHTML = `<p class="event-entry-empty">Não foi possível carregar as receitas do livro: ${escapeDesafioHtml(err.message || '')}</p>`;
       }
     }
 
     modal.classList.add('open');
+  }
+
+  async function executeBookEnrollment(receitaId, fotos = [], video = null) {
+    const modal = document.getElementById('event-entry-modal');
+    const alertEl = document.getElementById('event-entry-modal-alert');
+    try {
+      await api.post(`/desafios/eventos/${currentEventId}/inscrever`, { receitaId, fotos, video });
+      if (modal) modal.classList.remove('open');
+      // Resetar step 2 para próxima vez
+      const pBook = document.getElementById('panel-choose-book');
+      const pMedia = document.getElementById('panel-book-media-step');
+      if (pBook) pBook.style.display = '';
+      if (pMedia) pMedia.style.display = 'none';
+      const btnConfirm = document.getElementById('btn-confirm-book-entry');
+      if (btnConfirm) { btnConfirm.disabled = false; btnConfirm.innerHTML = '<i class="fa-solid fa-trophy"></i> Confirmar Inscrição no Evento'; }
+      if (window.SaboreNotify) window.SaboreNotify('Receita inscrita com sucesso no evento!', 'success');
+      else alert('Receita inscrita com sucesso no evento!');
+      await loadSpecialEventsView(currentEventId);
+    } catch (err) {
+      if (alertEl) { alertEl.textContent = err.message || 'Erro ao inscrever receita.'; alertEl.style.display = ''; }
+      else alert(err.message || 'Erro ao inscrever receita.');
+      throw err;
+    }
+  }
+
+  async function executeCreateEnrollment(payload) {
+    const modal = document.getElementById('event-entry-modal');
+    const errorEl = document.getElementById('pilot-recipe-create-error');
+    try {
+      await api.post(`/desafios/eventos/${currentEventId}/receitas`, payload);
+      document.getElementById('pilot-recipe-create-form')?.reset();
+      const previews = document.getElementById('pilot-create-photo-previews');
+      if (previews) previews.innerHTML = '';
+      if (modal) modal.classList.remove('open');
+      if (window.SaboreNotify) window.SaboreNotify('Sua receita foi criada e inscrita com sucesso no evento!', 'success');
+      else alert('Sua receita foi criada e inscrita com sucesso no evento!');
+      await loadSpecialEventsView(currentEventId);
+    } catch (err) {
+      if (errorEl) { errorEl.textContent = err.message || 'Não foi possível inscrever a receita.'; errorEl.hidden = false; }
+      else alert(err.message || 'Não foi possível inscrever a receita.');
+    }
   }
 
   window.addEventListener('focus', () => {

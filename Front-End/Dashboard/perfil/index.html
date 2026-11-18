@@ -207,6 +207,11 @@
                     </div>
                     <div style="border-left: 1px solid var(--glass-border); height: 32px; align-self: center;"></div>
                     <div>
+                      <span id="profile-month-posts" style="font-family: 'DM Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--secondary); display: block;">0</span>
+                      <span style="font-size: 0.7rem; color: rgba(242, 244, 243, 0.5); text-transform: uppercase;">Posts no Mês</span>
+                    </div>
+                    <div style="border-left: 1px solid var(--glass-border); height: 32px; align-self: center;"></div>
+                    <div>
                       <span id="profile-rank-pos" style="font-family: 'DM Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--light); display: block;">#--</span>
                       <span style="font-size: 0.7rem; color: rgba(242, 244, 243, 0.5); text-transform: uppercase;">Posição Geral</span>
                     </div>
@@ -281,12 +286,22 @@
                   </div>
                 </div>
 
-                <div class="insta-tabs-bar">
-                  <div class="insta-tab-btn active">
+                <div class="insta-tabs-bar" id="creations-tabs-bar">
+                  <button type="button" class="insta-tab-btn active" data-tab="all" id="tab-all-creations">
                     <i class="fa-solid fa-table-cells"></i>
-                    <span>Publicações</span>
+                    <span>Todas</span>
                     <span class="insta-tab-count" id="count-all-creations">0</span>
-                  </div>
+                  </button>
+                  <button type="button" class="insta-tab-btn" data-tab="public" id="tab-public-creations">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Na Comunidade</span>
+                    <span class="insta-tab-count" id="count-public-creations">0</span>
+                  </button>
+                  <button type="button" class="insta-tab-btn" data-tab="private" id="tab-private-creations">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Privadas</span>
+                    <span class="insta-tab-count" id="count-private-creations">0</span>
+                  </button>
                 </div>
 
                 <div class="creations-grid insta-creations-grid" id="creations-grid">
@@ -335,7 +350,82 @@
         </div>
       </div>
     </div>
-    <!-- Modal de Seguidores e Seguindo -->
+    
+    <!-- Modal de Edição de Receita -->
+    <div class="modal-overlay" id="edit-recipe-modal">
+      <div class="modal-card edit-recipe-modal-card">
+        <button class="modal-close-btn" id="close-edit-recipe-modal" type="button" aria-label="Fechar edição">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="modal-header-simple">
+          <h3><i class="fa-solid fa-pen-to-square"></i> Editar Publicação</h3>
+          <p>Altere os dados da receita e atualize na comunidade ou mantenha privada.</p>
+        </div>
+        <form id="edit-recipe-form" class="edit-recipe-form">
+          <input type="hidden" id="edit-recipe-id" />
+          <label>
+            Título da receita
+            <input id="edit-recipe-title" required maxlength="100" placeholder="Ex.: Bolo de chocolate da vovó" />
+          </label>
+          <label>
+            Descrição
+            <textarea id="edit-recipe-desc" maxlength="400" placeholder="Conte o que torna esta receita especial..."></textarea>
+          </label>
+          <div class="composer-row">
+            <label>
+              Tempo (min)
+              <input id="edit-recipe-time" type="number" min="1" required />
+            </label>
+            <label>
+              Dificuldade
+              <select id="edit-recipe-difficulty">
+                <option value="Fácil">Fácil</option>
+                <option value="Médio">Médio</option>
+                <option value="Difícil">Difícil</option>
+              </select>
+            </label>
+            <label>
+              Categoria
+              <input id="edit-recipe-category" required placeholder="Sobremesas" />
+            </label>
+          </div>
+          <label class="pilot-photo-upload">
+            Enviar novas fotos da receita (até 5)
+            <input id="edit-recipe-photos-file" type="file" accept="image/*" multiple />
+            <span>As fotos comporão o carrossel no feed e na comunidade.</span>
+          </label>
+          <div id="edit-recipe-photos-preview" class="edit-photos-preview-strip"></div>
+          <label>
+            Vídeo da receita (opcional)
+            <input id="edit-recipe-video-file" type="file" accept="video/mp4,video/webm" />
+            <span>Envie um arquivo MP4 ou WebM de até 4 MB.</span>
+          </label>
+          <div id="edit-recipe-video-preview" class="edit-video-preview" aria-live="polite"></div>
+          <label>
+            Hashtags
+            <input id="edit-recipe-hashtags" maxlength="150" placeholder="#bolo #sobremesa #receitafacil" />
+          </label>
+          <label>
+            Ingredientes — um por linha
+            <textarea id="edit-recipe-ingredients" rows="5" required placeholder="2 xícaras de farinha&#10;1 xícara de leite"></textarea>
+          </label>
+          <label>
+            Modo de preparo — um passo por linha
+            <textarea id="edit-recipe-steps" rows="5" required placeholder="Misture os ingredientes.&#10;Asse até dourar."></textarea>
+          </label>
+          <div class="edit-recipe-privacy-toggle">
+            <label class="privacy-checkbox-label">
+              <input type="checkbox" id="edit-recipe-public-toggle" />
+              <span><i class="fa-solid fa-globe"></i> Publicar na Comunidade Saboré (visível a todos os chefs)</span>
+            </label>
+          </div>
+          <button type="submit" class="btn-primary-modal-full" id="btn-save-edit-recipe">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar alterações na receita
+          </button>
+        </form>
+      </div>
+    </div>
+<!-- Modal de Seguidores e Seguindo -->
     <div class="modal-overlay" id="followers-modal">
       <div class="modal-card small-modal social-connections-card">
         <button class="modal-close-btn" id="close-followers-modal" type="button" aria-label="Fechar">

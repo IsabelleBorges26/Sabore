@@ -21,6 +21,9 @@ const btnLogin = document.getElementById('btnLogin');
 const btnGoogle = document.querySelector('.btn-social');
 const defaultGoogleButton = '<img src="../assets/branding/Logo Google.png" alt="Google" class="social-icon-img"> Google';
 const expiredMessage = document.getElementById('session-expired-message');
+const profileSyncError = document.getElementById('profile-sync-error');
+const profileSyncErrorText = document.getElementById('profile-sync-error-text');
+const retryProfileSync = document.getElementById('retry-profile-sync');
 if (expiredMessage && (api.sessionExpiredOnLoad || new URLSearchParams(window.location.search).get('session') === 'expired')) {
   expiredMessage.hidden = false;
 }
@@ -32,13 +35,39 @@ const setLoginButton = (loading) => {
 };
 
 const finishAuthentication = async (session) => {
+  if (profileSyncError) profileSyncError.hidden = true;
   api.setToken(session.access_token);
   const user = await api.get('/usuarios/perfil');
   api.setUser(user);
   window.location.replace('/Dashboard/home/index.html');
 };
 
-const getRedirectUrl = () => `${window.location.origin}/login/index.html`;
+const showProfileSyncError = (error) => {
+  if (!profileSyncError || !profileSyncErrorText) return;
+  profileSyncErrorText.textContent = `Sua conta foi autenticada, mas não foi possível carregar o perfil: ${error.message || 'servidor indisponível.'}`;
+  profileSyncError.hidden = false;
+};
+
+if (retryProfileSync) {
+  retryProfileSync.addEventListener('click', async () => {
+    retryProfileSync.disabled = true;
+    try {
+      const { data, error } = await authClient.auth.getSession();
+      if (error) throw error;
+      if (!data.session) throw new Error('Sua sessão terminou. Entre novamente.');
+      await finishAuthentication(data.session);
+    } catch (error) {
+      showProfileSyncError(error);
+    } finally {
+      retryProfileSync.disabled = false;
+    }
+  });
+}
+
+const getRedirectUrl = () => {
+  const origin = window.location.origin === 'null' ? 'http://localhost:3000' : window.location.origin;
+  return `${origin}/login/index.html`;
+};
 
 const toggleBtn = document.getElementById('togglePassword');
 const passwordInput = document.getElementById('senha');
@@ -61,12 +90,15 @@ const handleLoginSubmit = async (e) => {
   if (!authClient) return alert(window.SABORE_SUPABASE_CONFIG_ERROR || 'Supabase Auth não inicializado. Atualize a página e tente novamente.');
 
   setLoginButton(true);
+  let authenticated = false;
   try {
     const { data, error } = await authClient.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    authenticated = true;
     await finishAuthentication(data.session);
   } catch (error) {
-    alert(error.message || 'Não foi possível entrar na conta.');
+    if (authenticated) showProfileSyncError(error);
+    else alert(error.message || 'Não foi possível entrar na conta.');
     setLoginButton(false);
   }
 };
@@ -101,9 +133,7 @@ if (authClient && !api.sessionExpiredOnLoad && new URLSearchParams(window.locati
     try {
       await finishAuthentication(data.session);
     } catch (syncError) {
-      await authClient.auth.signOut({ scope: 'local' });
-      api.clearSession();
-      alert('Login concluído, mas não foi possível abrir sua conta: ' + syncError.message);
+      showProfileSyncError(syncError);
       setLoginButton(false);
     }
   });

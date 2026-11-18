@@ -898,9 +898,14 @@
 }
 
 .plan-tier-badge.pro-tier {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  color: #121F1C;
-  box-shadow: 0 4px 14px rgba(255, 215, 0, 0.25);
+  background: #111816;
+  color: transparent;
+  background-image: linear-gradient(105deg, #fffdf8 0%, #f5dfa7 18%, #c8912f 36%, #fff8e5 51%, #d5a13d 68%, #fffefa 82%, #bd8424 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  border: 1px solid rgba(240, 197, 93, 0.45);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(200, 145, 47, 0.15);
 }
 
 .plan-current-indicator {

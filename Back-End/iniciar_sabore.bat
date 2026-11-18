@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 echo ==============================================
 echo        INICIANDO OS SERVICOS DO SABORE
 echo ==============================================
@@ -17,6 +18,6 @@ if errorlevel 1 (
 echo.
 echo [INFO] Iniciando o servidor Back-End do Sabore...
 echo.
-npm run dev
+npm start
 
 pause

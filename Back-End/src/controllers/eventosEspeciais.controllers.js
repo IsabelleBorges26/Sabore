@@ -1,6 +1,7 @@
 const {
   listarEventos,
   obterEventoPorId,
+  participarEvento,
   inscreverReceitaOficial,
   registrarVotoComunitario,
   registrarDenuncia,
@@ -10,7 +11,9 @@ const {
   salvarEventoAdmin,
   listarEntradasAdmin,
   encerrarVotacaoAdmin,
-  carregarStoreEventos
+  carregarStoreEventos,
+  criarReceitaPiloto,
+  interagirReceitaPiloto
 } = require("../services/eventosEspeciais.service");
 
 // GET /desafios/eventos
@@ -41,18 +44,45 @@ const detalhar = async (req, res) => {
   }
 };
 
+// POST /desafios/eventos/:id/entrar (participação no evento piloto)
+const entrar = async (req, res) => {
+  try {
+    const resultado = participarEvento(req.params.id, req.usuario.id);
+    res.status(resultado.jaParticipava ? 200 : 201).json(resultado);
+  } catch (err) {
+    const status = err.message.includes("encerrado") || err.message.includes("começou") ? 403 : 400;
+    res.status(status).json({ erro: err.message });
+  }
+};
+
+const criarReceitaExclusiva = (req, res) => {
+  try {
+    res.status(201).json(criarReceitaPiloto(req.params.id, req.usuario, req.body || {}));
+  } catch (err) {
+    res.status(400).json({ erro: err.message });
+  }
+};
+
+const interagirReceitaExclusiva = (req, res) => {
+  try {
+    res.status(200).json(interagirReceitaPiloto(req.params.id, req.params.entradaId, req.usuario, req.params.tipo, req.body || {}));
+  } catch (err) {
+    res.status(400).json({ erro: err.message });
+  }
+};
+
 // POST /desafios/eventos/:id/participar (Inscrição Oficial — Modelo B)
 const inscrever = async (req, res) => {
   try {
     const eventoId = req.params.id;
     const usuarioId = req.usuario.id;
-    const { receitaId, dadosReceita } = req.body;
+    const { receitaId, dadosReceita, fotos, video } = req.body;
 
     if (!receitaId) {
       return res.status(400).json({ erro: "Selecione uma receita válida para sua inscrição oficial." });
     }
 
-    const resultado = await inscreverReceitaOficial(eventoId, usuarioId, receitaId, dadosReceita);
+    const resultado = await inscreverReceitaOficial(eventoId, usuarioId, receitaId, dadosReceita, fotos, video);
     res.status(201).json(resultado);
   } catch (err) {
     const status = err.message.includes("encerrado") || err.message.includes("começaram") || err.message.includes("autoria") ? 403 : 400;
@@ -168,6 +198,9 @@ const encerrarVotacao = async (req, res) => {
 module.exports = {
   listar,
   detalhar,
+  entrar,
+  criarReceitaExclusiva,
+  interagirReceitaExclusiva,
   inscrever,
   votar,
   denunciar,

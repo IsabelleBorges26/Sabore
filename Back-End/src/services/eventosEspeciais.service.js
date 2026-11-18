@@ -44,6 +44,28 @@ const EVENTOS_INICIAIS = [
     status: "RASCUNHO",
     resultadoConfirmado: false,
     vencedor: null
+  },
+  {
+    id: 3,
+    titulo: "Evento Piloto Saboré — Competição e Votação",
+    descricao: "Evento temporário para testar publicações, inscrições de receitas, votação comunitária e apresentação do resultado.",
+    hashtag: "#PilotoSabore2026",
+    bannerUrl: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+    comecaEm: "2026-11-18T00:00:00.000-03:00",
+    encerraEm: "2026-11-30T23:59:59.999-03:00",
+    inscricoesIniciaEm: "2026-11-18T00:00:00.000-03:00",
+    inscricoesEncerraEm: "2026-11-17T23:59:59.999-03:00",
+    votacaoIniciaEm: "2026-11-18T00:00:00.000-03:00",
+    votacaoEncerraEm: "2026-11-18T15:35:00.000-03:00",
+    resultadoDivulgadoEm: "2026-11-18T15:35:01.000-03:00",
+    emblema: "Piloto Saboré 2026",
+    emblemaImg: "/assets/Emblemas/EMBLEMA.jpg",
+    regras: "Crie uma receita exclusiva para o evento. Ela aparece apenas no feed das receitas concorrentes. Você pode substituí-la durante as inscrições. Na votação, cada participante vota uma vez e não pode votar na própria receita. A mais votada vence; em caso de empate, vale a inscrição aprovada primeiro.",
+    status: "INSCRICOES",
+    resultadoConfirmado: false,
+    vencedor: null,
+    temporario: true,
+    tema: "piloto"
   }
 ];
 
@@ -52,13 +74,18 @@ const LOCAL_STORE_PATH = path.resolve(__dirname, "..", "data", "eventos_store.js
 function carregarStoreEventos() {
   try {
     if (fs.existsSync(LOCAL_STORE_PATH)) {
-      return JSON.parse(fs.readFileSync(LOCAL_STORE_PATH, "utf8"));
+      const store = JSON.parse(fs.readFileSync(LOCAL_STORE_PATH, "utf8"));
+      if (!Array.isArray(store.participantes)) store.participantes = [];
+      const pilot = store.eventos?.find(evento => evento.id === 3 && evento.temporario);
+      if (pilot) pilot.regras = EVENTOS_INICIAIS[2].regras;
+      return store;
     }
   } catch (err) {
     console.warn("[EventosStore] Aviso ao ler store:", err.message);
   }
   return {
     eventos: EVENTOS_INICIAIS,
+    participantes: [], // { eventoId, usuarioId, createdAt }
     entradas: [], // { id, eventoId, usuarioId, receitaId, status: 'APROVADA', createdAt }
     votos: [],    // { id, eventoId, entradaId, usuarioId, createdAt }
     denuncias: [],// { id, eventoId, entradaId, usuarioId, motivo, createdAt }
@@ -112,6 +139,12 @@ function listarEventos(usuarioId = null) {
     const totalVotos = store.votos.filter(v => v.eventoId === ev.id).length;
     const minhaEntrada = usuarioId ? store.entradas.find(e => e.eventoId === ev.id && Number(e.usuarioId) === Number(usuarioId)) : null;
     const meuVoto = usuarioId ? store.votos.find(v => v.eventoId === ev.id && Number(v.usuarioId) === Number(usuarioId)) : null;
+    const participantesEvento = ev.temporario
+      ? store.participantes.filter(p => p.eventoId === ev.id)
+      : [];
+    const participando = usuarioId
+      ? participantesEvento.some(p => Number(p.usuarioId) === Number(usuarioId))
+      : false;
 
     return {
       ...ev,
@@ -123,9 +156,12 @@ function listarEventos(usuarioId = null) {
       votacaoFimEm: ev.votacaoEncerraEm,
       emblemaId: ev.emblema,
       fase,
-      participantesCount: entradasAprovadas.length,
+      participantesCount: ev.temporario ? participantesEvento.length : entradasAprovadas.length,
+      receitasCount: entradasAprovadas.length,
       totalVotos,
       jaInscrito: Boolean(minhaEntrada),
+      participando: ev.temporario ? participando : Boolean(minhaEntrada),
+      acessoLiberado: !ev.temporario || participando,
       minhaEntradaId: minhaEntrada?.id || null,
       meuVotoEntradaId: meuVoto?.entradaId || null
     };
@@ -144,6 +180,34 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
 
   const fase = calcularFaseEvento(evento);
   const entradas = store.entradas.filter(e => e.eventoId === idNum && e.status === "APROVADA");
+  const participantesEvento = evento.temporario
+    ? store.participantes.filter(p => p.eventoId === idNum)
+    : [];
+  const participando = usuarioId
+    ? participantesEvento.some(p => Number(p.usuarioId) === Number(usuarioId))
+    : false;
+
+  if (evento.temporario && !participando) {
+    return {
+      ...evento,
+      inicioEm: evento.comecaEm,
+      fimEm: evento.encerraEm,
+      inscricoesInicioEm: evento.inscricoesIniciaEm,
+      inscricoesFimEm: evento.inscricoesEncerraEm,
+      votacaoInicioEm: evento.votacaoIniciaEm,
+      votacaoFimEm: evento.votacaoEncerraEm,
+      emblemaId: evento.emblema,
+      fase,
+      galeria: [],
+      participantesCount: participantesEvento.length,
+      receitasCount: entradas.length,
+      totalVotos: store.votos.filter(v => v.eventoId === idNum).length,
+      minhaEntrada: null,
+      meuVoto: null,
+      participando: false,
+      acessoLiberado: false
+    };
+  }
 
   // Busca dados das receitas inscritas e autores
   const galeria = [];
@@ -151,8 +215,9 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
     let receita = null;
     let autor = null;
 
-    // Tenta carregar dados ricos da receita via Prisma se online
+    // Receitas criadas no piloto vivem apenas no evento.
     try {
+      if (ent.exclusivaEvento) throw new Error("Receita exclusiva do evento");
       receita = await prisma.receita.findUnique({
         where: { id: Number(ent.receitaId) },
         include: {
@@ -171,7 +236,8 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
         descricao: ent.descricao || "",
         imagem: ent.imagem || null,
         tempoPreparo: ent.tempoPreparo || 45,
-        modoPreparo: ent.modoPreparo || "Modo de preparo não informado."
+        modoPreparo: ent.modoPreparo || "Modo de preparo não informado.",
+        ingredientes: ent.ingredientes || []
       };
       autor = ent.autor || { id: ent.usuarioId, nome: "Cozinheiro Saboré", plano: "FREE" };
     }
@@ -184,6 +250,8 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
       titulo: receita.titulo,
       descricao: receita.descricao,
       imagem: receita.imagem,
+      fotos: Array.isArray(ent.fotos) && ent.fotos.length ? ent.fotos : [receita.imagem].filter(Boolean),
+      video: ent.video || null,
       tempoPreparo: receita.tempoPreparo,
       modoPreparo: receita.modoPreparo,
       ingredientes: receita.ingredientes || [],
@@ -194,6 +262,12 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
         plano: autor.plano,
       },
       votos: votosDaEntrada,
+      comentarios: (store.comentarios || []).filter(c => c.eventoId === idNum && c.entradaId === ent.id),
+      salvosCount: (store.salvos || []).filter(s => s.eventoId === idNum && s.entradaId === ent.id).length,
+      salvoPorMim: Boolean(usuarioId && (store.salvos || []).some(s => s.eventoId === idNum && s.entradaId === ent.id && Number(s.usuarioId) === Number(usuarioId))),
+      avaliacoesCount: (store.avaliacoes || []).filter(a => a.eventoId === idNum && a.entradaId === ent.id).length,
+      avaliacaoMedia: (() => { const items = (store.avaliacoes || []).filter(a => a.eventoId === idNum && a.entradaId === ent.id); return items.length ? Math.round(items.reduce((total, a) => total + a.nota, 0) / items.length * 10) / 10 : null; })(),
+      minhaAvaliacao: (store.avaliacoes || []).find(a => a.eventoId === idNum && a.entradaId === ent.id && Number(a.usuarioId) === Number(usuarioId))?.nota || null,
       inscritoEm: ent.createdAt
     });
   }
@@ -201,11 +275,72 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
   // Ordena a galeria pelos votos decrescentes e critério de desempate (mais antiga primeiro)
   galeria.sort((a, b) => b.votos - a.votos || new Date(a.inscritoEm) - new Date(b.inscritoEm));
 
+  // Se o evento estiver encerrado ou resultado confirmado, anexa resultado detalhado
+  let resultadoFinal = evento.vencedor ? {
+    tituloReceita: evento.vencedor.receitaTitulo,
+    nomeAutor: evento.vencedor.autorNome,
+    totalVotos: evento.vencedor.votos,
+    usuarioId: evento.vencedor.usuarioId,
+    receitaId: evento.vencedor.receitaId,
+    emblema: evento.emblema,
+    emblemaImg: evento.emblemaImg,
+    pontos: 15
+  } : null;
+
+  if (!resultadoFinal && (fase === "ENCERRADO" || evento.resultadoConfirmado) && galeria.length > 0) {
+    const campea = galeria[0];
+    resultadoFinal = {
+      tituloReceita: campea.titulo,
+      nomeAutor: campea.autor?.nome || "Cozinheiro Saboré",
+      totalVotos: campea.votos,
+      usuarioId: campea.autor?.id,
+      receitaId: campea.receitaId,
+      emblema: evento.emblema,
+      emblemaImg: evento.emblemaImg,
+      pontos: 15
+    };
+
+    // Auto-concessão permanente caso ainda não tenha sido concedida
+    if (!evento.vencedor) {
+      evento.vencedor = {
+        usuarioId: campea.autor?.id,
+        receitaId: campea.receitaId,
+        receitaTitulo: campea.titulo,
+        autorNome: campea.autor?.nome || "Cozinheiro Saboré",
+        votos: campea.votos,
+        confirmadoEm: new Date().toISOString()
+      };
+      evento.resultadoConfirmado = true;
+      try {
+        const { concederConquistaVencedor } = require("./conquistas.service");
+        concederConquistaVencedor(Number(campea.autor?.id), {
+          desafioId: evId,
+          titulo: evento.emblema,
+          emblema: evento.emblemaImg
+        }).catch(() => {});
+      } catch (e) {}
+
+      try {
+        const { registrarPontos } = require("./engajamento.service");
+        registrarPontos({
+          usuarioId: Number(campea.autor?.id),
+          tipo: "EVENTO_VENCEDOR",
+          pontos: 15,
+          chaveUnica: `EVENTO_${idNum}_VENCEDOR_${campea.autor?.id}`,
+          descricao: `Vencedor do evento especial: ${evento.titulo}`
+        }).catch(() => {});
+      } catch (e) {}
+
+      salvarStoreEventos(store);
+    }
+  }
+
   const minhaEntrada = usuarioId ? store.entradas.find(e => e.eventoId === idNum && Number(e.usuarioId) === Number(usuarioId)) : null;
   const meuVoto = usuarioId ? store.votos.find(v => v.eventoId === idNum && Number(v.usuarioId) === Number(usuarioId)) : null;
 
   return {
     ...evento,
+    resultado: resultadoFinal,
     inicioEm: evento.comecaEm,
     fimEm: evento.encerraEm,
     inscricoesInicioEm: evento.inscricoesIniciaEm,
@@ -215,17 +350,147 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
     emblemaId: evento.emblema,
     fase,
     galeria,
-    participantesCount: galeria.length,
+    participantesCount: evento.temporario ? participantesEvento.length : galeria.length,
+    receitasCount: galeria.length,
     totalVotos: store.votos.filter(v => v.eventoId === idNum).length,
+    participando: evento.temporario ? participando : true,
+    acessoLiberado: true,
     minhaEntrada: minhaEntrada ? {
       id: minhaEntrada.id,
       receitaId: minhaEntrada.receitaId,
-      status: minhaEntrada.status
+      titulo: minhaEntrada.titulo,
+      imagem: minhaEntrada.imagem,
+      fotos: minhaEntrada.fotos || [],
+      tempoPreparo: minhaEntrada.tempoPreparo,
+      status: minhaEntrada.status,
+      votos: store.votos.filter(v => v.entradaId === minhaEntrada.id).length
     } : null,
     meuVoto: meuVoto ? {
       entradaId: meuVoto.entradaId,
       votadoEm: meuVoto.createdAt
     } : null
+  };
+}
+
+const normalizarReceita = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+function validarEntradaPiloto(store, eventoId, usuarioId) {
+  const evId = Number(eventoId);
+  const uId = Number(usuarioId);
+  const evento = store.eventos.find(e => e.id === evId);
+  if (!evento || !evento.temporario) throw new Error("Evento piloto não encontrado.");
+  if (!store.participantes.some(p => p.eventoId === evId && Number(p.usuarioId) === uId)) throw new Error("Participe do evento primeiro.");
+  return { evId, uId, evento };
+}
+
+function criarReceitaPiloto(eventoId, usuario, dados) {
+  const store = carregarStoreEventos();
+  const { evId, uId, evento } = validarEntradaPiloto(store, eventoId, usuario.id);
+  if (calcularFaseEvento(evento) !== "INSCRICOES") throw new Error("As inscrições não estão abertas.");
+  const titulo = String(dados.titulo || "").trim().slice(0, 100);
+  const descricao = String(dados.descricao || "").trim().slice(0, 400);
+  const ingredientes = String(dados.ingredientes || "").split(/\r?\n/).map(item => item.trim()).filter(Boolean).slice(0, 40);
+  const passos = String(dados.modoPreparo || "").split(/\r?\n/).map(item => item.trim()).filter(Boolean).slice(0, 30);
+  const tempoPreparo = Number(dados.tempoPreparo);
+  if (titulo.length < 4 || !ingredientes.length || !passos.length || !Number.isInteger(tempoPreparo) || tempoPreparo < 1 || tempoPreparo > 1440) throw new Error("Preencha título, tempo, ingredientes e modo de preparo.");
+  if (ingredientes.some(item => item.length > 160) || passos.some(item => item.length > 500)) throw new Error("Um ingrediente ou passo é longo demais.");
+  const fotos = dados.fotos;
+  if (!Array.isArray(fotos) || fotos.length < 1 || fotos.length > 5 || fotos.some(foto => typeof foto !== "string" || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(foto) || foto.length > 700000)) throw new Error("Adicione de 1 a 5 fotos válidas da receita.");
+  const video = dados.video || null;
+  if (video && (typeof video !== "string" || !/^data:video\/(mp4|webm);base64,[A-Za-z0-9+/=]+$/.test(video) || video.length > 5600000)) throw new Error("O vídeo deve ser MP4 ou WebM de até 4 MB.");
+  const tituloNormalizado = normalizarReceita(titulo);
+  const conteudoNormalizado = normalizarReceita(`${ingredientes.join(" ")} ${passos.join(" ")}`);
+  const duplicada = store.entradas.find(entry => entry.eventoId === evId && entry.status === "APROVADA" && Number(entry.usuarioId) !== uId && (normalizarReceita(entry.titulo) === tituloNormalizado || (entry.conteudoNormalizado && entry.conteudoNormalizado === conteudoNormalizado)));
+  if (duplicada) throw new Error("Uma receita com este título ou preparo já está inscrita. Publique uma receita original.");
+  const anterior = store.entradas.find(entry => entry.eventoId === evId && Number(entry.usuarioId) === uId);
+  if (anterior) {
+    const votosAnteriores = (store.votos || []).filter(v => v.entradaId === anterior.id).length;
+    if (votosAnteriores > 0) {
+      throw new Error("Sua receita já possui votos computados nesta competição e não pode mais ser substituída.");
+    }
+  }
+  const id = anterior?.id || Date.now();
+  const entrada = {
+    id, eventoId: evId, usuarioId: uId, receitaId: -id, exclusivaEvento: true,
+    titulo, descricao, ingredientes, modoPreparo: passos.join("\n"), tempoPreparo,
+    imagem: fotos[0], fotos, video, conteudoNormalizado,
+    autor: { id: uId, nome: usuario.nome || "Participante", plano: usuario.plano || "FREE" },
+    status: "APROVADA", createdAt: new Date().toISOString(), atualizadoEm: new Date().toISOString()
+  };
+  if (anterior) {
+    store.entradas[store.entradas.indexOf(anterior)] = entrada;
+    store.comentarios = (store.comentarios || []).filter(item => item.entradaId !== id);
+    store.salvos = (store.salvos || []).filter(item => item.entradaId !== id);
+    store.avaliacoes = (store.avaliacoes || []).filter(item => item.entradaId !== id);
+  } else store.entradas.push(entrada);
+  salvarStoreEventos(store);
+  return { sucesso: true, entradaId: id, mensagem: anterior ? "Sua receita foi substituída no evento." : "Receita inscrita no evento." };
+}
+
+function interagirReceitaPiloto(eventoId, entradaId, usuario, tipo, dados = {}) {
+  const store = carregarStoreEventos();
+  const { evId, uId } = validarEntradaPiloto(store, eventoId, usuario.id);
+  const entrada = store.entradas.find(e => e.id === Number(entradaId) && e.eventoId === evId && e.status === "APROVADA");
+  if (!entrada) throw new Error("Receita não encontrada neste evento.");
+  if (tipo === "comentario") {
+    const texto = String(dados.texto || "").trim();
+    if (texto.length < 2 || texto.length > 500) throw new Error("Escreva um comentário de 2 a 500 caracteres.");
+    store.comentarios ||= [];
+    store.comentarios.push({ id: Date.now(), eventoId: evId, entradaId: entrada.id, usuarioId: uId, autor: usuario.nome || "Participante", texto, createdAt: new Date().toISOString() });
+  } else if (tipo === "salvar") {
+    store.salvos ||= [];
+    const index = store.salvos.findIndex(s => s.eventoId === evId && s.entradaId === entrada.id && Number(s.usuarioId) === uId);
+    let salvo = false;
+    if (index >= 0) {
+      store.salvos.splice(index, 1);
+      salvo = false;
+    } else {
+      store.salvos.push({ eventoId: evId, entradaId: entrada.id, usuarioId: uId, salvoEm: new Date().toISOString() });
+      salvo = true;
+    }
+    salvarStoreEventos(store);
+    return {
+      sucesso: true,
+      salvo,
+      mensagem: salvo ? "Receita salva! Ela está disponível nas receitas salvas deste evento e nos seus favoritos." : "Receita removida dos salvos."
+    };
+  } else if (tipo === "avaliar") {
+    const nota = Number(dados.nota);
+    if (!Number.isInteger(nota) || nota < 1 || nota > 5) throw new Error("A nota deve ser de 1 a 5.");
+    if (Number(entrada.usuarioId) === uId) throw new Error("Você não pode avaliar sua própria receita.");
+    store.avaliacoes ||= [];
+    const anterior = store.avaliacoes.find(a => a.eventoId === evId && a.entradaId === entrada.id && Number(a.usuarioId) === uId);
+    if (anterior) anterior.nota = nota;
+    else store.avaliacoes.push({ eventoId: evId, entradaId: entrada.id, usuarioId: uId, nota });
+  } else throw new Error("Interação inválida.");
+  salvarStoreEventos(store);
+  return { sucesso: true };
+}
+
+function participarEvento(eventoId, usuarioId) {
+  const store = carregarStoreEventos();
+  const evId = Number(eventoId);
+  const uId = Number(usuarioId);
+  const evento = store.eventos.find(e => e.id === evId);
+  if (!evento) throw new Error("Evento não encontrado.");
+  if (!evento.temporario) throw new Error("Este evento ainda usa o fluxo de inscrição atual.");
+
+  const fase = calcularFaseEvento(evento);
+  if (fase === "EM_BREVE") throw new Error("A participação neste evento ainda não começou.");
+  if (fase === "ENCERRADO") throw new Error("Este evento já foi encerrado.");
+
+  let jaParticipava = store.participantes.some(
+    p => p.eventoId === evId && Number(p.usuarioId) === uId
+  );
+  if (!jaParticipava) {
+    store.participantes.push({ eventoId: evId, usuarioId: uId, createdAt: new Date().toISOString() });
+    salvarStoreEventos(store);
+  }
+
+  return {
+    sucesso: true,
+    jaParticipava,
+    participantesCount: store.participantes.filter(p => p.eventoId === evId).length
   };
 }
 
@@ -235,14 +500,22 @@ async function obterEventoPorId(eventoId, usuarioId = null) {
  * Pode substituir a inscrição oficial enquanto as inscrições estiverem abertas e a votação não começou.
  * Durante a votação, alterações e substituições são bloqueadas.
  */
-async function inscreverReceitaOficial(eventoId, usuarioId, receitaId, dadosReceita = {}) {
+async function inscreverReceitaOficial(eventoId, usuarioId, receitaId, dadosReceita = {}, fotos = [], video = null) {
   const store = carregarStoreEventos();
   const evId = Number(eventoId);
   const uId = Number(usuarioId);
   const rId = Number(receitaId);
+  const fotosValidas = Array.isArray(fotos) ? fotos.slice(0, 5).filter(foto => typeof foto === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(foto) && foto.length < 700000) : [];
+  const videoValido = (typeof video === 'string' && /^data:video\/(mp4|webm|quicktime);base64,/.test(video) && video.length < 28000000) ? video : null;
 
   const evento = store.eventos.find(e => e.id === evId);
   if (!evento) throw new Error("Evento não encontrado.");
+
+  if (evento.temporario && !store.participantes.some(
+    p => p.eventoId === evId && Number(p.usuarioId) === uId
+  )) {
+    throw new Error("Participe do evento antes de inscrever sua receita.");
+  }
 
   const fase = calcularFaseEvento(evento);
   if (fase === "EM_BREVE") {
@@ -286,20 +559,30 @@ async function inscreverReceitaOficial(eventoId, usuarioId, receitaId, dadosRece
   let entradaFinal = null;
 
   if (entradaExistenteIdx >= 0) {
-    // Substitui a inscrição oficial anterior (permitido durante período de inscrições)
+    // Substitui a inscrição oficial anterior (permitido durante período de inscrições se não houver votos)
     const entradaAntiga = store.entradas[entradaExistenteIdx];
+    const votosAnteriores = (store.votos || []).filter(v => v.entradaId === entradaAntiga.id).length;
+    if (votosAnteriores > 0) {
+      throw new Error("Sua receita já começou a receber votos na competição e não pode mais ser substituída.");
+    }
     store.entradas[entradaExistenteIdx] = {
       ...entradaAntiga,
       receitaId: rId,
       titulo: receitaInfo.titulo || entradaAntiga.titulo,
-      descricao: receitaInfo.descricao || entradaAntiga.descricao,
-      imagem: receitaInfo.imagem || entradaAntiga.imagem,
+      descricao: receitaInfo.descricao || "",
+      imagem: (fotosValidas.length ? fotosValidas[0] : null) || receitaInfo.imagem || entradaAntiga.imagem,
+      fotos: fotosValidas.length ? fotosValidas : (entradaAntiga.fotos || [receitaInfo.imagem].filter(Boolean)),
+      video: videoValido !== null ? videoValido : (entradaAntiga.video || null),
       tempoPreparo: receitaInfo.tempoPreparo || entradaAntiga.tempoPreparo,
       modoPreparo: receitaInfo.modoPreparo || entradaAntiga.modoPreparo,
+      ingredientes: receitaInfo.ingredientes || entradaAntiga.ingredientes || [],
       autor: receitaInfo.autor || entradaAntiga.autor,
       status: "APROVADA",
       atualizadoEm: new Date().toISOString()
     };
+    store.comentarios = (store.comentarios || []).filter(item => item.entradaId !== entradaAntiga.id);
+    store.salvos = (store.salvos || []).filter(item => item.entradaId !== entradaAntiga.id);
+    store.avaliacoes = (store.avaliacoes || []).filter(item => item.entradaId !== entradaAntiga.id);
     entradaFinal = store.entradas[entradaExistenteIdx];
   } else {
     // Nova inscrição oficial única
@@ -310,9 +593,12 @@ async function inscreverReceitaOficial(eventoId, usuarioId, receitaId, dadosRece
       receitaId: rId,
       titulo: receitaInfo.titulo || "Receita Oficial do Evento",
       descricao: receitaInfo.descricao || "",
-      imagem: receitaInfo.imagem || null,
+      imagem: (fotosValidas.length ? fotosValidas[0] : null) || receitaInfo.imagem || null,
+      fotos: fotosValidas.length ? fotosValidas : [receitaInfo.imagem].filter(Boolean),
+      video: videoValido || null,
       tempoPreparo: receitaInfo.tempoPreparo || 40,
       modoPreparo: receitaInfo.modoPreparo || "",
+      ingredientes: receitaInfo.ingredientes || [],
       autor: receitaInfo.autor || { id: uId, nome: "Cozinheiro Saboré", plano: "FREE" },
       status: "APROVADA",
       createdAt: new Date().toISOString()
@@ -358,6 +644,12 @@ async function registrarVotoComunitario(eventoId, usuarioId, entradaId) {
 
   const evento = store.eventos.find(e => e.id === evId);
   if (!evento) throw new Error("Evento não encontrado.");
+
+  if (evento.temporario && !store.participantes.some(
+    p => p.eventoId === evId && Number(p.usuarioId) === uId
+  )) {
+    throw new Error("Participe do evento antes de votar.");
+  }
 
   const fase = calcularFaseEvento(evento);
   if (fase !== "VOTACAO") {
@@ -727,6 +1019,7 @@ module.exports = {
   calcularFaseEvento,
   listarEventos,
   obterEventoPorId,
+  participarEvento,
   inscreverReceitaOficial,
   registrarVotoComunitario,
   registrarDenuncia,
@@ -735,5 +1028,7 @@ module.exports = {
   moderarEntrada,
   salvarEventoAdmin,
   listarEntradasAdmin,
-  encerrarVotacaoAdmin
+  encerrarVotacaoAdmin,
+  criarReceitaPiloto,
+  interagirReceitaPiloto
 };

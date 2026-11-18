@@ -1,0 +1,15 @@
+{
+  "conquistas": [
+    {
+      "id": 1795027311436,
+      "usuarioId": 6,
+      "desafioId": 3,
+      "titulo": "Piloto Saboré 2026",
+      "emblema": "/assets/Emblemas/EMBLEMA.jpg",
+      "molduraPerfil": null,
+      "molduraNome": null,
+      "concedidaEm": "2026-11-18T18:35:04.000Z"
+    }
+  ],
+  "moldurasAtivas": {}
+}

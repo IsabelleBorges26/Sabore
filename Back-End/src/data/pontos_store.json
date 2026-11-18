@@ -1,0 +1,14 @@
+{
+  "atividades": [
+    {
+      "id": 1795028139042,
+      "usuarioId": 6,
+      "tipo": "EVENTO_VENCEDOR",
+      "pontos": 15,
+      "chaveUnica": "EVENTO_3_VENCEDOR_6",
+      "descricao": "Vencedor do evento especial: Evento Piloto Saboré",
+      "mesReferencia": "2026-11",
+      "createdAt": "2026-11-18T18:35:04.000Z"
+    }
+  ]
+}

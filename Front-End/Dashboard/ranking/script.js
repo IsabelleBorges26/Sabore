@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="podium-rank-badge">${item.posicao}º</div>
         <div class="podium-avatar-wrap">
           <img src="${avatarSrc}" alt="${item.nome}" class="podium-avatar">
-          ${item.posicao === 1 ? '<i class="fa-solid fa-crown podium-crown-icon"></i>' : ''}
+          ${item.posicao === 1 ? '<i class="fa-solid fa-crown podium-crown-icon" style="color: #FFD700; filter: drop-shadow(0 0 8px rgba(255,215,0,0.6));"></i>' : ''}
         </div>
         <h4 class="podium-user-name" title="${item.nome}">${api.renderUserIdentity(item.nome, item.plano)}</h4>
         <div class="podium-points-tag">${item.pontos} pts</div>

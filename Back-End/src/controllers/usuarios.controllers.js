@@ -162,9 +162,12 @@ const loginGoogle = async (req, res) => {
 };
 
 const perfil = async (req, res) => {
-    const usuarioId = req.usuario.id;
+    const requestedId = req.query.id ? Number(req.query.id) : null;
+    const usuarioId = (requestedId && Number.isSafeInteger(requestedId) && requestedId > 0) ? requestedId : req.usuario.id;
     try {
-        await registrarAcessoDiario(usuarioId).catch(() => {});
+        if (!requestedId || requestedId === req.usuario.id) {
+            await registrarAcessoDiario(usuarioId).catch(() => {});
+        }
 
         const usuario = await withDirectDatabaseFallback((db) => db.usuario.findUnique({
             where: { id: usuarioId },

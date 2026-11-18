@@ -140,6 +140,65 @@
                 <button type="button" class="event-tab-pill" data-event-id="2"><i class="fa-solid fa-champagne-glasses"></i> Réveillon Saboré 2027</button>
               </div>
 
+              <section class="pilot-feed-shell" id="pilot-feed-shell" hidden>
+                <header class="pilot-feed-header">
+                  <span class="pilot-feed-kicker">COMPETIÇÃO CULINÁRIA</span>
+                  <h2 id="pilot-feed-title">Evento Piloto Saboré</h2>
+                  <p id="pilot-feed-intro">Acompanhe as receitas inscritas, confira o modo de preparo completo, avalie com estrelas, comente e salve suas favoritas. Vote na sua favorita durante o período de votação!</p>
+                  <div class="pilot-feed-actions" id="pilot-feed-actions-wrap">
+                    <button type="button" id="pilot-feed-create"><i class="fa-solid fa-trophy"></i> Inscrever receita no evento</button>
+                  </div>
+                </header>
+
+                <!-- Destaque: Sua Receita Concorrente Oficial -->
+                <div class="pilot-competing-banner" id="pilot-my-competing-card" style="display: none;">
+                  <div class="pilot-competing-left">
+                    <img id="pilot-my-competing-img" class="pilot-competing-thumb" src="" alt="Sua Receita Concorrente" style="display: none;">
+                    <div id="pilot-my-competing-placeholder" class="pilot-competing-thumb-placeholder"><i class="fa-solid fa-utensils"></i></div>
+                    <div>
+                      <span class="pilot-competing-tag"><i class="fa-solid fa-trophy"></i> Sua Receita Concorrente Oficial</span>
+                      <h3 class="pilot-competing-title" id="pilot-my-competing-title">Panetone Caseiro</h3>
+                      <p class="pilot-competing-sub" id="pilot-my-competing-sub">Representando você nesta competição · Concorrendo a votos</p>
+                    </div>
+                  </div>
+                  <div class="pilot-competing-actions">
+                    <button type="button" class="btn-competing-action" id="btn-replace-my-competing"><i class="fa-solid fa-rotate"></i> Substituir Receita Concorrente</button>
+                  </div>
+                </div>
+
+                <!-- Barra de Abas e Filtros do Feed do Evento -->
+                <div class="pilot-feed-tabs-row">
+                  <div class="pilot-feed-filter-group">
+                    <button type="button" class="pilot-filter-btn active" id="btn-feed-filter-all"><i class="fa-solid fa-table-cells-large"></i> Todas as receitas <span class="pilot-filter-badge" id="badge-count-all">0</span></button>
+                    <button type="button" class="pilot-filter-btn" id="btn-feed-filter-ranking"><i class="fa-solid fa-ranking-star"></i> Ranking de Votação <span class="pilot-filter-badge" id="badge-count-ranking">0</span></button>
+                    <button type="button" class="pilot-filter-btn" id="btn-feed-filter-saved"><i class="fa-solid fa-bookmark"></i> Salvas por mim <span class="pilot-filter-badge" id="badge-count-saved">0</span></button>
+                  </div>
+                </div>
+
+                <!-- Painel de Ranking ao Vivo da Votação -->
+                <div class="pilot-ranking-container" id="pilot-ranking-container" style="display: none;">
+                  <div class="pilot-ranking-header">
+                    <div class="pilot-ranking-title-box">
+                      <span class="pilot-ranking-kicker"><i class="fa-solid fa-fire-flame-curved"></i> TEMPO REAL</span>
+                      <h3>Ranking Oficial da Votação</h3>
+                      <p>Acompanhe em tempo real as receitas mais votadas pela comunidade neste evento.</p>
+                    </div>
+                    <div class="pilot-ranking-meta" id="pilot-ranking-meta">
+                      <div class="pilot-countdown-box" id="pilot-countdown-box">
+                        <span class="countdown-label"><i class="fa-regular fa-clock"></i> Tempo restante para votar:</span>
+                        <strong class="countdown-timer" id="pilot-countdown-timer">--:--:--</strong>
+                      </div>
+                      <button type="button" class="btn-refresh-ranking" id="btn-refresh-ranking" title="Atualizar Ranking Agora">
+                        <i class="fa-solid fa-rotate"></i> Atualizar
+                      </button>
+                    </div>
+                  </div>
+                  <div class="pilot-ranking-list" id="pilot-ranking-list">
+                    <!-- Cards de ranking gerados dinamicamente -->
+                  </div>
+                </div>
+              </section>
+
 
               <div class="event-banner-card" id="event-banner-card">
                 <div class="event-snow-layer" aria-hidden="true"></div>
@@ -150,15 +209,34 @@
                   <div class="event-status-pill" id="event-status-pill">Carregando...</div>
                   <h2 id="event-banner-title">Natal Saboré 2026</h2>
                   <p id="event-banner-desc">Compartilhe sua receita especial e celebre com a comunidade.</p>
+                  <p class="event-hashtag-help" id="event-hashtag-help" hidden>A hashtag identifica o evento. As receitas criadas aqui ficam apenas no evento e concorrem na votação.</p>
                   <div class="event-meta-tags">
                     <span class="event-meta-item"><i class="fa-solid fa-hashtag"></i> <strong id="event-hashtag-badge">#NatalSabore2026</strong></span>
                     <span class="event-meta-item"><i class="fa-regular fa-calendar"></i> <span id="event-period-text">01 a 25/12/2026</span></span>
                     <span class="event-meta-item"><i class="fa-solid fa-users"></i> <span id="event-participants-count">0 participantes</span></span>
-                    <span class="event-meta-item"><i class="fa-solid fa-check-to-slot"></i> <span id="event-votes-count">0 votos computados</span></span>
+                    <span class="event-meta-item" id="event-votes-meta"><i class="fa-solid fa-check-to-slot"></i> <span id="event-votes-count">0 votos computados</span></span>
                   </div>
                 </div>
               </div>
 
+
+              <div class="event-winner-card" id="event-winner-card" style="display: none;">
+                <div class="winner-trophy">
+                  <img id="event-winner-emblem" src="/assets/Emblemas/EMBLEMA.jpg" alt="Emblema" style="width:56px;height:56px;object-fit:contain;border-radius:8px;box-shadow:0 0 16px rgba(200,145,47,.5);">
+                </div>
+                <div class="winner-info">
+                  <span class="winner-label"><i class="fa-solid fa-trophy" style="color:#FFD700;margin-right:6px;"></i> Receita vencedora do evento</span>
+                  <h3 id="event-winner-recipe-title">Receita Campeã</h3>
+                  <p id="event-winner-author-line">Criada por <a href="#" id="event-winner-author-link" style="color:#f5dfa7;font-weight:700;text-decoration:underline;"><strong id="event-winner-author">Nome do Autor</strong></a> com <span id="event-winner-votes">0</span> votos válidos</p>
+                  <div class="winner-rewards-awarded">
+                    <span class="awarded-pill"><i class="fa-solid fa-medal"></i> Emblema Desbloqueado</span>
+                    <span class="awarded-pill"><i class="fa-solid fa-star"></i> +15 pontos no ranking PRO</span>
+                  </div>
+                  <a href="#" id="event-winner-profile-btn" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 16px;background:linear-gradient(105deg,#c8912f,#f5dfa7,#c8912f);color:#1a1a1a;border-radius:20px;font-weight:700;font-size:0.82rem;text-decoration:none;">
+                    <i class="fa-solid fa-user"></i> Ver perfil do vencedor
+                  </a>
+                </div>
+              </div>
 
               <div class="event-timeline-strip">
                 <div class="timeline-step" id="step-inscricoes">
@@ -182,6 +260,14 @@
                   <div class="step-info">
                     <strong>Resultado & Premiação</strong>
                     <span id="step-resultado-dates">26/12</span>
+                  </div>
+                </div>
+                <div class="timeline-arrow" id="timeline-arrow-encerrado" style="display:none;"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="timeline-step timeline-step-winner" id="step-encerrado" style="display:none;">
+                  <div class="step-num step-num-winner"><i class="fa-solid fa-trophy" style="font-size:0.95rem;color:#1a1a1a;"></i></div>
+                  <div class="step-info">
+                    <strong><i class="fa-solid fa-flag-checkered" style="color:#f5dfa7;font-size:0.85rem;margin-right:4px;"></i> Evento Encerrado</strong>
+                    <a href="#" id="step-encerrado-winner-link" style="font-size:0.78rem;color:#f5dfa7;text-decoration:underline;display:block;margin-top:2px;" target="_blank"></a>
                   </div>
                 </div>
               </div>
@@ -216,21 +302,10 @@
               </div>
 
 
-              <div class="event-winner-card" id="event-winner-card" style="display: none;">
-                <div class="winner-trophy"><i class="fa-solid fa-trophy"></i></div>
-                <div class="winner-info">
-                  <span class="winner-label">Receita vencedora</span>
-                  <h3 id="event-winner-recipe-title">Receita Campeã</h3>
-                  <p id="event-winner-author-line">Criada por <strong id="event-winner-author">Nome do Autor</strong> com <span id="event-winner-votes">0</span> votos válidos</p>
-                  <div class="winner-rewards-awarded">
-                    <span class="awarded-pill"><i class="fa-solid fa-medal"></i> Emblema Desbloqueado</span>
-                    <span class="awarded-pill"><i class="fa-solid fa-award"></i> Destaque de vencedor</span>
-                  </div>
-                </div>
-              </div>
+              
 
 
-              <section class="card-section event-gallery-section">
+              <section class="card-section event-gallery-section" id="event-gallery-section">
                 <div class="section-title-wrap">
                   <div class="title-details">
                     <h3><i class="fa-solid fa-check-to-slot"></i> Galeria de Receitas Inscritas</h3>
@@ -312,6 +387,7 @@
             <span class="q-tag"><i class="fa-solid fa-gauge-simple"></i> <span id="recipe-detail-difficulty">Médio</span></span>
             <span class="q-tag vegetarian-tag" id="recipe-detail-diet-tag">Vegano</span>
           </div>
+          <div id="recipe-detail-carousel-container" class="recipe-detail-carousel-wrap" style="margin: 16px 0;"></div>
         </div>
         <div class="recipe-result-body">
           <div class="recipe-ingredients-side">
@@ -454,36 +530,102 @@
     </section>
   </div>
   <div class="modal-overlay" id="event-entry-modal">
-    <div class="modal-card" style="max-width: 580px; max-height: 88vh; overflow-y: auto;">
+    <div class="modal-card" style="max-width: 620px; max-height: 88vh; overflow-y: auto;">
       <button class="modal-close-btn" id="close-event-entry-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-header-simple">
-        <h3 id="event-entry-modal-title">Inscrição Oficial no Evento</h3>
-        <p id="event-entry-modal-subtitle">Escolha uma receita pública para representar você no evento.</p>
+        <h3 id="event-entry-modal-title">Inscrever receita no evento</h3>
+        <p id="event-entry-modal-subtitle">Escolha uma receita do seu Livro de Receitas ou crie uma receita inédita para concorrer.</p>
       </div>
       <div class="entry-modal-alert" id="event-entry-modal-alert" style="display:none; padding: 10px 14px; border-radius: 10px; background: rgba(224, 133, 122, 0.15); border: 1px solid rgba(224, 133, 122, 0.35); color: #F0D5B6; font-size: 0.82rem; margin-bottom: 14px;"></div>
-
-      <div class="entry-choice-tabs">
-        <button type="button" class="entry-choice-btn active" id="btn-choice-existing"><i class="fa-solid fa-book-bookmark"></i> Minhas Receitas Públicas</button>
-        <button type="button" class="entry-choice-btn" id="btn-choice-create"><i class="fa-solid fa-pen-nib"></i> Criar Nova Publicação</button>
+      
+      <!-- Abas de Inscrição: Livro de Receitas ou Nova Receita -->
+      <div class="pilot-entry-tabs">
+        <button type="button" class="pilot-entry-tab-btn active" id="tab-btn-choose-book"><i class="fa-solid fa-book-bookmark"></i> Do Meu Livro de Receitas</button>
+        <button type="button" class="pilot-entry-tab-btn" id="tab-btn-create-new"><i class="fa-solid fa-wand-magic-sparkles"></i> Criar Nova Receita</button>
       </div>
 
+      <!-- Painel: Escolher do Livro -->
+      <div id="panel-choose-book" class="pilot-entry-panel">
+        <p class="event-entry-guidance" style="margin-bottom: 12px;">Selecione qual das suas receitas cadastradas irá concorrer oficialmente no evento:</p>
+        <div id="entry-existing-recipes-list" class="user-recipes-select-list" aria-live="polite"></div>
+      </div>
 
-      <div id="entry-panel-existing" class="choice-panel active" style="margin-top: 14px;">
-        <p style="font-size: 0.82rem; color: rgba(242, 244, 243, 0.7); margin-bottom: 12px;">Selecione qual das suas receitas públicas será sua representante oficial na votação popular:</p>
-        <div id="entry-existing-recipes-list" class="user-recipes-select-list">
-
+      <!-- Painel Step 2: Adicionar mídia à receita do livro -->
+      <div id="panel-book-media-step" class="pilot-entry-panel" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <button type="button" id="btn-back-to-book-list" style="background:rgba(240,213,182,.1);border:1px solid rgba(240,213,182,.2);color:#f0d5b6;border-radius:10px;padding:7px 13px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+          </button>
+          <div id="book-media-selected-recipe-info" style="font-size:.9rem;font-weight:600;color:#f0e3d3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
         </div>
+        <p style="font-size:.84rem;color:rgba(242,244,243,.7);margin-bottom:14px;">Adicione fotos e/ou um vídeo curto para apresentar sua receita no evento <em>(opcional)</em>:</p>
+        <label class="pilot-photo-upload" id="pilot-entry-photo-upload">
+          <i class="fa-solid fa-images" style="margin-right:6px;"></i> Fotos (até 5, opcional)
+          <input id="pilot-entry-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+          <span>Fotos atraentes do prato finalizado para o carrossel do evento.</span>
+          <div class="pilot-photo-previews" id="pilot-book-photo-previews"></div>
+        </label>
+        <label class="pilot-photo-upload" style="margin-top:10px;" id="pilot-entry-video-upload">
+          <i class="fa-solid fa-film" style="margin-right:6px;"></i> Vídeo curto (opcional)
+          <input id="pilot-entry-video" type="file" accept="video/mp4,video/webm,video/quicktime">
+          <span>Formato MP4 ou WebM, até 20 MB. O vídeo aparece primeiro no carrossel.</span>
+          <div id="pilot-book-video-preview" style="margin-top:8px;"></div>
+        </label>
+        <p id="book-media-step-error" role="alert" style="display:none;color:#e0857a;font-size:.82rem;margin-top:8px;"></p>
+        <button type="button" class="btn-primary-modal-full" id="btn-confirm-book-entry" style="margin-top:16px;width:100%;padding:13px;border-radius:14px;font-size:.95rem;font-weight:700;background:linear-gradient(135deg,#3d7a6f,#2a5a52);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <i class="fa-solid fa-trophy"></i> Confirmar Inscrição no Evento
+        </button>
       </div>
 
+      <!-- Painel: Criar Nova Receita -->
+      <div id="panel-create-new" class="pilot-entry-panel" style="display: none;">
+        <form id="pilot-recipe-create-form" class="pilot-recipe-create-form">
+          <label>Nome da receita
+            <input name="titulo" required minlength="4" maxlength="100" placeholder="Ex.: Panetone Trufado Especial">
+          </label>
+          <label>Tempo de preparo (minutos)
+            <input name="tempoPreparo" type="number" min="1" max="1440" value="45" required>
+          </label>
+          <label>Ingredientes (um por linha)
+            <textarea name="ingredientes" required placeholder="500 g de farinha de trigo&#10;3 ovos&#10;1 copo de açúcar&#10;150 g de frutas cristalizadas"></textarea>
+          </label>
+          <label>Modo de preparo (um passo por linha)
+            <textarea name="modoPreparo" required placeholder="Misture os ingredientes e sove a massa&#10;Deixe descansar até dobrar de volume&#10;Asse em forno médio por 40 minutos"></textarea>
+          </label>
+          <label class="pilot-photo-upload">Fotos da receita (1 a 5 fotos em carrossel)
+            <input name="fotos" id="pilot-create-photos-input" type="file" accept="image/jpeg,image/png,image/webp" multiple required>
+            <span>Escolha fotos atraentes do prato finalizado e do preparo.</span>
+            <div class="pilot-photo-previews" id="pilot-create-photo-previews"></div>
+          </label>
+          <label class="pilot-photo-upload">Vídeo curto (opcional)
+            <input name="video" type="file" accept="video/mp4,video/webm">
+            <span>Formato MP4 ou WebM, até 4 MB.</span>
+          </label>
+          <p id="pilot-recipe-create-error" role="alert" hidden></p>
+          <button type="submit" class="btn-primary-modal-full" id="btn-submit-create-event-recipe"><i class="fa-solid fa-trophy"></i> Publicar e Concorrer no Evento</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
-      <div id="entry-panel-create" class="choice-panel" style="display:none; margin-top: 14px;">
-        <p style="font-size: 0.82rem; color: rgba(242, 244, 243, 0.7); margin-bottom: 14px;">Abra o publicador da comunidade. A hashtag oficial do evento será vinculada automaticamente à sua receita.</p>
-        <button type="button" class="btn-confirm-entry" id="btn-open-create-for-event" style="width: 100%; padding: 12px; border-radius: 12px; background: var(--secondary); color: var(--dark-deep); font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <i class="fa-solid fa-square-plus"></i> Abrir Publicador com a Hashtag Oficial
+  <!-- Modal de Confirmação de Substituição de Receita Concorrente -->
+  <div class="modal-overlay" id="event-replace-confirm-modal">
+    <div class="modal-card small-modal" style="max-width: 480px; text-align: center;">
+      <div style="font-size: 2.6rem; color: #f59e0b; margin-bottom: 12px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h3 style="font-family: 'Playfair Display', serif; font-size: 1.35rem; margin-bottom: 10px; color: #fff;">Substituir Receita Concorrente?</h3>
+      <p id="replace-confirm-message" style="font-size: 0.88rem; color: rgba(242, 244, 243, 0.8); line-height: 1.55; margin-bottom: 22px;">
+        Você já possui uma receita concorrendo oficialmente neste evento. Ao substituí-la, a sua receita anterior deixará de concorrer e os comentários/avaliações serão reiniciados para manter a competição justa.
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button type="button" class="btn-bio-cancel" id="btn-cancel-replace" style="padding: 10px 20px; border-radius: 10px;">Cancelar</button>
+        <button type="button" id="btn-execute-replace" style="padding: 10px 24px; border-radius: 10px; background: #e0857a; color: #121f1c; font-weight: 800; border: none; cursor: pointer;">
+          <i class="fa-solid fa-rotate"></i> Confirmar Substituição
         </button>
       </div>
     </div>
   </div>
+
+  <div class="event-join-celebration" id="event-join-celebration" aria-live="polite" hidden></div>
 
 
   <div class="modal-overlay" id="event-recipe-detail-modal">
@@ -512,6 +654,40 @@
     </div>
   </div>
 
+  <!-- Modal de Celebração de Vitória (Ganhador do Evento) -->
+  <div class="modal-overlay" id="event-winner-celebration-modal" style="display:none;">
+    <div class="modal-card winner-celebration-card" style="max-width: 480px; text-align: center; position: relative; overflow: hidden;">
+      <button class="modal-close-btn" id="close-winner-celebration-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
+      <div class="celebration-confetti-container" id="celebration-confetti" aria-hidden="true"></div>
+      
+      <div class="winner-trophy-glow"><i class="fa-solid fa-trophy"></i></div>
+      <span class="winner-kicker-tag">🎉 PARABÉNS, VOCÊ VENCEU!</span>
+      <h2 id="winner-modal-title" style="font-family: 'Playfair Display', serif; margin: 8px 0 6px; font-size: 1.65rem; color: #fff;">Campeão do Evento!</h2>
+      <p id="winner-modal-desc" style="font-size: 0.88rem; color: rgba(242, 244, 243, 0.8); line-height: 1.5; margin-bottom: 20px;">
+        Sua receita conquistou a maior quantidade de votos da comunidade e foi consagrada a grande vencedora oficial!
+      </p>
+
+      <div class="winner-prize-showcase">
+        <div class="prize-badge-card">
+          <img id="winner-modal-badge-img" src="/assets/conquistas/padrao.png" alt="Emblema do Evento">
+          <strong id="winner-modal-badge-title">Emblema Exclusivo</strong>
+          <span>Adicionado ao seu perfil</span>
+        </div>
+        <div class="prize-points-card">
+          <div class="prize-points-num">+15 pts</div>
+          <strong>Pontos no Ranking</strong>
+          <span>Pontuação adicionada</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <button type="button" class="btn-celebrate-accept" id="btn-celebrate-accept">
+          <i class="fa-solid fa-medal"></i> Ver no Meu Perfil
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="notifications-modal">
     <div class="modal-card small-modal">
       <button class="modal-close-btn" id="close-notif-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -528,7 +704,7 @@
   </div>
 
   <script src="../../assets/js/api.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js?v=20261118-receita-midia"></script>
 </body>
 </html>
 

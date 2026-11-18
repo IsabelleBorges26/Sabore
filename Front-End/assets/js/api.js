@@ -24,11 +24,19 @@ window.applySaboreNeonGlow = () => {};
 window.initSaboreTheme = () => {};
 
 const isLocalNetworkHost = /^(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})$/.test(window.location.hostname);
-const API_BASE_URL = window.API_BASE_URL || (
-    isLocalNetworkHost && window.location.port !== "3000"
-        ? `${window.location.protocol}//${window.location.hostname}:3000`
-        : window.location.origin
-);
+const API_BASE_URL = window.API_BASE_URL || (() => {
+    const { protocol, hostname, port, origin } = window.location;
+
+    // Quando o HTML for aberto diretamente do disco, origin será "null" e
+    // as chamadas relativas falharão. O backend local continua acessível.
+    if (protocol === "file:" || origin === "null") return "http://localhost:3000";
+
+    if (isLocalNetworkHost && port !== "3000") {
+        return `${protocol}//${hostname}:3000`;
+    }
+
+    return origin;
+})();
 const SESSION_IDLE_MS = 10 * 60 * 1000;
 const SESSION_ACTIVITY_KEY = "sabore_last_activity";
 let lastActivityWrite = 0;
@@ -57,7 +65,7 @@ const api = {
     setUser: (user) => localStorage.setItem("sabore_user", JSON.stringify(user)),
     renderProBadge: (plan) => {
         if (String(plan || "").toUpperCase() !== "PRO") return "";
-        return '<span class="sabore-pro-badge" title="Usuário Saboré PRO" aria-label="Usuário PRO"><i class="fa-solid fa-crown" aria-hidden="true"></i></span>';
+        return '<span class="sabore-pro-badge" title="Chef Saboré PRO" aria-label="Chef PRO"><img src="/assets/Emblemas/chefe-de-cozinha-gold.png" alt="PRO" class="sabore-pro-badge-img" aria-hidden="true"></span>';
     },
     renderUserIdentity: (name, plan) => {
         const isPro = String(plan || "").toUpperCase() === "PRO";
@@ -69,7 +77,8 @@ const api = {
                 .sabore-user-identity { display:inline-flex; align-items:center; gap:5px; min-width:0; vertical-align:middle; }
                 .sabore-user-display-name { color:inherit; }
                 .sabore-user-identity.is-pro .sabore-user-display-name { color:transparent; background:linear-gradient(105deg,#fffdf8 0%,#f5dfa7 18%,#c8912f 36%,#fff8e5 51%,#d5a13d 68%,#fffefa 82%,#bd8424 100%); background-size:220% 100%; background-clip:text; -webkit-background-clip:text; font-weight:750; filter:drop-shadow(0 0 5px rgba(225,180,80,.24)); animation:sabore-pro-metal-shine 6s ease-in-out infinite; }
-                .sabore-pro-badge { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; margin-left:1px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; color:#f4d27d; font-size:.78em; line-height:1; filter:drop-shadow(0 0 5px rgba(240,197,93,.42)); }
+                .sabore-pro-badge { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; margin-left:2px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; line-height:1; filter:drop-shadow(0 0 5px rgba(240,197,93,.42)); }
+                .sabore-pro-badge-img { width:1.1em; height:1.1em; object-fit:contain; display:block; }
                 .sabore-user-identity.is-pro .sabore-pro-badge { animation:sabore-pro-crown-glow 3.8s ease-in-out infinite; }
                 .user-meta > .user-plan-tag { display:none !important; }
                 @keyframes sabore-pro-metal-shine { 0%,100% { background-position:100% 0; } 50% { background-position:0 0; } }
@@ -515,15 +524,6 @@ api.openUserProfile = async (userId) => {
             const achievements = await api.get(`/usuarios/conquistas/${id}`);
             if (overlay.dataset.userId !== String(id)) return;
             const achievementsToShow = Array.isArray(achievements) ? [...achievements] : [];
-            const normalizedName = String(profile.nome || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-            if (normalizedName === "paulo moratorio") {
-                [
-                    { titulo: "Espírito Natalino 2026", emblema: "/assets/Emblemas/espirito-natalino-2026.png" },
-                    { titulo: "Sabor da Virada 2027", emblema: "/assets/Emblemas/sabor-da-virada-2027.png" }
-                ].forEach((preview) => {
-                    if (!achievementsToShow.some((item) => (item.titulo || item.nome) === preview.titulo)) achievementsToShow.push(preview);
-                });
-            }
             if (achievementsToShow.length) {
                 achievementsToShow.forEach((achievement) => {
                     const card = document.createElement("div");

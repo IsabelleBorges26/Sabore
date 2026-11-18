@@ -111,12 +111,24 @@ const ranking = async (req, res) => {
         // Identifica posição do usuário logado se autenticado
         let usuarioLogado = null;
         if (req.usuario?.id) {
-            const encontrado = dadosRanking.ranking.find(r => r.usuarioId === req.usuario.id);
+            const encontrado = dadosRanking.ranking.find(r => String(r.usuarioId) === String(req.usuario.id));
             if (encontrado) {
                 usuarioLogado = {
                     ...encontrado,
                     posicao: encontrado.posicao,
+                    receitasValidas: encontrado.receitasValidas || 0,
                     naZonaPro: encontrado.naZonaPro
+                };
+            } else {
+                usuarioLogado = {
+                    usuarioId: req.usuario.id,
+                    nome: req.usuario.nome || "Você",
+                    foto: req.usuario.foto || null,
+                    plano: req.usuario.plano || "FREE",
+                    pontos: 0,
+                    posicao: (dadosRanking.ranking || []).length + 1,
+                    receitasValidas: 0,
+                    naZonaPro: false
                 };
             }
         }
@@ -134,7 +146,6 @@ const ranking = async (req, res) => {
     }
 };
 
-// Retorna o histórico de atividades de pontuação do usuário logado
 const meuHistoricoAtividades = async (req, res) => {
     const usuarioId = req.usuario.id;
     const { mes } = req.query;

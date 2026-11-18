@@ -1,11 +1,16 @@
 const prisma = require("../data/prisma");
 const { isDatabaseConnectionError, withDirectDatabaseFallback } = require("../data/databaseFallback");
 const { listRecipes } = require("../data/restQueries");
+const isStalePrismaRelationError = (error) =>
+    /Unknown field .* for select statement on model .*CountOutputType/i.test(error?.message || "");
 const listWithFallback = async (operation, restOperation, label) => {
     try {
         return await withDirectDatabaseFallback(operation, label);
     } catch (error) {
-        if (!isDatabaseConnectionError(error)) throw error;
+        if (!isDatabaseConnectionError(error) && !isStalePrismaRelationError(error)) throw error;
+        if (isStalePrismaRelationError(error)) {
+            console.warn(`[Receitas] Prisma Client desatualizado em ${label}; usando consulta REST.`);
+        }
         return restOperation();
     }
 };
@@ -33,6 +38,20 @@ const parseIngredient = (input) => {
     return { quantidade: "", nome: cleanStr };
 };
 const formatRecipe = (recipe) => {
+    let mainImage = recipe.imagem || null;
+    let fotosList = [];
+    let videoUrl = null;
+    if (mainImage && typeof mainImage === 'string' && mainImage.startsWith('{') && mainImage.includes('"fotos"')) {
+        try {
+            const parsed = JSON.parse(mainImage);
+            mainImage = parsed.principal || parsed.imagem || null;
+            fotosList = Array.isArray(parsed.fotos) ? parsed.fotos : [];
+            videoUrl = parsed.video || null;
+        } catch (e) {}
+    }
+    if (!fotosList.length && mainImage) {
+        fotosList = [mainImage];
+    }
     const count = (key) => recipe._count?.[key] ?? (Array.isArray(recipe[key]) ? recipe[key].length : 0);
     return {
         id: recipe.id,
@@ -43,7 +62,9 @@ const formatRecipe = (recipe) => {
         public: recipe.publica,
         communityPublished: Boolean(recipe.publica && !recipe.rascunho),
         publishedAt: recipe.publica ? (recipe.publicadaEm || recipe.createdAt) : null,
-        image: recipe.imagem || null,
+        image: mainImage,
+        fotos: fotosList,
+        video: videoUrl,
         criadaPorIA: recipe.criadaPorIA,
         rascunho: recipe.rascunho,
         linkImportacao: recipe.linkImportacao,
@@ -103,7 +124,16 @@ const cadastrar = async (req, res) => {
     const prepStepsString = Array.isArray(finalSteps) ? finalSteps.join("\n") : (modoPreparo || "");
     const finalTime = time !== undefined ? Number(time) : (tempoPreparo !== undefined ? Number(tempoPreparo) : 15);
     const finalPublic = frontendPublic !== undefined ? Boolean(frontendPublic) : Boolean(publica);
-    const finalImage = image || imagem || null;
+    const { fotos, video } = req.body;
+    let finalImage = image || imagem || null;
+    if ((Array.isArray(fotos) && fotos.length) || video) {
+        const cleanPhotos = Array.isArray(fotos) ? fotos.slice(0, 5) : (finalImage ? [finalImage] : []);
+        finalImage = JSON.stringify({
+            principal: cleanPhotos[0] || finalImage || null,
+            fotos: cleanPhotos,
+            video: video || null
+        });
+    }
     const finalIngredients = ingredients || ingredientes || [];
     const finalCategories = categories || categorias || [];
     const finalHashtags = normalizeHashtags(hashtags);
@@ -228,10 +258,15 @@ const cadastrar = async (req, res) => {
     }
 };
 const listar = async (req, res) => {
-    const usuarioId = req.usuario.id;
+    const requestedId = req.query.usuarioId ? Number(req.query.usuarioId) : null;
+    const usuarioId = (requestedId && Number.isSafeInteger(requestedId) && requestedId > 0) ? requestedId : req.usuario.id;
     const { livroId } = req.query;
     try {
         const filters = { usuarioId };
+        if (requestedId && requestedId !== req.usuario.id) {
+            filters.publica = true;
+            filters.rascunho = false;
+        }
         if (livroId) {
             filters.livroId = Number(livroId);
         }
@@ -398,7 +433,29 @@ const atualizar = async (req, res) => {
         const prepStepsString = Array.isArray(finalSteps) ? finalSteps.join("\n") : modoPreparo;
         const finalTime = time !== undefined ? Number(time) : (tempoPreparo !== undefined ? Number(tempoPreparo) : undefined);
         const finalPublic = frontendPublic !== undefined ? Boolean(frontendPublic) : (publica !== undefined ? Boolean(publica) : undefined);
-        const finalImage = image || imagem;
+        const { fotos, video } = req.body;
+        let finalImage = image !== undefined ? image : imagem;
+        if (fotos !== undefined || video !== undefined) {
+            let previousMedia = {};
+            if (typeof existing.imagem === "string" && existing.imagem.startsWith("{")) {
+                try { previousMedia = JSON.parse(existing.imagem); } catch {}
+            }
+            const previousPhotos = Array.isArray(previousMedia.fotos)
+                ? previousMedia.fotos
+                : (previousMedia.principal || existing.imagem ? [previousMedia.principal || existing.imagem] : []);
+            const cleanPhotos = fotos !== undefined
+                ? (Array.isArray(fotos) ? fotos.slice(0, 5) : [])
+                : previousPhotos.slice(0, 5);
+            const nextVideo = video !== undefined ? video : (previousMedia.video || null);
+            const principal = finalImage !== undefined
+                ? finalImage
+                : (previousMedia.principal || cleanPhotos[0] || null);
+            finalImage = JSON.stringify({
+                principal,
+                fotos: cleanPhotos,
+                video: nextVideo
+            });
+        }
         const finalIngredients = ingredients || ingredientes;
         const finalCategories = categories || categorias;
         const finalHashtags = hashtags === undefined ? undefined : normalizeHashtags(hashtags);
@@ -614,19 +671,24 @@ const DESAFIOS_SEMANAIS = [
 
 const listarHashtagsEmAlta = async (req, res) => {
     try {
-        const receitas = await prisma.receita.findMany({
-            where: { publica: true, publicadaEm: { not: null } },
-            include: {
-                categorias: {
-                    include: { categoria: true }
-                },
-                _count: { select: { favoritos: true, avaliacoes: true, comentarios: true } }
-            }
-        });
+        let receitas = [];
+        try {
+            receitas = await prisma.receita.findMany({
+                where: { publica: true, publicadaEm: { not: null } },
+                include: {
+                    categorias: {
+                        include: { categoria: true }
+                    },
+                    _count: { select: { favoritos: true, avaliacoes: true, comentarios: true } }
+                }
+            });
+        } catch (dbErr) {
+            console.warn("[Hashtags] Banco indisponível, buscando hashtags locais:", dbErr.message);
+        }
 
         const hashtagMap = new Map();
 
-        for (const rec of receitas) {
+        for (const rec of (receitas || [])) {
             const likes = rec._count?.favoritos || 0;
             const avaliacoes = rec._count?.avaliacoes || 0;
             const comentarios = rec._count?.comentarios || 0;
@@ -661,9 +723,10 @@ const listarHashtagsEmAlta = async (req, res) => {
         }
 
         const emAlta = Array.from(hashtagMap.values())
-            .filter(item => item.interacoes > 0)
-            .sort((a, b) => b.interacoes - a.interacoes || b.receitas - a.receitas);
+            .filter(item => item.interacoes > 0 || item.receitas > 0)
+            .sort((a, b) => (b.interacoes * 2 + b.receitas) - (a.interacoes * 2 + a.receitas));
 
+        // Adiciona desafio semanal ativo
         try {
             const { obterDesafioSemanalAtivo } = require("../services/desafiosSemanais.service");
             const desafioAtivo = obterDesafioSemanalAtivo();
@@ -675,11 +738,39 @@ const listarHashtagsEmAlta = async (req, res) => {
                         tag: desafioAtivo.hashtag,
                         interacoes: Math.max(10, (emAlta[0]?.interacoes || 5) + 1),
                         receitas: 1,
-                        isDesafio: true
+                        isDesafio: true,
+                        oficial: true
                     });
                 }
             }
         } catch (hErr) {}
+
+        // Adiciona hashtags dos eventos especiais cadastrados
+        try {
+            const path = require("path");
+            const storePath = path.join(__dirname, "../data/eventos_store.json");
+            if (fs.existsSync(storePath)) {
+                const store = JSON.parse(fs.readFileSync(storePath, "utf8"));
+                if (Array.isArray(store.eventos)) {
+                    for (const ev of store.eventos) {
+                        if (ev.hashtag) {
+                            const tagClean = ev.hashtag.toLowerCase();
+                            const jaExiste = emAlta.some(item => item.tag.toLowerCase() === tagClean);
+                            if (!jaExiste) {
+                                emAlta.unshift({
+                                    tag: ev.hashtag,
+                                    interacoes: Math.max(12, (emAlta[0]?.interacoes || 8) + 2),
+                                    receitas: 1,
+                                    isEvento: true,
+                                    oficial: true,
+                                    tituloEvento: ev.titulo
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (evErr) {}
 
         res.status(200).json(emAlta);
     } catch (error) {
