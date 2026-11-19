@@ -1,46 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Saboré Mobile — Cozinha Inteligente & Comunidade Gastronômica">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="sabore_flutter">
+  <meta name="apple-mobile-web-app-title" content="Saboré">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>sabore_flutter</title>
+  <title>Saboré — Cozinha Inteligente</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    // Preserva fragmento OAuth (#access_token=...) antes do router do Flutter inicializar
+    window.__saboreInitialHash = window.location.hash || '';
+    window.__saboreInitialSearch = window.location.search || '';
+
+    window.saboreLocalStorageGet = function(key) {
+      try {
+        return window.localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    };
+
+    window.saboreLocalStorageSet = function(key, value) {
+      try {
+        window.localStorage.setItem(key, value);
+      } catch (e) {}
+    };
+
+    window.saboreLocalStorageRemove = function(key) {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (e) {}
+    };
+
+    window.saboreOpenExternalUrl = function(url) {
+      try {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } catch (e) {
+        window.location.assign(url);
+      }
+    };
+
+    // Seletor real de imagem do dispositivo com redimensionamento Canvas para JPEG Base64
+    window.saborePickImageBase64 = function(maxWidth, quality) {
+      return new Promise(function(resolve) {
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/jpeg,image/png,image/webp,image/gif';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+
+        var settled = false;
+        function finish(val) {
+          if (settled) return;
+          settled = true;
+          try { document.body.removeChild(input); } catch (e) {}
+          resolve(val ? JSON.stringify(val) : null);
+        }
+
+        input.addEventListener('cancel', function() {
+          finish(null);
+        });
+
+        input.addEventListener('change', function(event) {
+          var file = event.target.files && event.target.files[0];
+          if (!file) {
+            finish(null);
+            return;
+          }
+          if (file.size > 10 * 1024 * 1024) {
+            finish({ error: 'A imagem selecionada excede o limite máximo de 10MB.' });
+            return;
+          }
+          var reader = new FileReader();
+          reader.onerror = function() { finish(null); };
+          reader.onload = function(e) {
+            var rawDataUrl = e.target.result;
+            var img = new Image();
+            img.onerror = function() {
+              finish({
+                dataUrl: rawDataUrl,
+                fileName: file.name || 'imagem.jpg',
+                fileSize: file.size || 0
+              });
+            };
+            img.onload = function() {
+              try {
+                var targetMax = maxWidth || 900;
+                var w = img.width;
+                var h = img.height;
+                if (w > targetMax || h > targetMax) {
+                  if (w >= h) {
+                    h = Math.round((h * targetMax) / w);
+                    w = targetMax;
+                  } else {
+                    w = Math.round((w * targetMax) / h);
+                    h = targetMax;
+                  }
+                }
+                var canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                var resizedUrl = canvas.toDataURL('image/jpeg', quality || 0.82);
+                finish({
+                  dataUrl: resizedUrl,
+                  fileName: file.name || 'foto.jpg',
+                  fileSize: file.size || resizedUrl.length
+                });
+              } catch (err) {
+                finish({
+                  dataUrl: rawDataUrl,
+                  fileName: file.name || 'foto.jpg',
+                  fileSize: file.size || 0
+                });
+              }
+            };
+            img.src = rawDataUrl;
+          };
+          reader.readAsDataURL(file);
+        });
+
+        input.click();
+      });
+    };
+  </script>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

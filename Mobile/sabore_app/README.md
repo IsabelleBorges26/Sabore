@@ -1,74 +1,56 @@
-# Saboré — App de Receitas (Flutter)
+# Saboré Mobile (Flutter & Dart)
 
-Projeto Flutter completo baseado no protótipo enviado, com 7 telas,
-tema centralizado e dados fictícios prontos para serem substituídos
-por uma API real no futuro.
+Aplicativo mobile oficial da plataforma **Saboré — Cozinha Inteligente com IA**, desenvolvido em **Flutter & Dart** com fidelidade visual absoluta ao **Saboré Web** e integração 100% real com o Back-End Node.js/Express, Prisma/PostgreSQL e Supabase Auth.
 
-## Como rodar
+---
 
-1. Extraia o zip em uma pasta.
-2. Abra a pasta `sabore_app` no VS Code ou Android Studio.
-3. No terminal, dentro da pasta do projeto, rode:
+## 🎨 Identidade Visual (Paleta Oficial Saboré)
+
+- **Verde Esmeralda Profundo (`--dark`)**: `#1B2B27`
+- **Verde Obsidiana (`--dark-deep`)**: `#121F1C`
+- **Card Glassmorphic (`--dark-card`)**: `#213530`
+- **Coral / Terracota (`--accent`)**: `#E0857A`
+- **Champagne (`--secondary`)**: `#F0D5B6`
+- **Ouro Metálico PRO**: `#FFD700` → `#FFA500`
+- **Tipografia**: `Playfair Display` (Títulos), `DM Sans` (Interface/Corpo), `DM Mono` (Métricas e Ranking)
+
+---
+
+## 📱 Módulos e Funcionalidades Implementadas
+
+1. **Landing Page & Fale Conosco (`/estatisticas/publicas`, `/contato`)**:
+   - Apresentação completa do ecossistema, métricas públicas em tempo real e formulário de contato integrado ao banco de dados.
+2. **Autenticação Real (`Supabase Auth` + `/usuarios/perfil` + `/usuarios/cadastrar`)**:
+   - Login com persistência de sessão (`sabore_token`), cadastro com indicador de força de senha em 4 níveis, recuperação de senha por e-mail e seletor de servidor API (Produção Vercel ou Localhost).
+3. **Home / Dashboard (`/ingredientes-disponiveis`, `/receitas/publicas`, `/desafios/atual`)**:
+   - Saudação personalizada, badge `FREE` / `PRO`, 4 cards de estatísticas, atalhos rápidos para as ferramentas de IA, **Geladeira & Despensa Inteligente** interativa e receitas recomendadas.
+4. **Meus Livros de Receitas (`/livros/*`, `/receitas/*`)**:
+   - Listagem de coleções com busca, filtros e ordenação, criação de livros com seletor de ícones, visualização de receitas de cada livro e cadastro manual de receitas com upload de foto (`Base64`), ingredientes dinâmicos e **Modo Passo a Passo**.
+5. **Comunidade, Desafio Semanal & Eventos Especiais (`/receitas/publicas`, `/desafios/*`, `/social/*`)**:
+   - **Feed da Comunidade**: Abas *"Para Você"* e *"Seguindo"*, busca por texto/categoria, hashtags em alta, carrossel de *Chefs em Destaque* com botão Seguir/Deixar de Seguir, modal de perfil do Chef, avaliação de 1 a 5 estrelas (`/avaliacoes`), comentários (`/comentarios`), favoritar (`/favoritos`) e salvar receita em livro.
+   - **Desafio da Semana**: Card do desafio ativo (+30 pts PRO), modal completo de participação com botão **"Escolher arquivo"**, pré-visualização da foto, nome/tamanho do arquivo, botão de remoção, validação de envio (`POST /desafios/publicar`), galeria da comunidade e histórico (`/desafios/historico`).
+   - **Eventos Especiais**: Competições sazonais (*Ceia de Natal 2026*, *Sabor da Virada 2027*), inscrição de receitas e votação aberta.
+6. **Chef IA (`/ia/gerar`, `/ia/consumo`)**:
+   - Contador mensal de créditos (`5 msgs/mês` no plano FREE ou `Ilimitado` no PRO), integração direta com os ingredientes da Geladeira, filtros de tempo máximo e restrição alimentar, histórico persistente de conversa e card de receita interativo com botão *"Salvar esta Receita"*.
+7. **IA por Foto (`/ia/analisar-foto`, `/ia/gerar-receita-foto`)**:
+   - Contador de créditos (`2 créditos/mês` no FREE ou `Ilimitado` no PRO), upload de foto do prato + pratos de demonstração, scanner com barras de confiança (`%`) por ingrediente e geração de receita completa.
+8. **Importar Vídeo (`/importacao/importar`)**:
+   - Contador de créditos (`2 créditos/mês` no FREE ou `Ilimitado` no PRO), extração automática de ingredientes e modo de preparo a partir de links do YouTube.
+9. **Favoritas (`/favoritos/*`)**:
+   - Filtro por categorias, busca rápida e gerenciamento de receitas favoritas.
+10. **Meu Perfil (`/usuarios/perfil`, `/usuarios/conquistas`, `/usuarios/molduras`)**:
+    - Upload/remoção de foto de perfil, seletor de molduras comemorativas (`moldura-natal-2026`, `moldura-reveillon-2027`), emblemas conquistados, modal de Seguidores/Seguindo, mini-card de desempenho no Ranking PRO, bio culinária, tags de especialidades e grid *Minhas Criações*.
+11. **Ranking PRO (`/planos/ranking`, `/planos/historico-atividades`)**:
+    - Tela unificada do Menu PRO & Ranking de Mérito Mensal, faixa de posição do usuário, comparativo completo `FREE` vs `Saboré PRO`, Pódio Top 5 (`G-5`), tabela geral, regras de pontuação e extrato individual de pontos.
+12. **Configurações & Painel Admin (`/usuarios/atualizar/:id`, `/planos/admin/*`)**:
+    - Atualização de nome, e-mail e senha, preferências padrão do Chef IA (dificuldade, porções e 6 restrições alimentares), switches de notificações e Painel Administrativo para fechamento mensal e gestão de desafios.
+
+---
+
+## 🚀 Como Executar
 
 ```bash
+cd Mobile/sabore_app/sabore_flutter
 flutter pub get
 flutter run
 ```
-
-> Se for a primeira vez usando este projeto, garanta que o Flutter SDK
-> esteja instalado (`flutter doctor`) e que exista um emulador/dispositivo
-> conectado.
-
-## Estrutura
-
-```
-lib/
-  main.dart                     -> ponto de entrada
-  app.dart                      -> MaterialApp e rota inicial (Login)
-  theme/                        -> cores, tipografia, espaçamentos, ThemeData
-  models/                       -> Recipe, AppUser
-  data/mock_data.dart           -> dados fictícios (fácil de substituir por API)
-  services/recipe_service.dart  -> regras de negócio (favoritar, buscar, publicar)
-  widgets/                      -> AppBottomNavBar, RecipeCard, AppTextField, TagChip
-  screens/
-    login_screen.dart
-    main_navigation_screen.dart -> controla a barra inferior
-    home_screen.dart
-    recipe_detail_screen.dart
-    profile_screen.dart
-    search_screen.dart
-    search_not_found_screen.dart
-    publish_recipe_screen.dart
-    favorites_screen.dart
-```
-
-## Telas e cores (extraídas do protótipo)
-
-| Tela | Cor de fundo |
-|---|---|
-| Login | Verde-escuro (`AppColors.darkGreen`) |
-| Início | Rosa queimado (`AppColors.rose`) |
-| Detalhes da receita | Dourado (`AppColors.gold`) |
-| Perfil / Livro de receitas | Verde-escuro |
-| Busca | Rosa queimado |
-| Publicar receita | Rosa queimado |
-| Resultado não encontrado | Verde-escuro |
-
-Todas as cores estão centralizadas em `lib/theme/app_colors.dart`.
-
-## Funcionalidades implementadas
-
-- Login visual (navega para a tela principal).
-- Navegação por barra inferior com botão central de destaque.
-- Busca de receitas com tela de "resultado não encontrado".
-- Detalhes de receita com favoritar/desfavoritar.
-- Livro de receitas e receitas publicadas no perfil.
-- Formulário de publicação com ingredientes e tags dinâmicos (adicionar/remover).
-- Imagens via URL (Unsplash/Pravatar), fáceis de trocar por assets locais.
-
-## Próximos passos sugeridos
-
-- Substituir `RecipeService` por chamadas HTTP reais.
-- Adicionar persistência local (ex: `shared_preferences` ou `sqflite`).
-- Adicionar validação de formulário mais robusta na tela de publicação.
-- Trocar imagens de rede por assets locais em `assets/images/`.
