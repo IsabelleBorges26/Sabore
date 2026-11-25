@@ -723,25 +723,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const importPromise = api.post("/importacao/importar", { url: urlStr });
     let currentStep = 0;
     const processInterval = setInterval(() => {
-      logs[currentStep].className = 'status-line done';
+      logs[currentStep].className = 'status-line';
+      logs[currentStep].querySelector('i').className = 'fa-regular fa-circle';
+      currentStep = (currentStep + 1) % logs.length;
+      logs[currentStep].className = 'status-line active';
+      logs[currentStep].querySelector('i').className = 'fa-solid fa-circle-notch fa-spin';
+    }, 1800);
 
-      logs[currentStep].querySelector('i').className = 'fa-solid fa-circle-check';
-
-      currentStep++;
-
-      if (currentStep < logs.length) {
-
-        logs[currentStep].className = 'status-line active';
-
-        logs[currentStep].querySelector('i').className = 'fa-solid fa-circle-notch fa-spin';
-
-      } else {
+    importPromise
+      .then((data) => {
         clearInterval(processInterval);
-        importPromise
-          .then((data) => finishMediaProcessing(data))
-          .catch((error) => failMediaProcessing(error));
-      }
-    }, 800);
+        logs.forEach((log) => {
+          log.className = 'status-line done';
+          log.querySelector('i').className = 'fa-solid fa-circle-check';
+        });
+        finishMediaProcessing(data);
+      })
+      .catch((error) => {
+        clearInterval(processInterval);
+        failMediaProcessing(error);
+      });
   }
   function finishMediaProcessing(data) {
     pageState.isProcessing = false;
@@ -840,14 +841,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     stepsList.innerHTML = '';
 
-    mediaData.recipe.steps.forEach(step => {
-
+    mediaData.recipe.steps.forEach((step, index) => {
       const li = document.createElement('li');
+      const number = document.createElement('span');
+      const text = document.createElement('span');
 
-      li.textContent = step;
+      li.className = 'recipe-step-item';
+      number.className = 'recipe-step-number';
+      number.setAttribute('aria-hidden', 'true');
+      number.textContent = String(index + 1).padStart(2, '0');
+      text.className = 'recipe-step-text';
+      text.textContent = step;
 
+      li.append(number, text);
       stepsList.appendChild(li);
-
     });
 
     updateCursorHoverListeners();

@@ -1,4 +1,4 @@
-const ytdl = require("@distube/ytdl-core");
+const youtubeDl = require("youtube-dl-exec");
 const { MODELS } = require("../services/openrouterModels");
 
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
@@ -105,7 +105,9 @@ const getYouTubeTranscript = async (videoId) => {
 const downloadYouTubeAudio = (url) => new Promise((resolve, reject) => {
     let settled = false;
     let totalBytes = 0;
+    let stderrBytes = 0;
     const chunks = [];
+    const stderrChunks = [];
     const finish = (error, audio) => {
         if (settled) return;
         settled = true;
@@ -113,25 +115,48 @@ const downloadYouTubeAudio = (url) => new Promise((resolve, reject) => {
         if (error) reject(error);
         else resolve(audio);
     };
-    const stream = ytdl(url, {
-        filter: "audioonly",
-        quality: "lowestaudio",
-        highWaterMark: 1 << 25
-    });
+    const options = {
+        output: "-",
+        // Alguns vídeos não oferecem um formato somente de áudio para todos os clientes.
+        // Prefere áudio isolado e aceita um formato combinado com áudio como fallback.
+        format: "bestaudio/best[acodec!=none]",
+        noPlaylist: true,
+        quiet: true,
+        noWarnings: true
+    };
+    if (process.env.YOUTUBE_COOKIES_PATH) {
+        options.cookies = process.env.YOUTUBE_COOKIES_PATH;
+    }
+
+    const stream = youtubeDl.exec(url, options, { windowsHide: true });
     const timeout = setTimeout(() => {
-        stream.destroy(new Error("O download do áudio demorou demais."));
+        stream.kill("SIGKILL");
+        finish(new Error("O download do áudio demorou demais."));
     }, 110000);
 
-    stream.on("data", (chunk) => {
+    stream.stdout.on("data", (chunk) => {
         totalBytes += chunk.length;
         if (totalBytes > MAX_AUDIO_BYTES) {
-            stream.destroy(new Error("O áudio excede o limite de 25 MB para transcrição. Use um vídeo mais curto."));
+            stream.kill("SIGKILL");
+            finish(new Error("O áudio excede o limite de 25 MB para transcrição. Use um vídeo mais curto."));
             return;
         }
         chunks.push(chunk);
     });
+    stream.stderr.on("data", (chunk) => {
+        if (stderrBytes < 4096) {
+            const kept = chunk.subarray(0, 4096 - stderrBytes);
+            stderrChunks.push(kept);
+            stderrBytes += kept.length;
+        }
+    });
     stream.once("error", (error) => finish(error));
-    stream.once("end", () => {
+    stream.once("close", (code) => {
+        if (settled) return;
+        if (code !== 0) {
+            const detail = Buffer.concat(stderrChunks).toString("utf8");
+            return finish(new Error(detail || `O yt-dlp encerrou com código ${code}.`));
+        }
         if (!totalBytes) return finish(new Error("O áudio do vídeo está vazio."));
         finish(null, Buffer.concat(chunks));
     });
@@ -172,8 +197,8 @@ const transcribeYouTubeAudio = async (url) => {
         }
         return reduceTranscript(result.text);
     } catch (error) {
-        if (error.message?.includes("Sign in to confirm")) {
-            throw new Error("O YouTube exigiu uma confirmação para baixar o áudio deste vídeo. Tente outro vídeo ou torne-o público.");
+        if (/Sign in to confirm|confirm you.re not a bot|cookies are no longer valid/i.test(error.message || "")) {
+            throw new Error("O YouTube exigiu confirmação para acessar este vídeo. Configure YOUTUBE_COOKIES_PATH no backend com um arquivo de cookies válido ou tente um vídeo com legendas públicas.");
         }
         throw error;
     }
