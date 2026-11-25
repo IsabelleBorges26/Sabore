@@ -17,23 +17,44 @@ class ApiService extends ChangeNotifier {
 
   // Configuração oficial do Supabase do projeto Saboré (extraída de Front-End/assets/js/supabase-config.js)
   static const String supabaseUrl = 'https://dzumxhfglusinxtyflwb.supabase.co';
-  static const String supabaseAnonKey = 'sb_publishable_qKiOJEMNUGFZE-1UDmUXcg_WpxoyP5_';
+  static const String supabaseAnonKey =
+      'sb_publishable_qKiOJEMNUGFZE-1UDmUXcg_WpxoyP5_';
 
-  // URL padrão da API Saboré (Servidor Back-End local na porta 3000)
+  // Pode ser definido no build mobile com --dart-define=SABORE_API_URL=https://api.seudominio.com.
+  static const String _configuredApiUrl =
+      String.fromEnvironment('SABORE_API_URL');
+
+  // Na web publicada, usa a mesma origem da aplicação, como o Front-End web.
+  // Em desenvolvimento e em emuladores, usa o backend local na porta 3000.
   static String get defaultLocalUrl {
-    if (kIsWeb) return 'http://localhost:3000';
-    if (defaultTargetPlatform == TargetPlatform.android) return 'http://10.0.2.2:3000';
+    final configured = _configuredApiUrl.trim().replaceAll(RegExp(r'/+$'), '');
+    if (configured.isNotEmpty) return configured;
+
+    if (kIsWeb) {
+      final uri = Uri.base;
+      if (uri.scheme == 'http' || uri.scheme == 'https') {
+        final isLocal = uri.host == 'localhost' ||
+            uri.host == '127.0.0.1' ||
+            uri.host.startsWith('192.168.') ||
+            uri.host.startsWith('10.');
+        if (isLocal) return '${uri.scheme}://${uri.host}:3000';
+        return uri.origin;
+      }
+      return 'http://localhost:3000';
+    }
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:3000';
+    }
     return 'http://localhost:3000';
   }
-
-  static String get vercelApiUrl => defaultLocalUrl;
 
   String _baseUrl = defaultLocalUrl;
   String get baseUrl => _baseUrl;
 
   String? _token;
   String? get token => _token;
-  bool get isAuthenticated => _token != null && _token!.isNotEmpty && _currentUser != null;
+  bool get isAuthenticated =>
+      _token != null && _token!.isNotEmpty && _currentUser != null;
 
   AppUser? _currentUser;
   AppUser? get currentUser => _currentUser;
@@ -51,14 +72,7 @@ class ApiService extends ChangeNotifier {
   List<Recipe> favoriteRecipes = [];
   Set<int> favoriteRecipeIds = {};
   List<FridgeIngredient> fridgeIngredients = [];
-  List<String> trendingHashtags = [
-    '#MassasArtesanais',
-    '#RapidoEFacil',
-    '#AirFryer',
-    '#Sobremesas',
-    '#FitSaudavel',
-    '#ChefIA',
-  ];
+  List<String> trendingHashtags = [];
   Map<String, int> trendingHashtagCounts = {};
   WeeklyChallenge? activeWeeklyChallenge;
   List<WeeklyChallenge> weeklyChallengeHistory = [];
@@ -68,8 +82,8 @@ class ApiService extends ChangeNotifier {
   List<RankingEntry> rankingList = [];
   Map<String, dynamic> rankingPeriodo = {
     'mesReferencia': '',
-    'diasRestantes': 10,
-    'horasRestantes': 12,
+    'diasRestantes': 0,
+    'horasRestantes': 0,
     'totalParticipantes': 0,
   };
   List<EngagementActivity> myActivities = [];
@@ -78,14 +92,15 @@ class ApiService extends ChangeNotifier {
   List<Map<String, dynamic>> conquistas = [];
   List<Map<String, dynamic>> moldurasDisponiveis = [];
   Map<String, dynamic> publicStats = {
-    'receitas': 120,
-    'usuarios': 45,
-    'totalAvaliacoes': 310,
-    'avaliacaoMedia': 4.9,
-    'totalReceitas': 120,
-    'totalUsuarios': 45,
-    'mediaSatisfacao': 4.9,
+    'receitas': null,
+    'usuarios': null,
+    'totalAvaliacoes': null,
+    'avaliacaoMedia': null,
+    'totalReceitas': null,
+    'totalUsuarios': null,
+    'mediaSatisfacao': null,
   };
+  bool publicStatsLoaded = false;
 
   int _activeTabIndex = 0;
   int get activeTabIndex => _activeTabIndex;
@@ -118,13 +133,17 @@ class ApiService extends ChangeNotifier {
     _startSessionMonitor();
 
     final savedUrl = StorageService.instance.getString('sabore_api_base_url');
-    if (savedUrl != null &&
-        savedUrl.isNotEmpty &&
-        !savedUrl.contains('sabore-inky.vercel.app')) {
-      _baseUrl = savedUrl;
-    } else {
+    final savedIsOldLocalDefault = savedUrl == 'http://localhost:3000' ||
+        savedUrl == 'http://10.0.2.2:3000';
+    final shouldUseCurrentDefault = savedUrl == null ||
+        savedUrl.isEmpty ||
+        savedUrl.contains('sabore-inky.vercel.app') ||
+        (savedIsOldLocalDefault && savedUrl != defaultLocalUrl);
+    if (shouldUseCurrentDefault) {
       _baseUrl = defaultLocalUrl;
       await StorageService.instance.setString('sabore_api_base_url', _baseUrl);
+    } else {
+      _baseUrl = savedUrl;
     }
 
     // 1) Verifica se voltamos de um login OAuth (Google / Facebook) via URL fragment (#access_token=...)
@@ -157,11 +176,30 @@ class ApiService extends ChangeNotifier {
 
     if (_token != null && _token!.isNotEmpty) {
       final ok = await fetchUserProfile();
-      if (ok || _currentUser != null) {
+      if (ok) {
         await refreshAllDashboardData();
+      } else {
+        _token = null;
+        _currentUser = null;
+        await StorageService.instance.remove('sabore_token');
+        await StorageService.instance.remove('sabore_user');
       }
     }
     notifyListeners();
+  }
+
+  Future<bool> checkApiConnection() async {
+    try {
+      final response = await _request(
+        'GET',
+        '/estatisticas/publicas',
+        auth: false,
+        timeout: const Duration(seconds: 8),
+      );
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> setBaseUrl(String newUrl) async {
@@ -198,11 +236,17 @@ class ApiService extends ChangeNotifier {
 
     switch (method.toUpperCase()) {
       case 'POST':
-        return await http.post(uri, headers: headers, body: encodedBody).timeout(timeout);
+        return await http
+            .post(uri, headers: headers, body: encodedBody)
+            .timeout(timeout);
       case 'PUT':
-        return await http.put(uri, headers: headers, body: encodedBody).timeout(timeout);
+        return await http
+            .put(uri, headers: headers, body: encodedBody)
+            .timeout(timeout);
       case 'DELETE':
-        return await http.delete(uri, headers: headers, body: encodedBody).timeout(timeout);
+        return await http
+            .delete(uri, headers: headers, body: encodedBody)
+            .timeout(timeout);
       default:
         return await http.get(uri, headers: headers).timeout(timeout);
     }
@@ -226,55 +270,21 @@ class ApiService extends ChangeNotifier {
   // ===========================================================================
 
   /// Finaliza autenticação a partir de um `access_token` do Supabase (E-mail ou Google/Facebook OAuth)
-  Future<bool> completeOAuthWithAccessToken(
-    String accessToken, {
-    Map<String, dynamic>? supaUserPayload,
-  }) async {
+  Future<bool> completeOAuthWithAccessToken(String accessToken) async {
     _token = accessToken;
     await StorageService.instance.setString('sabore_token', _token!);
 
-    Map<String, dynamic> supaUser = supaUserPayload ?? {};
-    if (supaUser.isEmpty) {
-      try {
-        final uRes = await http
-            .get(
-              Uri.parse('$supabaseUrl/auth/v1/user'),
-              headers: {
-                'apikey': supabaseAnonKey,
-                'Authorization': 'Bearer $_token',
-              },
-            )
-            .timeout(const Duration(seconds: 12));
-        final decoded = _decodeResponse(uRes);
-        if (uRes.statusCode >= 200 && uRes.statusCode < 300 && decoded is Map<String, dynamic>) {
-          supaUser = decoded;
-        }
-      } catch (_) {}
-    }
-
-    final email = (supaUser['email'] ?? '').toString().trim();
-    final meta = supaUser['user_metadata'] is Map<String, dynamic>
-        ? supaUser['user_metadata'] as Map<String, dynamic>
-        : <String, dynamic>{};
-    final fullName = (meta['full_name'] ??
-            meta['name'] ??
-            meta['nome'] ??
-            (email.isNotEmpty ? email.split('@').first : 'Chef Saboré'))
-        .toString();
-    final avatarUrl = (meta['avatar_url'] ?? meta['picture'])?.toString();
-
     // Sincroniza com o Back-End Saboré (/usuarios/perfil) que cria o usuário e os 5 livros padrão automaticamente via authMiddleware
-    bool loadedFromBackend = await fetchUserProfile();
+    final loadedFromBackend = await fetchUserProfile();
     if (!loadedFromBackend) {
-      _currentUser = AppUser(
-        id: 1,
-        nome: fullName,
-        email: email,
-        fotoPerfil: avatarUrl,
-        bio: StorageService.instance.getString('sabore_bio_$email') ?? '',
-        preferencias: StorageService.instance.getStringList('sabore_prefs_$email'),
-      );
-      await StorageService.instance.setJsonMap('sabore_user', _currentUser!.toJson());
+      // Sem perfil confirmado pela API, não inicia uma sessão com usuário fictício.
+      // Isso evita gravar dados no perfil errado quando o app não alcança o backend.
+      _token = null;
+      _currentUser = null;
+      await StorageService.instance.remove('sabore_token');
+      await StorageService.instance.remove('sabore_user');
+      notifyListeners();
+      return false;
     }
 
     await refreshAllDashboardData();
@@ -283,7 +293,8 @@ class ApiService extends ChangeNotifier {
   }
 
   /// Login com Google ou Facebook via Supabase OAuth (igual ao `signInWithOAuth` do site!)
-  Future<({bool ok, String message})> loginWithSocialProvider(String provider) async {
+  Future<({bool ok, String message})> loginWithSocialProvider(
+      String provider) async {
     _isLoading = true;
     notifyListeners();
     try {
@@ -291,13 +302,21 @@ class ApiService extends ChangeNotifier {
       if (kIsWeb) {
         return (
           ok: true,
-          message: 'Redirecionando para o login com ${provider.toUpperCase()}...'
+          message:
+              'Redirecionando para o login com ${provider.toUpperCase()}...'
         );
       }
       if (token != null && token.isNotEmpty) {
-        await completeOAuthWithAccessToken(token);
+        final profileLoaded = await completeOAuthWithAccessToken(token);
         _isLoading = false;
         notifyListeners();
+        if (!profileLoaded) {
+          return (
+            ok: false,
+            message:
+                'Login recebido, mas não foi possível conectar ao banco do Saboré. Confira o servidor da API nas Configurações.'
+          );
+        }
         return (
           ok: true,
           message: 'Login com ${provider.toUpperCase()} realizado com sucesso!'
@@ -307,20 +326,26 @@ class ApiService extends ChangeNotifier {
       notifyListeners();
       return (
         ok: false,
-        message: 'O login com ${provider.toUpperCase()} foi cancelado ou não concluído.'
+        message:
+            'O login com ${provider.toUpperCase()} foi cancelado ou não concluído.'
       );
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return (ok: false, message: 'Não foi possível iniciar o login social: $e');
+      return (
+        ok: false,
+        message: 'Não foi possível iniciar o login social: $e'
+      );
     }
   }
 
-  Future<({bool ok, String message})> login(String email, String password) async {
+  Future<({bool ok, String message})> login(
+      String email, String password) async {
     _isLoading = true;
     notifyListeners();
     try {
-      final supaUri = Uri.parse('$supabaseUrl/auth/v1/token?grant_type=password');
+      final supaUri =
+          Uri.parse('$supabaseUrl/auth/v1/token?grant_type=password');
       final supaRes = await http
           .post(
             supaUri,
@@ -341,22 +366,30 @@ class ApiService extends ChangeNotifier {
           supaRes.statusCode < 300 &&
           supaData is Map &&
           supaData['access_token'] != null) {
-        final userMap = supaData['user'] is Map<String, dynamic>
-            ? supaData['user'] as Map<String, dynamic>
-            : <String, dynamic>{'email': email.trim()};
-
-        await completeOAuthWithAccessToken(
+        final profileLoaded = await completeOAuthWithAccessToken(
           supaData['access_token'].toString(),
-          supaUserPayload: userMap,
         );
 
         _isLoading = false;
+        if (!profileLoaded) {
+          notifyListeners();
+          return (
+            ok: false,
+            message:
+                'Login recebido, mas não foi possível conectar ao banco do Saboré. Confira o servidor da API nas Configurações.'
+          );
+        }
         notifyListeners();
-        return (ok: true, message: 'Bem-vindo de volta, ${_currentUser?.nome ?? 'Chef'}!');
+        return (
+          ok: true,
+          message: 'Bem-vindo de volta, ${_currentUser?.nome ?? 'Chef'}!'
+        );
       }
 
       final errMsg = (supaData is Map
-              ? (supaData['error_description'] ?? supaData['msg'] ?? supaData['message'])
+              ? (supaData['error_description'] ??
+                  supaData['msg'] ??
+                  supaData['message'])
               : null)
           ?.toString();
       _isLoading = false;
@@ -403,7 +436,9 @@ class ApiService extends ChangeNotifier {
       final supaData = _decodeResponse(supaRes);
       if (supaRes.statusCode >= 400) {
         final rawErr = (supaData is Map
-                ? (supaData['msg'] ?? supaData['error_description'] ?? supaData['message'])
+                ? (supaData['msg'] ??
+                    supaData['error_description'] ??
+                    supaData['message'])
                 : 'Não foi possível criar sua conta.')
             .toString();
         _isLoading = false;
@@ -412,19 +447,23 @@ class ApiService extends ChangeNotifier {
       }
 
       if (supaData is Map && supaData['access_token'] != null) {
-        final userMap = supaData['user'] is Map<String, dynamic>
-            ? supaData['user'] as Map<String, dynamic>
-            : <String, dynamic>{
-                'email': email.trim(),
-                'user_metadata': {'full_name': nome.trim()},
-              };
-        await completeOAuthWithAccessToken(
+        final profileLoaded = await completeOAuthWithAccessToken(
           supaData['access_token'].toString(),
-          supaUserPayload: userMap,
         );
         _isLoading = false;
+        if (!profileLoaded) {
+          notifyListeners();
+          return (
+            ok: false,
+            message:
+                'Conta criada, mas não foi possível conectar ao banco do Saboré. Confira o servidor da API nas Configurações.'
+          );
+        }
         notifyListeners();
-        return (ok: true, message: 'Conta criada com sucesso! Bem-vindo ao Saboré!');
+        return (
+          ok: true,
+          message: 'Conta criada com sucesso! Bem-vindo ao Saboré!'
+        );
       }
 
       _isLoading = false;
@@ -455,7 +494,8 @@ class ApiService extends ChangeNotifier {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return (
           ok: true,
-          message: 'Enviamos um link de recuperação de senha para ${email.trim()}!'
+          message:
+              'Enviamos um link de recuperação de senha para ${email.trim()}!'
         );
       }
       final data = _decodeResponse(res);
@@ -492,7 +532,8 @@ class ApiService extends ChangeNotifier {
     if (lower.contains('email not confirmed')) {
       return 'Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada ou entre com o Google.';
     }
-    if (lower.contains('user already registered') || lower.contains('already exists')) {
+    if (lower.contains('user already registered') ||
+        lower.contains('already exists')) {
       return 'Este e-mail já está cadastrado no Saboré. Faça login ou use o botão Google.';
     }
     if (lower.contains('password should be at least')) {
@@ -517,14 +558,17 @@ class ApiService extends ChangeNotifier {
               : data;
           final parsed = AppUser.fromJson(userMap);
           final savedBio =
-              StorageService.instance.getString('sabore_bio_${parsed.email}') ?? parsed.bio;
-          final savedPrefs =
-              StorageService.instance.getStringList('sabore_prefs_${parsed.email}');
+              StorageService.instance.getString('sabore_bio_${parsed.email}') ??
+                  parsed.bio;
+          final savedPrefs = StorageService.instance
+              .getStringList('sabore_prefs_${parsed.email}');
           _currentUser = parsed.copyWith(
             bio: savedBio,
-            preferencias: savedPrefs.isNotEmpty ? savedPrefs : parsed.preferencias,
+            preferencias:
+                savedPrefs.isNotEmpty ? savedPrefs : parsed.preferencias,
           );
-          await StorageService.instance.setJsonMap('sabore_user', _currentUser!.toJson());
+          await StorageService.instance
+              .setJsonMap('sabore_user', _currentUser!.toJson());
           notifyListeners();
           return true;
         }
@@ -560,11 +604,13 @@ class ApiService extends ChangeNotifier {
         if (data is Map<String, dynamic>) {
           publicStats = {
             ...data,
-            'totalReceitas': data['receitas'] ?? data['totalReceitas'] ?? 120,
-            'totalUsuarios': data['usuarios'] ?? data['totalUsuarios'] ?? 45,
-            'mediaSatisfacao': data['avaliacaoMedia'] ?? data['mediaSatisfacao'] ?? 4.9,
-            'totalAvaliacoes': data['totalAvaliacoes'] ?? 310,
+            'totalReceitas': data['receitas'] ?? data['totalReceitas'],
+            'totalUsuarios': data['usuarios'] ?? data['totalUsuarios'],
+            'mediaSatisfacao':
+                data['avaliacaoMedia'] ?? data['mediaSatisfacao'],
+            'totalAvaliacoes': data['totalAvaliacoes'],
           };
+          publicStatsLoaded = true;
           notifyListeners();
         }
       }
@@ -599,7 +645,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Não foi possível enviar a mensagem.'
       );
     } catch (e) {
@@ -673,12 +720,21 @@ class ApiService extends ChangeNotifier {
               : data;
           created = RecipeBook.fromJson(bMap);
         }
-        return (ok: true, message: 'Livro "$nome" criado com sucesso!', book: created);
+        return (
+          ok: true,
+          message: 'Livro "$nome" criado com sucesso!',
+          book: created
+        );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
       return (ok: false, message: errMsg ?? 'Erro ao criar livro.', book: null);
     } catch (e) {
-      return (ok: false, message: 'Erro ao conectar com o servidor: $e', book: null);
+      return (
+        ok: false,
+        message: 'Erro ao conectar com o servidor: $e',
+        book: null
+      );
     }
   }
 
@@ -696,7 +752,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Não foi possível excluir o livro.'
       );
     } catch (e) {
@@ -744,7 +801,8 @@ class ApiService extends ChangeNotifier {
 
   Future<Recipe?> fetchPublicRecipeById(int recipeId) async {
     try {
-      final res = await _request('GET', '/receitas/publicas/$recipeId', auth: false);
+      final res =
+          await _request('GET', '/receitas/publicas/$recipeId', auth: false);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
         if (data is Map<String, dynamic>) {
@@ -760,7 +818,8 @@ class ApiService extends ChangeNotifier {
       final res = await _request('GET', '/receitas/hashtags-em-alta');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
-        final list = data is List ? data : (data is Map ? (data['hashtags'] ?? []) : []);
+        final list =
+            data is List ? data : (data is Map ? (data['hashtags'] ?? []) : []);
         if (list is List && list.isNotEmpty) {
           final tags = <String>[];
           final counts = <String, int>{};
@@ -844,7 +903,8 @@ class ApiService extends ChangeNotifier {
         'criadaPorIA': criadaPorIA,
         'ingredientes': ingStrings,
         'livroId': targetBookId,
-        if (imagemBase64 != null && imagemBase64.isNotEmpty) 'imagem': imagemBase64,
+        if (imagemBase64 != null && imagemBase64.isNotEmpty)
+          'imagem': imagemBase64,
       };
 
       final res = await _request('POST', '/receitas/cadastrar', body: payload);
@@ -857,7 +917,8 @@ class ApiService extends ChangeNotifier {
               ? data['receita'] as Map<String, dynamic>
               : data;
           rec = Recipe.fromJson(rMap);
-          if (data['desafioInfo'] is Map && data['desafioInfo']['concluiuDesafio'] == true) {
+          if (data['desafioInfo'] is Map &&
+              data['desafioInfo']['concluiuDesafio'] == true) {
             concluiuDesafio = true;
           }
         }
@@ -880,7 +941,8 @@ class ApiService extends ChangeNotifier {
         return (ok: true, message: msg, recipe: rec);
       }
 
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
       return (
         ok: false,
         message: errMsg ?? 'Não foi possível salvar a receita.',
@@ -921,8 +983,12 @@ class ApiService extends ChangeNotifier {
                   : 'Receita alterada para privada.')
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
-      return (ok: false, message: errMsg ?? 'Erro ao atualizar visibilidade da receita.');
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      return (
+        ok: false,
+        message: errMsg ?? 'Erro ao atualizar visibilidade da receita.'
+      );
     } catch (e) {
       return (ok: false, message: 'Erro ao atualizar receita: $e');
     }
@@ -943,7 +1009,8 @@ class ApiService extends ChangeNotifier {
       final data = _decodeResponse(res);
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Erro ao excluir receita.'
       );
     } catch (e) {
@@ -962,7 +1029,9 @@ class ApiService extends ChangeNotifier {
         final data = _decodeResponse(res);
         final list = data is List
             ? data
-            : (data is Map ? (data['favoritos'] ?? data['receitas'] ?? []) : []);
+            : (data is Map
+                ? (data['favoritos'] ?? data['receitas'] ?? [])
+                : []);
         if (list is List) {
           final parsed = <Recipe>[];
           final ids = <int>{};
@@ -988,17 +1057,43 @@ class ApiService extends ChangeNotifier {
 
   bool isFavorite(int recipeId) => favoriteRecipeIds.contains(recipeId);
 
-  Future<({bool ok, bool favorited, String message})> toggleFavorite(Recipe recipe) async {
+  Future<({bool ok, bool favorited, String message})> toggleFavorite(
+      Recipe recipe) async {
     final currentlyFav = favoriteRecipeIds.contains(recipe.id);
     if (currentlyFav) {
       favoriteRecipeIds.remove(recipe.id);
       favoriteRecipes.removeWhere((r) => r.id == recipe.id);
       notifyListeners();
       try {
-        await _request('DELETE', '/favoritos/excluir/${recipe.id}');
+        final res = await _request('DELETE', '/favoritos/excluir/${recipe.id}');
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          favoriteRecipeIds.add(recipe.id);
+          favoriteRecipes.insert(0, recipe);
+          notifyListeners();
+          return (
+            ok: false,
+            favorited: true,
+            message: 'Não foi possível remover a favorita.'
+          );
+        }
         await Future.wait([fetchPublicRecipes(), fetchUserProfile()]);
-      } catch (_) {}
-      return (ok: true, favorited: false, message: 'Removida das suas Favoritas.');
+      } catch (_) {
+        favoriteRecipeIds.add(recipe.id);
+        if (!favoriteRecipes.any((r) => r.id == recipe.id)) {
+          favoriteRecipes.insert(0, recipe);
+        }
+        notifyListeners();
+        return (
+          ok: false,
+          favorited: true,
+          message: 'Falha de conexão ao remover a favorita.'
+        );
+      }
+      return (
+        ok: true,
+        favorited: false,
+        message: 'Removida das suas Favoritas.'
+      );
     } else {
       favoriteRecipeIds.add(recipe.id);
       if (!favoriteRecipes.any((r) => r.id == recipe.id)) {
@@ -1006,16 +1101,43 @@ class ApiService extends ChangeNotifier {
       }
       notifyListeners();
       try {
-        await _request('POST', '/favoritos/cadastrar', body: {'receitaId': recipe.id});
-        await Future.wait([fetchFavorites(), fetchPublicRecipes(), fetchUserProfile()]);
-      } catch (_) {}
-      return (ok: true, favorited: true, message: 'Adicionada às suas Favoritas ❤️');
+        final res = await _request('POST', '/favoritos/cadastrar',
+            body: {'receitaId': recipe.id});
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          favoriteRecipeIds.remove(recipe.id);
+          favoriteRecipes.removeWhere((r) => r.id == recipe.id);
+          notifyListeners();
+          return (
+            ok: false,
+            favorited: false,
+            message: 'Não foi possível salvar a favorita.'
+          );
+        }
+        await Future.wait(
+            [fetchFavorites(), fetchPublicRecipes(), fetchUserProfile()]);
+      } catch (_) {
+        favoriteRecipeIds.remove(recipe.id);
+        favoriteRecipes.removeWhere((r) => r.id == recipe.id);
+        notifyListeners();
+        return (
+          ok: false,
+          favorited: false,
+          message: 'Falha de conexão ao salvar a favorita.'
+        );
+      }
+      return (
+        ok: true,
+        favorited: true,
+        message: 'Adicionada às suas Favoritas ❤️'
+      );
     }
   }
 
-  Future<({double media, int total, int? minhaNota})> fetchRecipeRatings(int recipeId) async {
+  Future<({double media, int total, int? minhaNota})> fetchRecipeRatings(
+      int recipeId) async {
     try {
-      final res = await _request('GET', '/avaliacoes/listar?receitaId=$recipeId');
+      final res =
+          await _request('GET', '/avaliacoes/listar?receitaId=$recipeId');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
         if (data is Map<String, dynamic>) {
@@ -1032,7 +1154,8 @@ class ApiService extends ChangeNotifier {
     return (media: 0.0, total: 0, minhaNota: null);
   }
 
-  Future<({bool ok, String message, double? novaMedia, int? novoTotal})> rateRecipe(
+  Future<({bool ok, String message, double? novaMedia, int? novoTotal})>
+      rateRecipe(
     int recipeId,
     int nota,
   ) async {
@@ -1044,7 +1167,8 @@ class ApiService extends ChangeNotifier {
       );
       final data = _decodeResponse(res);
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        await Future.wait([fetchPublicRecipes(), fetchMyRecipes(), fetchRankingPro()]);
+        await Future.wait(
+            [fetchPublicRecipes(), fetchMyRecipes(), fetchRankingPro()]);
         final media = data is Map && data['media'] != null
             ? double.tryParse(data['media'].toString())
             : null;
@@ -1058,7 +1182,8 @@ class ApiService extends ChangeNotifier {
           novoTotal: total,
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
       return (
         ok: false,
         message: errMsg ?? 'Não foi possível registrar avaliação.',
@@ -1085,7 +1210,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Erro ao remover avaliação.'
       );
     } catch (e) {
@@ -1095,7 +1221,8 @@ class ApiService extends ChangeNotifier {
 
   Future<List<RecipeComment>> fetchRecipeComments(int recipeId) async {
     try {
-      final res = await _request('GET', '/comentarios/listar?receitaId=$recipeId');
+      final res =
+          await _request('GET', '/comentarios/listar?receitaId=$recipeId');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
         final list = data is List
@@ -1112,7 +1239,8 @@ class ApiService extends ChangeNotifier {
     return [];
   }
 
-  Future<({bool ok, String message})> addComment(int recipeId, String texto) async {
+  Future<({bool ok, String message})> addComment(
+      int recipeId, String texto) async {
     try {
       final res = await _request(
         'POST',
@@ -1122,11 +1250,15 @@ class ApiService extends ChangeNotifier {
       final data = _decodeResponse(res);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         await Future.wait([fetchPublicRecipes(), fetchRankingPro()]);
-        return (ok: true, message: 'Comentário publicado (+3 pts no Ranking PRO)!');
+        return (
+          ok: true,
+          message: 'Comentário publicado (+3 pts no Ranking PRO)!'
+        );
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Não foi possível publicar o comentário.'
       );
     } catch (e) {
@@ -1144,7 +1276,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Não foi possível excluir o comentário.'
       );
     } catch (e) {
@@ -1170,7 +1303,9 @@ class ApiService extends ChangeNotifier {
         final data = _decodeResponse(res);
         final list = data is List
             ? data
-            : (data is Map ? (data['ingredientes'] ?? data['dados'] ?? []) : []);
+            : (data is Map
+                ? (data['ingredientes'] ?? data['dados'] ?? [])
+                : []);
         if (list is List) {
           final parsed = <FridgeIngredient>[];
           for (var i = 0; i < list.length; i++) {
@@ -1187,9 +1322,12 @@ class ApiService extends ChangeNotifier {
   Future<bool> addFridgeIngredient(String nome) async {
     final cleaned = nome.trim();
     if (cleaned.isEmpty) return false;
-    if (!fridgeIngredients.any((i) => i.nome.toLowerCase() == cleaned.toLowerCase())) {
+    final alreadyExists = fridgeIngredients
+        .any((i) => i.nome.toLowerCase() == cleaned.toLowerCase());
+    if (!alreadyExists) {
       fridgeIngredients.add(
-        FridgeIngredient(id: DateTime.now().millisecondsSinceEpoch, nome: cleaned),
+        FridgeIngredient(
+            id: DateTime.now().millisecondsSinceEpoch, nome: cleaned),
       );
       notifyListeners();
     }
@@ -1199,43 +1337,61 @@ class ApiService extends ChangeNotifier {
         '/ingredientes-disponiveis/cadastrar',
         body: {'nome': cleaned},
       );
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        await fetchFridgeIngredients();
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        if (!alreadyExists) {
+          fridgeIngredients.removeWhere((i) => i.nome == cleaned);
+          notifyListeners();
+        }
+        return false;
       }
-    } catch (_) {}
-    return true;
+      await fetchFridgeIngredients();
+      return true;
+    } catch (_) {
+      if (!alreadyExists) {
+        fridgeIngredients.removeWhere((i) => i.nome == cleaned);
+        notifyListeners();
+      }
+      return false;
+    }
   }
 
   Future<bool> removeFridgeIngredient(int id, {String? nome}) async {
     final target = fridgeIngredients.where((i) => i.id == id).firstOrNull;
     final targetName = nome ?? target?.nome;
-    fridgeIngredients.removeWhere((i) => i.id == id || (targetName != null && i.nome == targetName));
+    if (targetName == null || targetName.isEmpty) return false;
+    fridgeIngredients.removeWhere((i) => i.id == id || i.nome == targetName);
     notifyListeners();
-    if (targetName != null && targetName.isNotEmpty) {
-      try {
-        await _request(
-          'DELETE',
-          '/ingredientes-disponiveis/excluir/${Uri.encodeComponent(targetName)}',
-        );
-        await fetchFridgeIngredients();
-      } catch (_) {}
+    try {
+      final res = await _request(
+        'DELETE',
+        '/ingredientes-disponiveis/excluir/${Uri.encodeComponent(targetName)}',
+      );
+      await fetchFridgeIngredients();
+      return res.statusCode >= 200 && res.statusCode < 300;
+    } catch (_) {
+      await fetchFridgeIngredients();
+      return false;
     }
-    return true;
   }
 
   Future<bool> clearFridgeIngredients() async {
     final copy = List<FridgeIngredient>.from(fridgeIngredients);
     fridgeIngredients = [];
     notifyListeners();
+    var allRemoved = true;
     for (final item in copy) {
       try {
-        await _request(
+        final res = await _request(
           'DELETE',
           '/ingredientes-disponiveis/excluir/${Uri.encodeComponent(item.nome)}',
         );
-      } catch (_) {}
+        if (res.statusCode < 200 || res.statusCode >= 300) allRemoved = false;
+      } catch (_) {
+        allRemoved = false;
+      }
     }
-    return true;
+    if (!allRemoved) await fetchFridgeIngredients();
+    return allRemoved;
   }
 
   // ===========================================================================
@@ -1255,7 +1411,8 @@ class ApiService extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<({bool ok, String replyText, Recipe? recipe, bool limitReached})> generateChefIaRecipe({
+  Future<({bool ok, String replyText, Recipe? recipe, bool limitReached})>
+      generateChefIaRecipe({
     required String prompt,
     String? tempoMaximo,
     String? restricao,
@@ -1264,7 +1421,8 @@ class ApiService extends ChangeNotifier {
   }) async {
     try {
       final defaultDiff =
-          StorageService.instance.getString('sabore_ai_difficulty') ?? 'Qualquer';
+          StorageService.instance.getString('sabore_ai_difficulty') ??
+              'Qualquer';
       final defaultServings =
           StorageService.instance.getString('sabore_ai_servings') ?? '2';
       final activeDiets = <String>[];
@@ -1276,7 +1434,9 @@ class ApiService extends ChangeNotifier {
         'Low Carb',
         'Keto'
       ]) {
-        if (StorageService.instance.getBool('sabore_diet_$d')) activeDiets.add(d);
+        if (StorageService.instance.getBool('sabore_diet_$d')) {
+          activeDiets.add(d);
+        }
       }
       if (restricao != null && restricao.isNotEmpty && restricao != 'Nenhuma') {
         if (!activeDiets.contains(restricao)) activeDiets.insert(0, restricao);
@@ -1288,7 +1448,8 @@ class ApiService extends ChangeNotifier {
         if (m != null) maxTimeNum = int.tryParse(m.group(0)!) ?? 45;
       }
 
-      final ingList = customIngredients ?? fridgeIngredients.map((i) => i.nome).toList();
+      final ingList =
+          customIngredients ?? fridgeIngredients.map((i) => i.nome).toList();
 
       final payload = <String, dynamic>{
         'prompt': prompt.trim(),
@@ -1313,12 +1474,15 @@ class ApiService extends ChangeNotifier {
       await fetchIaConsumption();
 
       if (res.statusCode == 403 || res.statusCode == 429) {
-        final msg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        final msg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Você atingiu o limite mensal gratuito do Chef IA (5 gerações/mês). Conquiste o Top 5 no Ranking PRO para uso ilimitado!';
         return (ok: false, replyText: msg, recipe: null, limitReached: true);
       }
 
-      if (res.statusCode >= 200 && res.statusCode < 300 && data is Map<String, dynamic>) {
+      if (res.statusCode >= 200 &&
+          res.statusCode < 300 &&
+          data is Map<String, dynamic>) {
         final isRecipe = data['isRecipe'] != false &&
             (data['title'] != null ||
                 data['titulo'] != null ||
@@ -1339,10 +1503,16 @@ class ApiService extends ChangeNotifier {
                 'Aqui está a sugestão preparada pelo Chef IA:')
             .toString();
 
-        return (ok: true, replyText: text, recipe: parsedRecipe, limitReached: false);
+        return (
+          ok: true,
+          replyText: text,
+          recipe: parsedRecipe,
+          limitReached: false
+        );
       }
 
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+              ?.toString() ??
           'Não foi possível gerar a resposta do Chef IA no momento.';
       return (ok: false, replyText: errMsg, recipe: null, limitReached: false);
     } catch (e) {
@@ -1355,8 +1525,13 @@ class ApiService extends ChangeNotifier {
     }
   }
 
-  Future<({bool ok, PhotoAnalysisResult? result, String message, bool limitReached})>
-      analyzeDishPhoto({
+  Future<
+      ({
+        bool ok,
+        PhotoAnalysisResult? result,
+        String message,
+        bool limitReached
+      })> analyzeDishPhoto({
     required String imagemBase64,
   }) async {
     try {
@@ -1375,13 +1550,16 @@ class ApiService extends ChangeNotifier {
         return (
           ok: false,
           result: null,
-          message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+          message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                  ?.toString() ??
               'Seus 2 créditos gratuitos mensais do Scanner IA por Foto acabaram.',
           limitReached: true
         );
       }
 
-      if (res.statusCode >= 200 && res.statusCode < 300 && data is Map<String, dynamic>) {
+      if (res.statusCode >= 200 &&
+          res.statusCode < 300 &&
+          data is Map<String, dynamic>) {
         return (
           ok: true,
           result: PhotoAnalysisResult.fromJson(data),
@@ -1390,7 +1568,8 @@ class ApiService extends ChangeNotifier {
         );
       }
 
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+              ?.toString() ??
           'Não foi possível analisar a imagem enviada.';
       return (ok: false, result: null, message: errMsg, limitReached: false);
     } catch (e) {
@@ -1403,16 +1582,15 @@ class ApiService extends ChangeNotifier {
     }
   }
 
-  Future<({bool ok, Recipe? recipe, String message})> generateRecipeFromPhotoAnalysis(
+  Future<({bool ok, Recipe? recipe, String message})>
+      generateRecipeFromPhotoAnalysis(
     PhotoAnalysisResult analysis, {
     String? imagemOriginal,
   }) async {
-    if (analysis.receitaSugerida != null) {
-      return (ok: true, recipe: analysis.receitaSugerida, message: 'Receita gerada!');
-    }
     try {
       final defaultServings =
-          StorageService.instance.getString('sabore_ai_servings') ?? '2 porções';
+          StorageService.instance.getString('sabore_ai_servings') ??
+              '2 porções';
       final activeDiets = <String>[];
       for (final d in [
         'Vegano',
@@ -1422,7 +1600,9 @@ class ApiService extends ChangeNotifier {
         'Low Carb',
         'Keto'
       ]) {
-        if (StorageService.instance.getBool('sabore_diet_$d')) activeDiets.add(d);
+        if (StorageService.instance.getBool('sabore_diet_$d')) {
+          activeDiets.add(d);
+        }
       }
 
       final res = await _request(
@@ -1439,7 +1619,9 @@ class ApiService extends ChangeNotifier {
         timeout: const Duration(seconds: 65),
       );
       final data = _decodeResponse(res);
-      if (res.statusCode >= 200 && res.statusCode < 300 && data is Map<String, dynamic>) {
+      if (res.statusCode >= 200 &&
+          res.statusCode < 300 &&
+          data is Map<String, dynamic>) {
         final recMap = data['receita'] is Map<String, dynamic>
             ? data['receita'] as Map<String, dynamic>
             : data;
@@ -1455,16 +1637,27 @@ class ApiService extends ChangeNotifier {
           message: 'Receita completa gerada com sucesso!'
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+              ?.toString() ??
           'Não foi possível gerar a receita a partir da foto.';
       return (ok: false, recipe: null, message: errMsg);
     } catch (e) {
-      return (ok: false, recipe: null, message: 'Erro ao gerar receita da foto: $e');
+      return (
+        ok: false,
+        recipe: null,
+        message: 'Erro ao gerar receita da foto: $e'
+      );
     }
   }
 
-  Future<({bool ok, Recipe? recipe, Map<String, dynamic>? videoMeta, String message, bool limitReached})>
-      importVideoRecipe(String videoUrl) async {
+  Future<
+      ({
+        bool ok,
+        Recipe? recipe,
+        Map<String, dynamic>? videoMeta,
+        String message,
+        bool limitReached
+      })> importVideoRecipe(String videoUrl) async {
     try {
       final res = await _request(
         'POST',
@@ -1480,13 +1673,16 @@ class ApiService extends ChangeNotifier {
           ok: false,
           recipe: null,
           videoMeta: null,
-          message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+          message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                  ?.toString() ??
               'Seus 2 créditos gratuitos mensais de Importação de Vídeo acabaram.',
           limitReached: true
         );
       }
 
-      if (res.statusCode >= 200 && res.statusCode < 300 && data is Map<String, dynamic>) {
+      if (res.statusCode >= 200 &&
+          res.statusCode < 300 &&
+          data is Map<String, dynamic>) {
         final recMap = data['recipe'] is Map<String, dynamic>
             ? data['recipe'] as Map<String, dynamic>
             : (data['receita'] is Map<String, dynamic>
@@ -1494,7 +1690,9 @@ class ApiService extends ChangeNotifier {
                 : data);
         final rec = Recipe.fromJson({
           ...recMap,
-          'title': data['title'] ?? recMap['title'] ?? 'Receita Importada do YouTube',
+          'title': data['title'] ??
+              recMap['title'] ??
+              'Receita Importada do YouTube',
           'description': data['description'] ?? recMap['description'] ?? '',
           'image': data['thumbnail'] ?? recMap['image'],
           'criadaPorIA': true,
@@ -1517,7 +1715,8 @@ class ApiService extends ChangeNotifier {
         );
       }
 
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+              ?.toString() ??
           'Não foi possível extrair a receita deste vídeo do YouTube.';
       return (
         ok: false,
@@ -1562,7 +1761,9 @@ class ApiService extends ChangeNotifier {
         final hData = _decodeResponse(histRes);
         final list = hData is List
             ? hData
-            : (hData is Map ? (hData['historico'] ?? hData['desafios'] ?? []) : []);
+            : (hData is Map
+                ? (hData['historico'] ?? hData['desafios'] ?? [])
+                : []);
         if (list is List) {
           weeklyChallengeHistory = list
               .whereType<Map<String, dynamic>>()
@@ -1590,7 +1791,8 @@ class ApiService extends ChangeNotifier {
         'POST',
         '/desafios/publicar',
         body: {
-          if (activeWeeklyChallenge != null) 'desafioId': activeWeeklyChallenge!.id,
+          if (activeWeeklyChallenge != null)
+            'desafioId': activeWeeklyChallenge!.id,
           'nomeReceita': tituloReceita.trim(),
           'descricaoPreparacao': fullDesc,
           'foto': imagemBase64,
@@ -1611,10 +1813,17 @@ class ApiService extends ChangeNotifier {
               'Participação publicada com sucesso! Você ganhou +30 pontos no Ranking PRO! 🏆'
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
-      return (ok: false, message: errMsg ?? 'Não foi possível enviar sua participação.');
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      return (
+        ok: false,
+        message: errMsg ?? 'Não foi possível enviar sua participação.'
+      );
     } catch (e) {
-      return (ok: false, message: 'Erro ao publicar participação no desafio: $e');
+      return (
+        ok: false,
+        message: 'Erro ao publicar participação no desafio: $e'
+      );
     }
   }
 
@@ -1673,8 +1882,12 @@ class ApiService extends ChangeNotifier {
               'Receita inscrita na competição especial com sucesso!'
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
-      return (ok: false, message: errMsg ?? 'Não foi possível inscrever a receita.');
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      return (
+        ok: false,
+        message: errMsg ?? 'Não foi possível inscrever a receita.'
+      );
     } catch (e) {
       return (ok: false, message: 'Erro ao inscrever receita no evento: $e');
     }
@@ -1699,8 +1912,12 @@ class ApiService extends ChangeNotifier {
               'Voto oficial registrado com sucesso!'
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
-      return (ok: false, message: errMsg ?? 'Não foi possível registrar o voto.');
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      return (
+        ok: false,
+        message: errMsg ?? 'Não foi possível registrar o voto.'
+      );
     } catch (e) {
       return (ok: false, message: 'Erro ao votar no prato: $e');
     }
@@ -1728,8 +1945,12 @@ class ApiService extends ChangeNotifier {
               'Denúncia registrada para análise da moderação.'
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
-      return (ok: false, message: errMsg ?? 'Não foi possível registrar a denúncia.');
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      return (
+        ok: false,
+        message: errMsg ?? 'Não foi possível registrar a denúncia.'
+      );
     } catch (e) {
       return (ok: false, message: 'Erro ao enviar denúncia: $e');
     }
@@ -1755,10 +1976,8 @@ class ApiService extends ChangeNotifier {
               .whereType<Map<String, dynamic>>()
               .map((e) => ChefProfile.fromJson(e))
               .toList();
-          followingChefIds = featuredChefs
-              .where((c) => c.seguindo)
-              .map((c) => c.id)
-              .toSet();
+          followingChefIds =
+              featuredChefs.where((c) => c.seguindo).map((c) => c.id).toSet();
           notifyListeners();
         }
       }
@@ -1821,7 +2040,8 @@ class ApiService extends ChangeNotifier {
                   : 'Você deixou de seguir este Chef.')
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
       return (
         ok: false,
         following: isCurrentlyFollowing,
@@ -1838,7 +2058,8 @@ class ApiService extends ChangeNotifier {
 
   Future<({bool ok, String message})> removeFollower(int followerUserId) async {
     try {
-      final res = await _request('DELETE', '/social/remover-seguidor/$followerUserId');
+      final res =
+          await _request('DELETE', '/social/remover-seguidor/$followerUserId');
       final data = _decodeResponse(res);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         await fetchUserProfile();
@@ -1850,7 +2071,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Não foi possível remover o seguidor.'
       );
     } catch (e) {
@@ -1863,7 +2085,9 @@ class ApiService extends ChangeNotifier {
       final res = await _request('GET', '/social/meus-seguidores');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
-        final list = data is List ? data : (data is Map ? (data['seguidores'] ?? []) : []);
+        final list = data is List
+            ? data
+            : (data is Map ? (data['seguidores'] ?? []) : []);
         if (list is List) {
           return list
               .whereType<Map<String, dynamic>>()
@@ -1882,7 +2106,8 @@ class ApiService extends ChangeNotifier {
       final res = await _request('GET', '/social/meus-seguindo');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
-        final list = data is List ? data : (data is Map ? (data['seguindo'] ?? []) : []);
+        final list =
+            data is List ? data : (data is Map ? (data['seguindo'] ?? []) : []);
         if (list is List) {
           return list
               .whereType<Map<String, dynamic>>()
@@ -1903,43 +2128,51 @@ class ApiService extends ChangeNotifier {
         final data = _decodeResponse(res);
         final list = data is List
             ? data
-            : (data is Map ? (data['notificacoes'] ?? data['dados'] ?? []) : []);
+            : (data is Map
+                ? (data['notificacoes'] ?? data['dados'] ?? [])
+                : []);
         if (list is List) {
-          final readIds =
-              StorageService.instance.getStringList('sabore_read_notifications').toSet();
-          final deletedIds =
-              StorageService.instance.getStringList('sabore_deleted_notifications').toSet();
+          final readIds = StorageService.instance
+              .getStringList('sabore_read_notifications')
+              .toSet();
+          final deletedIds = StorageService.instance
+              .getStringList('sabore_deleted_notifications')
+              .toSet();
 
           notifications = list
               .whereType<Map<String, dynamic>>()
               .map((e) => AppNotification.fromJson(e))
               .where((n) => !deletedIds.contains(n.id))
               .map((n) {
-                if (readIds.contains(n.id)) n.lida = true;
-                return n;
-              })
-              .toList();
+            if (readIds.contains(n.id)) n.lida = true;
+            return n;
+          }).toList();
           notifyListeners();
         }
       }
     } catch (_) {}
   }
 
-  int get unreadNotificationsCount => notifications.where((n) => !n.lida).length;
+  int get unreadNotificationsCount =>
+      notifications.where((n) => !n.lida).length;
 
   Future<void> markAllNotificationsAsRead() async {
-    final readIds = StorageService.instance.getStringList('sabore_read_notifications').toSet();
+    final readIds = StorageService.instance
+        .getStringList('sabore_read_notifications')
+        .toSet();
     for (final n in notifications) {
       n.lida = true;
       readIds.add(n.id);
     }
-    await StorageService.instance.setStringList('sabore_read_notifications', readIds.toList());
+    await StorageService.instance
+        .setStringList('sabore_read_notifications', readIds.toList());
     notifyListeners();
   }
 
   Future<void> deleteNotificationsByIds(Set<String> ids) async {
-    final deletedIds =
-        StorageService.instance.getStringList('sabore_deleted_notifications').toSet();
+    final deletedIds = StorageService.instance
+        .getStringList('sabore_deleted_notifications')
+        .toSet();
     deletedIds.addAll(ids);
     await StorageService.instance
         .setStringList('sabore_deleted_notifications', deletedIds.toList());
@@ -1961,7 +2194,8 @@ class ApiService extends ChangeNotifier {
               ? data['periodo'] as Map<String, dynamic>
               : <String, dynamic>{};
           rankingPeriodo = {
-            'mesReferencia': data['mesReferencia'] ?? per['mesReferencia'] ?? '',
+            'mesReferencia':
+                data['mesReferencia'] ?? per['mesReferencia'] ?? '',
             'diasRestantes': per['diasRestantes'] ?? 10,
             'horasRestantes': per['horasRestantes'] ?? 12,
             'totalParticipantes': data['totalParticipantes'] ?? 0,
@@ -1980,12 +2214,14 @@ class ApiService extends ChangeNotifier {
           rankingList = [];
           for (var i = 0; i < list.length; i++) {
             if (list[i] is Map<String, dynamic>) {
-              rankingList.add(RankingEntry.fromJson(list[i] as Map<String, dynamic>, i));
+              rankingList.add(
+                  RankingEntry.fromJson(list[i] as Map<String, dynamic>, i));
             }
           }
           if (_currentUser != null) {
-            final myEntry =
-                rankingList.where((r) => r.usuarioId == _currentUser!.id).firstOrNull;
+            final myEntry = rankingList
+                .where((r) => r.usuarioId == _currentUser!.id)
+                .firstOrNull;
             if (myEntry != null) {
               _currentUser = _currentUser!.copyWith(
                 pontosMensais: myEntry.pontos,
@@ -2003,7 +2239,9 @@ class ApiService extends ChangeNotifier {
         final actData = _decodeResponse(actRes);
         final list = actData is List
             ? actData
-            : (actData is Map ? (actData['atividades'] ?? actData['historico'] ?? []) : []);
+            : (actData is Map
+                ? (actData['atividades'] ?? actData['historico'] ?? [])
+                : []);
         if (list is List) {
           myActivities = list
               .whereType<Map<String, dynamic>>()
@@ -2022,7 +2260,9 @@ class ApiService extends ChangeNotifier {
         final cData = _decodeResponse(cRes);
         final list = cData is List
             ? cData
-            : (cData is Map ? (cData['emblemas'] ?? cData['conquistas'] ?? []) : []);
+            : (cData is Map
+                ? (cData['emblemas'] ?? cData['conquistas'] ?? [])
+                : []);
         if (list is List) {
           conquistas = list.whereType<Map<String, dynamic>>().toList();
         }
@@ -2041,7 +2281,8 @@ class ApiService extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<({bool ok, String message})> equipProfileFrame(String? molduraId) async {
+  Future<({bool ok, String message})> equipProfileFrame(
+      String? molduraId) async {
     try {
       final res = await _request(
         'PUT',
@@ -2059,7 +2300,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Você ainda não desbloqueou esta moldura.'
       );
     } catch (e) {
@@ -2078,32 +2320,46 @@ class ApiService extends ChangeNotifier {
     String? bio,
     List<String>? preferencias,
   }) async {
-    if (_currentUser == null) return (ok: false, message: 'Usuário não autenticado.');
+    if (_currentUser == null) {
+      return (ok: false, message: 'Usuário não autenticado.');
+    }
     try {
       if (removerMoldura || molduraAtiva != null) {
-        await equipProfileFrame(removerMoldura ? 'none' : molduraAtiva);
+        final frameResult =
+            await equipProfileFrame(removerMoldura ? 'none' : molduraAtiva);
+        if (!frameResult.ok) return frameResult;
       }
 
       final body = <String, dynamic>{
         'nome': (nome ?? _currentUser!.nome).trim(),
         'email': (email ?? _currentUser!.email).trim(),
-        if (novaSenha != null && novaSenha.trim().isNotEmpty) 'senha': novaSenha.trim(),
+        if (novaSenha != null && novaSenha.trim().isNotEmpty)
+          'senha': novaSenha.trim(),
         if (removerFoto)
           'foto': null
         else if (fotoPerfilBase64 != null)
           'foto': fotoPerfilBase64,
       };
 
-      final res = await _request('PUT', '/usuarios/atualizar/${_currentUser!.id}', body: body);
-      if (res.statusCode >= 400) {
+      final res = await _request(
+          'PUT', '/usuarios/atualizar/${_currentUser!.id}',
+          body: body);
+      if (res.statusCode < 200 || res.statusCode >= 300) {
         final data = _decodeResponse(res);
-        final err = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
-        if (err != null) return (ok: false, message: err);
+        final err = (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+            ?.toString();
+        return (
+          ok: false,
+          message: err ?? 'Não foi possível atualizar o perfil no servidor.',
+        );
       }
-    } catch (_) {}
+    } catch (e) {
+      return (ok: false, message: 'Falha ao sincronizar o perfil: $e');
+    }
 
     if (bio != null) {
-      await StorageService.instance.setString('sabore_bio_${_currentUser!.email}', bio.trim());
+      await StorageService.instance
+          .setString('sabore_bio_${_currentUser!.email}', bio.trim());
     }
     if (preferencias != null) {
       await StorageService.instance
@@ -2117,7 +2373,8 @@ class ApiService extends ChangeNotifier {
         preferencias: preferencias ?? _currentUser!.preferencias,
       );
       if (_currentUser != null) {
-        await StorageService.instance.setJsonMap('sabore_user', _currentUser!.toJson());
+        await StorageService.instance
+            .setJsonMap('sabore_user', _currentUser!.toJson());
       }
     }
     notifyListeners();
@@ -2125,17 +2382,24 @@ class ApiService extends ChangeNotifier {
   }
 
   Future<({bool ok, String message})> deleteMyAccount() async {
-    if (_currentUser == null) return (ok: false, message: 'Usuário não autenticado.');
+    if (_currentUser == null) {
+      return (ok: false, message: 'Usuário não autenticado.');
+    }
     try {
-      final res = await _request('DELETE', '/usuarios/excluir/${_currentUser!.id}');
+      final res =
+          await _request('DELETE', '/usuarios/excluir/${_currentUser!.id}');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         await logout();
-        return (ok: true, message: 'Sua conta foi encerrada e excluída com sucesso.');
+        return (
+          ok: true,
+          message: 'Sua conta foi encerrada e excluída com sucesso.'
+        );
       }
       final data = _decodeResponse(res);
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Não foi possível excluir sua conta.'
       );
     } catch (e) {
@@ -2158,7 +2422,8 @@ class ApiService extends ChangeNotifier {
     return {};
   }
 
-  Future<({bool ok, String message})> executeAdminMonthlyClosing({String? mesReferencia}) async {
+  Future<({bool ok, String message})> executeAdminMonthlyClosing(
+      {String? mesReferencia}) async {
     try {
       final res = await _request(
         'POST',
@@ -2177,25 +2442,33 @@ class ApiService extends ChangeNotifier {
               'Fechamento mensal executado! Top 5 premiados com 30 dias de Saboré PRO!'
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
-      return (ok: false, message: errMsg ?? 'Erro ao executar fechamento mensal.');
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      return (
+        ok: false,
+        message: errMsg ?? 'Erro ao executar fechamento mensal.'
+      );
     } catch (e) {
       return (ok: false, message: 'Erro ao executar fechamento mensal: $e');
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchAdminScheduledWeeklyChallenges() async {
+  Future<List<Map<String, dynamic>>>
+      fetchAdminScheduledWeeklyChallenges() async {
     try {
       final res = await _request('GET', '/desafios/semanal/programados');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
-        if (data is List) return data.whereType<Map<String, dynamic>>().toList();
+        if (data is List) {
+          return data.whereType<Map<String, dynamic>>().toList();
+        }
       }
     } catch (_) {}
     return [];
   }
 
-  Future<List<Map<String, dynamic>>> fetchAdminWeeklyParticipations({int? desafioId}) async {
+  Future<List<Map<String, dynamic>>> fetchAdminWeeklyParticipations(
+      {int? desafioId}) async {
     try {
       final query = desafioId != null
           ? '/desafios/semanal/admin/participacoes?desafioId=$desafioId'
@@ -2203,7 +2476,9 @@ class ApiService extends ChangeNotifier {
       final res = await _request('GET', query);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
-        if (data is List) return data.whereType<Map<String, dynamic>>().toList();
+        if (data is List) {
+          return data.whereType<Map<String, dynamic>>().toList();
+        }
       }
     } catch (_) {}
     return [];
@@ -2250,16 +2525,19 @@ class ApiService extends ChangeNotifier {
               'Desafio Semanal salvo e ativado com sucesso!'
         );
       }
-      final errMsg = (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
+      final errMsg =
+          (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString();
       return (ok: false, message: errMsg ?? 'Erro ao salvar desafio semanal.');
     } catch (e) {
       return (ok: false, message: 'Erro ao salvar desafio semanal: $e');
     }
   }
 
-  Future<({bool ok, String message})> endAdminWeeklyChallenge(int desafioId) async {
+  Future<({bool ok, String message})> endAdminWeeklyChallenge(
+      int desafioId) async {
     try {
-      final res = await _request('POST', '/desafios/semanal/admin/$desafioId/encerrar');
+      final res =
+          await _request('POST', '/desafios/semanal/admin/$desafioId/encerrar');
       final data = _decodeResponse(res);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         await fetchWeeklyChallenge();
@@ -2271,7 +2549,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Erro ao encerrar desafio.'
       );
     } catch (e) {
@@ -2279,12 +2558,16 @@ class ApiService extends ChangeNotifier {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchAdminEventEntries(String eventId) async {
+  Future<List<Map<String, dynamic>>> fetchAdminEventEntries(
+      String eventId) async {
     try {
-      final res = await _request('GET', '/desafios/eventos/$eventId/admin/entradas');
+      final res =
+          await _request('GET', '/desafios/eventos/$eventId/admin/entradas');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
-        if (data is List) return data.whereType<Map<String, dynamic>>().toList();
+        if (data is List) {
+          return data.whereType<Map<String, dynamic>>().toList();
+        }
       }
     } catch (_) {}
     return [];
@@ -2309,7 +2592,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Não foi possível salvar o evento.'
       );
     } catch (e) {
@@ -2343,7 +2627,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Erro ao moderar inscrição.'
       );
     } catch (e) {
@@ -2351,9 +2636,11 @@ class ApiService extends ChangeNotifier {
     }
   }
 
-  Future<({bool ok, String message})> endAdminEventVoting(String eventId) async {
+  Future<({bool ok, String message})> endAdminEventVoting(
+      String eventId) async {
     try {
-      final res = await _request('POST', '/desafios/eventos/$eventId/encerrar-votacao');
+      final res =
+          await _request('POST', '/desafios/eventos/$eventId/encerrar-votacao');
       final data = _decodeResponse(res);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         await fetchSpecialEvents();
@@ -2365,7 +2652,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Erro ao encerrar votação.'
       );
     } catch (e) {
@@ -2373,9 +2661,11 @@ class ApiService extends ChangeNotifier {
     }
   }
 
-  Future<({bool ok, String message})> confirmAdminEventResult(String eventId) async {
+  Future<({bool ok, String message})> confirmAdminEventResult(
+      String eventId) async {
     try {
-      final res = await _request('POST', '/desafios/eventos/$eventId/confirmar-resultado');
+      final res = await _request(
+          'POST', '/desafios/eventos/$eventId/confirmar-resultado');
       final data = _decodeResponse(res);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         await fetchSpecialEvents();
@@ -2387,7 +2677,8 @@ class ApiService extends ChangeNotifier {
       }
       return (
         ok: false,
-        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)?.toString() ??
+        message: (data is Map ? (data['erro'] ?? data['mensagem']) : null)
+                ?.toString() ??
             'Erro ao confirmar resultado.'
       );
     } catch (e) {
@@ -2400,7 +2691,9 @@ class ApiService extends ChangeNotifier {
       final res = await _request('GET', '/desafios/eventos/auditoria');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = _decodeResponse(res);
-        if (data is List) return data.whereType<Map<String, dynamic>>().toList();
+        if (data is List) {
+          return data.whereType<Map<String, dynamic>>().toList();
+        }
       }
     } catch (_) {}
     return [];

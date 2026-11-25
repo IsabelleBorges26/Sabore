@@ -50,7 +50,23 @@ Aplicativo mobile oficial da plataforma **Saboré — Cozinha Inteligente com IA
 ## 🚀 Como Executar
 
 ```bash
-cd Mobile/sabore_app/sabore_flutter
+# Na raiz do repositório: inicia a API compartilhada e abre o Flutter Web no Chrome
+npm run fluuter
+
+# Para rodar o app nativo no Android/iOS
+cd Mobile/sabore_app
 flutter pub get
 flutter run
 ```
+
+## Conexão com o backend compartilhado
+
+O mobile usa a mesma API Saboré que atende o site e, por meio dela, o mesmo banco PostgreSQL/Supabase. Para celular físico, configure a URL pública HTTPS do backend na tela de login (ícone de conexão) antes de entrar. Em Android Emulator, `http://10.0.2.2:3000` aponta para o computador; em Flutter Web hospedado junto à API, a origem é detectada automaticamente.
+
+Também é possível definir o endereço ao compilar o app nativo:
+
+```bash
+flutter build apk --dart-define=SABORE_API_URL=https://seu-dominio-da-api
+```
+
+Use o botão Salvar na configuração de servidor para testar `GET /estatisticas/publicas`. O login só abre o dashboard após carregar o perfil real pela API.

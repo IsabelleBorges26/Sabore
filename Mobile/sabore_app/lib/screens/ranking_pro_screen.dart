@@ -34,30 +34,45 @@ class _RankingProScreenState extends State<RankingProScreen> {
             children: [
               const Icon(Icons.emoji_events_rounded, color: AppColors.proGold),
               const SizedBox(width: 8),
-              Expanded(child: Text('Como Conquistar Pontos PRO', style: AppTextStyles.headingSm)),
+              Expanded(
+                  child: Text('Como Conquistar Pontos PRO',
+                      style: AppTextStyles.headingSm)),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ruleRow('🏆 Participar do Desafio da Semana', '+30 pts'),
-              _ruleRow('📖 Publicar Receita na Comunidade', '+10 pts'),
-              _ruleRow('💬 Comentar em Receita da Comunidade', '+3 pts'),
-              _ruleRow('⭐ Avaliar Receita com Estrelas', '+2 pts'),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.proGold.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.proBorder),
-                ),
-                child: const Text(
-                  'Os 5 chefs com mais pontos no fechamento mensal ganham automaticamente 30 dias de Saboré PRO com recursos de IA ilimitados!',
-                  style: TextStyle(fontSize: 12.5, color: AppColors.secondary),
-                ),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.65,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _ruleRow('Publicar uma receita válida', '+10 pts'),
+                  _ruleRow('Receber avaliação ou comentário', '+3 pts'),
+                  _ruleRow('Receber favorito em uma receita', '+2 pts'),
+                  _ruleRow('Acessar em dias diferentes', '+2 pts/dia'),
+                  _ruleRow('Completar o perfil', '+5 pts'),
+                  _ruleRow('Seguir outro cozinheiro', '+1 pt'),
+                  _ruleRow('Participar do Desafio da Semana', '+30 pts'),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.proGold.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.proBorder),
+                    ),
+                    child: const Text(
+                      'Os 5 chefs com mais pontos no fechamento mensal ganham 30 dias de Saboré PRO para o mês seguinte.',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           actions: [
             ElevatedButton(
@@ -89,7 +104,8 @@ class _RankingProScreenState extends State<RankingProScreen> {
                   const Icon(Icons.history_rounded, color: AppColors.proGold),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text('Meu Histórico de Pontos no Mês', style: AppTextStyles.headingMd),
+                    child: Text('Meu Histórico de Pontos no Mês',
+                        style: AppTextStyles.headingMd),
                   ),
                 ],
               ),
@@ -110,7 +126,8 @@ class _RankingProScreenState extends State<RankingProScreen> {
                           return ListTile(
                             contentPadding: EdgeInsets.zero,
                             leading: CircleAvatar(
-                              backgroundColor: AppColors.proGold.withValues(alpha: 0.16),
+                              backgroundColor:
+                                  AppColors.proGold.withValues(alpha: 0.16),
                               child: Text(
                                 '+${a.pontos}',
                                 style: const TextStyle(
@@ -123,7 +140,8 @@ class _RankingProScreenState extends State<RankingProScreen> {
                             title: Text(a.descricao, style: AppTextStyles.body),
                             subtitle: Text(
                               a.criadoEm.split('T').first,
-                              style: AppTextStyles.bodyMuted.copyWith(fontSize: 11.5),
+                              style: AppTextStyles.bodyMuted
+                                  .copyWith(fontSize: 11.5),
                             ),
                           );
                         },
@@ -167,7 +185,8 @@ class _RankingProScreenState extends State<RankingProScreen> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         gradient: AppColors.proGoldGradient,
                         borderRadius: BorderRadius.circular(999),
@@ -184,7 +203,8 @@ class _RankingProScreenState extends State<RankingProScreen> {
                     const Spacer(),
                     Text(
                       '⏳ ${_daysUntilEndOfMonth()}',
-                      style: AppTextStyles.mono.copyWith(color: AppColors.proGold, fontSize: 12),
+                      style: AppTextStyles.mono
+                          .copyWith(color: AppColors.proGold, fontSize: 12),
                     ),
                   ],
                 ),
@@ -276,7 +296,9 @@ class _RankingProScreenState extends State<RankingProScreen> {
                       const SaborePlanBadge(isPro: false, compact: true),
                       const SizedBox(height: 8),
                       Text('Plano FREE', style: AppTextStyles.headingSm),
-                      Text('Gratuito para sempre', style: AppTextStyles.bodyMuted.copyWith(fontSize: 11.5)),
+                      Text('Gratuito para sempre',
+                          style:
+                              AppTextStyles.bodyMuted.copyWith(fontSize: 11.5)),
                       const Divider(height: 20, color: AppColors.glassBorder),
                       _planBullet('Chef IA: 5 msgs/mês'),
                       _planBullet('IA por Foto: 2/mês'),
@@ -302,8 +324,12 @@ class _RankingProScreenState extends State<RankingProScreen> {
                     children: [
                       const SaborePlanBadge(isPro: true, compact: true),
                       const SizedBox(height: 8),
-                      Text('Saboré PRO', style: AppTextStyles.headingSm.copyWith(color: AppColors.proGold)),
-                      Text('Top 5 do Ranking Mensal', style: AppTextStyles.bodyMuted.copyWith(fontSize: 11.5)),
+                      Text('Saboré PRO',
+                          style: AppTextStyles.headingSm
+                              .copyWith(color: AppColors.proGold)),
+                      Text('Top 5 do Ranking Mensal',
+                          style:
+                              AppTextStyles.bodyMuted.copyWith(fontSize: 11.5)),
                       const Divider(height: 20, color: AppColors.proBorder),
                       _planBullet('Chef IA Ilimitado', isPro: true),
                       _planBullet('IA por Foto Ilimitado', isPro: true),
@@ -322,9 +348,11 @@ class _RankingProScreenState extends State<RankingProScreen> {
           // 4. Top 5 Pódio (Zona de Premiação PRO)
           Row(
             children: [
-              const Icon(Icons.workspace_premium_rounded, color: AppColors.proGold),
+              const Icon(Icons.workspace_premium_rounded,
+                  color: AppColors.proGold),
               const SizedBox(width: 8),
-              Text('Top 5 — Zona de Premiação PRO (G-5)', style: AppTextStyles.headingSm),
+              Text('Top 5 — Zona de Premiação PRO (G-5)',
+                  style: AppTextStyles.headingSm),
             ],
           ),
           const SizedBox(height: 10),
@@ -344,7 +372,8 @@ class _RankingProScreenState extends State<RankingProScreen> {
             ...ranking.take(5).map((r) => _buildRankingRow(r, isTop5: true)),
             if (ranking.length > 5) ...[
               const SizedBox(height: 18),
-              Text('Classificação Geral da Comunidade', style: AppTextStyles.headingSm),
+              Text('Classificação Geral da Comunidade',
+                  style: AppTextStyles.headingSm),
               const SizedBox(height: 10),
               ...ranking.skip(5).map((r) => _buildRankingRow(r, isTop5: false)),
             ],
@@ -400,7 +429,8 @@ class _RankingProScreenState extends State<RankingProScreen> {
       2: const Color(0xFFC0C0C0),
       3: const Color(0xFFCD7F32),
     };
-    final posColor = medalColors[entry.posicao] ?? (isTop5 ? AppColors.proGold : AppColors.textMuted);
+    final posColor = medalColors[entry.posicao] ??
+        (isTop5 ? AppColors.proGold : AppColors.textMuted);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -413,7 +443,8 @@ class _RankingProScreenState extends State<RankingProScreen> {
       ),
       child: ListTile(
         onTap: entry.usuarioId > 0
-            ? () => showChefProfileModal(context, userId: entry.usuarioId, fallbackName: entry.nome)
+            ? () => showChefProfileModal(context,
+                userId: entry.usuarioId, fallbackName: entry.nome)
             : null,
         leading: Row(
           mainAxisSize: MainAxisSize.min,
@@ -502,4 +533,3 @@ class _RankingProScreenState extends State<RankingProScreen> {
     );
   }
 }
-

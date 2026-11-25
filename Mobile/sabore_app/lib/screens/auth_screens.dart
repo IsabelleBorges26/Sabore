@@ -349,7 +349,7 @@ class _AuthScreenState extends State<AuthScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'O aplicativo conecta-se automaticamente à API de produção ou ao seu servidor local.',
+                'No celular físico, informe o endereço HTTPS público da API. Na versão web hospedada, o app usa a origem atual.',
                 style: AppTextStyles.bodyMuted,
               ),
               const SizedBox(height: 12),
@@ -365,10 +365,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  ActionChip(
-                    label: const Text('Vercel (Produção)', style: TextStyle(fontSize: 11.5)),
-                    onPressed: () => urlCtrl.text = ApiService.vercelApiUrl,
-                  ),
+
                   ActionChip(
                     label: const Text('Localhost (3000)', style: TextStyle(fontSize: 11.5)),
                     onPressed: () => urlCtrl.text = 'http://localhost:3000',
@@ -389,10 +386,15 @@ class _AuthScreenState extends State<AuthScreen> {
             ElevatedButton(
               onPressed: () async {
                 await _api.setBaseUrl(urlCtrl.text);
+                final connected = await _api.checkApiConnection();
                 if (ctx.mounted) {
                   Navigator.of(ctx).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Servidor atualizado para: ${_api.baseUrl}')),
+                    SnackBar(
+                      content: Text(connected
+                          ? 'API respondeu em ${_api.baseUrl}. Perfil e dados usam o backend compartilhado.'
+                          : 'URL salva, mas a API não respondeu em ${_api.baseUrl}.'),
+                    ),
                   );
                 }
               },

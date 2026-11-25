@@ -86,7 +86,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Preferências de IA e notificações salvas com sucesso!'),
+          content:
+              Text('Preferências de IA e notificações salvas com sucesso!'),
         ),
       );
     }
@@ -101,7 +102,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               const Icon(Icons.warning_amber_rounded, color: AppColors.danger),
               const SizedBox(width: 8),
-              Expanded(child: Text('Excluir Minha Conta', style: AppTextStyles.headingSm)),
+              Expanded(
+                  child: Text('Excluir Minha Conta',
+                      style: AppTextStyles.headingSm)),
             ],
           ),
           content: Text(
@@ -123,7 +126,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
               child: const Text('Confirmar Exclusão'),
             ),
           ],
@@ -137,7 +141,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 40),
       children: [
-        Text('Configurações da Conta & Cozinha', style: AppTextStyles.headingLg),
+        Text('Configurações da Conta & Cozinha',
+            style: AppTextStyles.headingLg),
         Text(
           'Personalize seus dados, restrições alimentares padrão do Chef IA e alertas',
           style: AppTextStyles.bodyMuted,
@@ -157,7 +162,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.manage_accounts_rounded, color: AppColors.accent),
+                  const Icon(Icons.manage_accounts_rounded,
+                      color: AppColors.accent),
                   const SizedBox(width: 8),
                   Text('Dados da Conta', style: AppTextStyles.headingSm),
                 ],
@@ -210,7 +216,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           }
                         },
                   icon: const Icon(Icons.save_rounded, size: 18),
-                  label: Text(_savingAccount ? 'Atualizando...' : 'Salvar Dados da Conta'),
+                  label: Text(_savingAccount
+                      ? 'Atualizando...'
+                      : 'Salvar Dados da Conta'),
                 ),
               ),
             ],
@@ -234,7 +242,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   const Icon(Icons.smart_toy_outlined, color: AppColors.accent),
                   const SizedBox(width: 8),
-                  Text('Preferências Padrão do Chef IA', style: AppTextStyles.headingSm),
+                  Text('Preferências Padrão do Chef IA',
+                      style: AppTextStyles.headingSm),
                 ],
               ),
               const SizedBox(height: 14),
@@ -244,14 +253,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: DropdownButtonFormField<String>(
                       initialValue: _aiDifficulty,
                       dropdownColor: AppColors.darkCard,
-                      decoration: const InputDecoration(labelText: 'Dificuldade Padrão'),
+                      decoration: const InputDecoration(
+                          labelText: 'Dificuldade Padrão'),
                       items: const [
-                        DropdownMenuItem(value: 'Qualquer', child: Text('Qualquer')),
+                        DropdownMenuItem(
+                            value: 'Qualquer', child: Text('Qualquer')),
                         DropdownMenuItem(value: 'Fácil', child: Text('Fácil')),
                         DropdownMenuItem(value: 'Médio', child: Text('Médio')),
-                        DropdownMenuItem(value: 'Difícil', child: Text('Difícil')),
+                        DropdownMenuItem(
+                            value: 'Difícil', child: Text('Difícil')),
                       ],
-                      onChanged: (v) => setState(() => _aiDifficulty = v ?? 'Qualquer'),
+                      onChanged: (v) =>
+                          setState(() => _aiDifficulty = v ?? 'Qualquer'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -259,7 +272,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: DropdownButtonFormField<String>(
                       initialValue: _aiServings,
                       dropdownColor: AppColors.darkCard,
-                      decoration: const InputDecoration(labelText: 'Porções Padrão'),
+                      decoration:
+                          const InputDecoration(labelText: 'Porções Padrão'),
                       items: const [
                         DropdownMenuItem(value: '1', child: Text('1 porção')),
                         DropdownMenuItem(value: '2', child: Text('2 porções')),
@@ -272,7 +286,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              Text('Restrições Alimentares Ativas:', style: AppTextStyles.label),
+              Text('Restrições Alimentares Ativas:',
+                  style: AppTextStyles.label),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -293,7 +308,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: _saveAiPreferences,
-                  icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                  icon:
+                      const Icon(Icons.check_circle_outline_rounded, size: 18),
                   label: const Text('Salvar Preferências de IA'),
                 ),
               ),
@@ -316,9 +332,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.notifications_outlined, color: AppColors.accent),
+                  const Icon(Icons.notifications_outlined,
+                      color: AppColors.accent),
                   const SizedBox(width: 8),
-                  Text('Alertas & Notificações', style: AppTextStyles.headingSm),
+                  Text('Alertas & Notificações',
+                      style: AppTextStyles.headingSm),
                 ],
               ),
               SwitchListTile(
@@ -332,7 +350,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Comentários e avaliações nas minhas receitas'),
+                title:
+                    const Text('Comentários e avaliações nas minhas receitas'),
                 value: _notifyComments,
                 onChanged: (v) {
                   setState(() => _notifyComments = v);
@@ -382,7 +401,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: TextField(
                       controller: _serverUrlCtrl,
                       decoration: const InputDecoration(
-                        hintText: 'http://localhost:3000',
+                        hintText: 'https://seu-dominio-da-api',
                         prefixIcon: Icon(Icons.cloud_done_outlined),
                       ),
                     ),
@@ -391,9 +410,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   OutlinedButton(
                     onPressed: () async {
                       await _api.setBaseUrl(_serverUrlCtrl.text);
+                      var connected = await _api.checkApiConnection();
+                      if (connected && _api.token != null) {
+                        connected = await _api.fetchUserProfile();
+                        if (connected) await _api.refreshAllDashboardData();
+                      }
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('API conectada em: ${_api.baseUrl}')),
+                          SnackBar(
+                            content: Text(connected
+                                ? 'API respondeu em ${_api.baseUrl}. Dados sincronizados com o backend.'
+                                : 'URL salva, mas a API não respondeu em ${_api.baseUrl}.'),
+                          ),
                         );
                       }
                     },
@@ -423,12 +451,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Cache local e preferências restaurados para o padrão.'),
+                            content: Text(
+                                'Cache local e preferências restaurados para o padrão.'),
                           ),
                         );
                       }
                     },
-                    icon: const Icon(Icons.cleaning_services_outlined, size: 17),
+                    icon:
+                        const Icon(Icons.cleaning_services_outlined, size: 17),
                     label: const Text('Limpar Cache Local'),
                   ),
                 ],
@@ -451,7 +481,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: double.infinity,
                 child: TextButton.icon(
                   onPressed: _confirmDeleteAccount,
-                  style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                  style:
+                      TextButton.styleFrom(foregroundColor: AppColors.danger),
                   icon: const Icon(Icons.delete_forever_rounded, size: 18),
                   label: const Text('Encerrar / Excluir Minha Conta (LGPD)'),
                 ),

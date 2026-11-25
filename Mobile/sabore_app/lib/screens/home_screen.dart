@@ -44,16 +44,44 @@ class _HomeScreenState extends State<HomeScreen> {
     final text = raw.trim();
     if (text.isEmpty) return;
     setState(() => _addingIngredient = true);
-    await _api.addFridgeIngredient(text);
-    _fridgeCtrl.clear();
-    if (mounted) setState(() => _addingIngredient = false);
+    final saved = await _api.addFridgeIngredient(text);
+    if (!mounted) return;
+    setState(() => _addingIngredient = false);
+    if (saved) {
+      _fridgeCtrl.clear();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Não foi possível sincronizar o ingrediente.')),
+      );
+    }
+  }
+
+  Future<void> _clearIngredients() async {
+    final cleared = await _api.clearFridgeIngredients();
+    if (!mounted || cleared) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Alguns ingredientes não puderam ser removidos.')),
+    );
+  }
+
+  Future<void> _removeIngredient(int id) async {
+    final removed = await _api.removeFridgeIngredient(id);
+    if (!mounted || removed) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Não foi possível remover o ingrediente.')),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final user = _api.currentUser;
     final firstName = (user?.nome ?? 'Chef').split(' ').first;
-    final savedCount = _api.favoriteRecipes.length + _api.myRecipes.length;
+    final savedCount = {
+      ..._api.favoriteRecipes.map((recipe) => recipe.id),
+      ..._api.myRecipes.map((recipe) => recipe.id),
+    }.length;
     final createdCount = _api.myRecipes.length;
     final booksCount = _api.books.length;
     final monthlyPoints = user?.pontosMensais ?? 0;
@@ -107,7 +135,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       label: const Text('Criar com Chef IA'),
                     ),
                     OutlinedButton.icon(
-                      onPressed: () => widget.onNavigateTab(2), // Comunidade / Desafios
+                      onPressed: () =>
+                          widget.onNavigateTab(2), // Comunidade / Desafios
                       icon: const Icon(Icons.explore_outlined, size: 18),
                       label: const Text('Explorar Comunidade'),
                     ),
@@ -118,50 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 18),
 
-          // 2. Quatro Cards de Estatísticas Reais
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.75,
-            children: [
-              _statCard(
-                icon: Icons.bookmark_added_rounded,
-                color: AppColors.accent,
-                value: '$savedCount',
-                label: 'Receitas no Acervo',
-                onTap: () => widget.onNavigateTab(1),
-              ),
-              _statCard(
-                icon: Icons.restaurant_menu_rounded,
-                color: AppColors.success,
-                value: '$createdCount',
-                label: 'Minhas Criações',
-                onTap: () => widget.onNavigateTab(7),
-              ),
-              _statCard(
-                icon: Icons.menu_book_rounded,
-                color: AppColors.info,
-                value: '$booksCount',
-                label: 'Meus Livros',
-                onTap: () => widget.onNavigateTab(1),
-              ),
-              _statCard(
-                icon: Icons.emoji_events_rounded,
-                color: AppColors.proGold,
-                value: '$monthlyPoints pts',
-                label: user?.posicaoRanking != null
-                    ? 'Ranking #${user!.posicaoRanking}'
-                    : 'Ranking PRO Mensal',
-                onTap: () => widget.onNavigateTab(8),
-              ),
-            ],
-          ),
-          const SizedBox(height: 22),
-
-          // 3. Ações Rápidas (Atalhos Inteligentes)
+          // 2. Ações Rápidas (Atalhos Inteligentes)
           Text('Ferramentas Inteligentes', style: AppTextStyles.headingSm),
           const SizedBox(height: 10),
           SingleChildScrollView(
@@ -208,6 +194,54 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 24),
 
+          _buildBooksSection(),
+          const SizedBox(height: 18),
+          _buildRecentFavorites(),
+          const SizedBox(height: 18),
+
+          // 3. Quatro Cards de Estatísticas Reais
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.75,
+            children: [
+              _statCard(
+                icon: Icons.bookmark_added_rounded,
+                color: AppColors.accent,
+                value: '$savedCount',
+                label: 'Receitas no Acervo',
+                onTap: () => widget.onNavigateTab(1),
+              ),
+              _statCard(
+                icon: Icons.restaurant_menu_rounded,
+                color: AppColors.success,
+                value: '$createdCount',
+                label: 'Minhas Criações',
+                onTap: () => widget.onNavigateTab(7),
+              ),
+              _statCard(
+                icon: Icons.menu_book_rounded,
+                color: AppColors.info,
+                value: '$booksCount',
+                label: 'Meus Livros',
+                onTap: () => widget.onNavigateTab(1),
+              ),
+              _statCard(
+                icon: Icons.emoji_events_rounded,
+                color: AppColors.proGold,
+                value: '$monthlyPoints pts',
+                label: user?.posicaoRanking != null
+                    ? 'Ranking #${user!.posicaoRanking}'
+                    : 'Ranking PRO Mensal',
+                onTap: () => widget.onNavigateTab(8),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+
           // 4. Widget Geladeira / Despensa Inteligente (/ingredientes-disponiveis)
           Container(
             padding: const EdgeInsets.all(18),
@@ -221,7 +255,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.kitchen_rounded, color: AppColors.accent, size: 22),
+                    const Icon(Icons.kitchen_rounded,
+                        color: AppColors.accent, size: 22),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -231,10 +266,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     if (_api.fridgeIngredients.isNotEmpty)
                       TextButton(
-                        onPressed: _api.clearFridgeIngredients,
+                        onPressed: _clearIngredients,
                         child: const Text(
                           'Limpar',
-                          style: TextStyle(color: AppColors.danger, fontSize: 12),
+                          style:
+                              TextStyle(color: AppColors.danger, fontSize: 12),
                         ),
                       ),
                   ],
@@ -251,19 +287,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         controller: _fridgeCtrl,
                         onSubmitted: _addIngredient,
                         decoration: const InputDecoration(
-                          hintText: 'Ex: Peito de frango, creme de leite, alho...',
-                          prefixIcon: Icon(Icons.add_shopping_cart_rounded, size: 18),
+                          hintText:
+                              'Ex: Peito de frango, creme de leite, alho...',
+                          prefixIcon:
+                              Icon(Icons.add_shopping_cart_rounded, size: 18),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: _addingIngredient ? null : () => _addIngredient(_fridgeCtrl.text),
+                      onPressed: _addingIngredient
+                          ? null
+                          : () => _addIngredient(_fridgeCtrl.text),
                       child: _addingIngredient
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           : const Text('Adicionar'),
                     ),
@@ -279,7 +320,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         .any((i) => i.nome.toLowerCase() == item.toLowerCase());
                     if (alreadyAdded) return const SizedBox.shrink();
                     return ActionChip(
-                      label: Text('+ $item', style: const TextStyle(fontSize: 11.5)),
+                      label: Text('+ $item',
+                          style: const TextStyle(fontSize: 11.5)),
                       backgroundColor: AppColors.darkDeep,
                       side: const BorderSide(color: AppColors.glassBorder),
                       onPressed: () => _addIngredient(item),
@@ -298,12 +340,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           (ing) => Chip(
                             label: Text(
                               ing.nome,
-                              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                  fontSize: 12.5, fontWeight: FontWeight.w600),
                             ),
-                            backgroundColor: AppColors.accent.withValues(alpha: 0.16),
-                            side: const BorderSide(color: AppColors.accentBorder),
-                            deleteIcon: const Icon(Icons.close_rounded, size: 16),
-                            onDeleted: () => _api.removeFridgeIngredient(ing.id),
+                            backgroundColor:
+                                AppColors.accent.withValues(alpha: 0.16),
+                            side:
+                                const BorderSide(color: AppColors.accentBorder),
+                            deleteIcon:
+                                const Icon(Icons.close_rounded, size: 16),
+                            onDeleted: () => _removeIngredient(ing.id),
                           ),
                         )
                         .toList(),
@@ -314,7 +360,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => widget.onNavigateTab(3),
                       icon: const Icon(Icons.auto_awesome_rounded, size: 18),
-                      label: const Text('Gerar Receita com Minha Geladeira no Chef IA'),
+                      label: const Text(
+                          'Gerar Receita com Minha Geladeira no Chef IA'),
                     ),
                   ),
                 ],
@@ -338,16 +385,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.local_fire_department_rounded, color: AppColors.proGold),
+                      const Icon(Icons.local_fire_department_rounded,
+                          color: AppColors.proGold),
                       const SizedBox(width: 8),
                       Text(
                         'DESAFIO GASTRONÔMICO DA SEMANA',
-                        style: AppTextStyles.label.copyWith(color: AppColors.proGold),
+                        style: AppTextStyles.label
+                            .copyWith(color: AppColors.proGold),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(_api.activeWeeklyChallenge!.titulo, style: AppTextStyles.headingMd),
+                  Text(_api.activeWeeklyChallenge!.titulo,
+                      style: AppTextStyles.headingMd),
                   const SizedBox(height: 4),
                   Text(
                     _api.activeWeeklyChallenge!.descricao,
@@ -360,7 +410,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           color: AppColors.proGold.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(999),
@@ -415,14 +466,17 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             )
           else
-            ..._api.publicRecipes.take(4).map((r) => _buildRecipeHorizontalTile(context, r)),
+            ..._api.publicRecipes
+                .take(4)
+                .map((r) => _buildRecipeHorizontalTile(context, r)),
 
           if (_api.myRecipes.isNotEmpty) ...[
             const SizedBox(height: 22),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Minhas Receitas Recentes', style: AppTextStyles.headingSm),
+                Text('Minhas Receitas Recentes',
+                    style: AppTextStyles.headingSm),
                 TextButton(
                   onPressed: () => widget.onNavigateTab(1),
                   child: const Text('Meus Livros'),
@@ -430,8 +484,132 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            ..._api.myRecipes.take(3).map((r) => _buildRecipeHorizontalTile(context, r)),
+            ..._api.myRecipes
+                .take(3)
+                .map((r) => _buildRecipeHorizontalTile(context, r)),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBooksSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+                child: Text('Meus Livros de Receitas',
+                    style: AppTextStyles.headingSm)),
+            TextButton(
+              onPressed: () => widget.onNavigateTab(1),
+              child: const Text('Ver todos'),
+            ),
+          ],
+        ),
+        if (_api.books.isEmpty)
+          _homeEmptyCard(
+            icon: Icons.menu_book_outlined,
+            message: 'Seus livros e coleções aparecerão aqui.',
+          )
+        else
+          SizedBox(
+            height: 126,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _api.books.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (context, index) {
+                final book = _api.books[index];
+                return InkWell(
+                  onTap: () => widget.onNavigateTab(1),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 158,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.cardGradient,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(book.icone, style: const TextStyle(fontSize: 25)),
+                        const Spacer(),
+                        Text(
+                          book.nome,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.body
+                              .copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 3),
+                        Text('${book.totalReceitas} receitas',
+                            style: AppTextStyles.bodyMuted),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRecentFavorites() {
+    final favorites = _api.favoriteRecipes.take(3).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+                child:
+                    Text('Favoritas Recentes', style: AppTextStyles.headingSm)),
+            TextButton(
+              onPressed: () => widget.onNavigateTab(6),
+              child: const Text('Ver todas'),
+            ),
+          ],
+        ),
+        if (favorites.isEmpty)
+          _homeEmptyCard(
+            icon: Icons.favorite_border_rounded,
+            message:
+                'Salve suas receitas favoritas para encontrá-las rapidamente.',
+          )
+        else
+          ...favorites.map(
+            (recipe) => SaboreMobileRecipeCard(
+              recipe: recipe,
+              isFavorite: true,
+              compact: true,
+              onTap: () => showRecipeDetailModal(context, recipe),
+              onSaveToBook: () => showSaveRecipeToBookDialog(context, recipe),
+              onToggleFavorite: () => _api.toggleFavorite(recipe),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _homeEmptyCard({required IconData icon, required String message}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      decoration: BoxDecoration(
+        color: AppColors.darkCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.accent),
+          const SizedBox(width: 10),
+          Expanded(child: Text(message, style: AppTextStyles.bodyMuted)),
         ],
       ),
     );
@@ -469,7 +647,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Icon(icon, color: color, size: 18),
                 ),
-                const Icon(Icons.arrow_outward_rounded, size: 15, color: AppColors.textMuted),
+                const Icon(Icons.arrow_outward_rounded,
+                    size: 15, color: AppColors.textMuted),
               ],
             ),
             Column(
@@ -515,9 +694,12 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Icon(icon, color: color, size: 22),
               const SizedBox(height: 10),
-              Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+              Text(title,
+                  style:
+                      AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 2),
-              Text(subtitle, style: AppTextStyles.bodyMuted.copyWith(fontSize: 11)),
+              Text(subtitle,
+                  style: AppTextStyles.bodyMuted.copyWith(fontSize: 11)),
             ],
           ),
         ),

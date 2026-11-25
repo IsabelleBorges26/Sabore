@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Use a câmera para fotografar pratos e ingredientes para análise pelo Saboré.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Escolha fotos de pratos e ingredientes para análise e cadastro no Saboré.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -134,6 +134,28 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
     });
   }
 
+  Future<void> _addFridgeIngredient(String value) async {
+    final added = await _api.addFridgeIngredient(value);
+    if (!mounted) return;
+    if (added) {
+      _ingInputCtrl.clear();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('Não foi possível salvar o ingrediente na despensa.')),
+      );
+    }
+  }
+
+  Future<void> _removeFridgeIngredient(int id) async {
+    final removed = await _api.removeFridgeIngredient(id);
+    if (!mounted || removed) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Não foi possível remover o ingrediente.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cons = _api.iaConsumption;
@@ -166,7 +188,8 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.tune_rounded, color: AppColors.accent, size: 18),
+                  const Icon(Icons.tune_rounded,
+                      color: AppColors.accent, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -178,14 +201,18 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
                   if (_messages.length > 1)
                     TextButton(
                       onPressed: () async {
-                        final key = 'sabore_chat_${_api.currentUser?.email ?? 'guest'}';
+                        final key =
+                            'sabore_chat_${_api.currentUser?.email ?? 'guest'}';
                         await StorageService.instance.remove(key);
                         setState(() => _loadHistory());
                       },
-                      child: const Text('Limpar Chat', style: TextStyle(fontSize: 11.5)),
+                      child: const Text('Limpar Chat',
+                          style: TextStyle(fontSize: 11.5)),
                     ),
                   Icon(
-                    _showFilters ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                    _showFilters
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
                     color: AppColors.secondary,
                   ),
                 ],
@@ -213,8 +240,7 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
                         controller: _ingInputCtrl,
                         onSubmitted: (v) async {
                           if (v.trim().isNotEmpty) {
-                            await _api.addFridgeIngredient(v);
-                            _ingInputCtrl.clear();
+                            await _addFridgeIngredient(v);
                           }
                         },
                         decoration: const InputDecoration(
@@ -227,8 +253,7 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         if (_ingInputCtrl.text.trim().isNotEmpty) {
-                          await _api.addFridgeIngredient(_ingInputCtrl.text);
-                          _ingInputCtrl.clear();
+                          await _addFridgeIngredient(_ingInputCtrl.text);
                         }
                       },
                       child: const Text('Add'),
@@ -243,9 +268,10 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
                     children: _api.fridgeIngredients
                         .map(
                           (i) => Chip(
-                            label: Text(i.nome, style: const TextStyle(fontSize: 11.5)),
+                            label: Text(i.nome,
+                                style: const TextStyle(fontSize: 11.5)),
                             visualDensity: VisualDensity.compact,
-                            onDeleted: () => _api.removeFridgeIngredient(i.id),
+                            onDeleted: () => _removeFridgeIngredient(i.id),
                           ),
                         )
                         .toList(),
@@ -258,15 +284,22 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
                       child: DropdownButtonFormField<String>(
                         initialValue: _maxTime,
                         dropdownColor: AppColors.darkCard,
-                        decoration: const InputDecoration(labelText: 'Tempo Máximo', isDense: true),
+                        decoration: const InputDecoration(
+                            labelText: 'Tempo Máximo', isDense: true),
                         items: const [
-                          DropdownMenuItem(value: 'Qualquer', child: Text('Qualquer')),
-                          DropdownMenuItem(value: '15 min', child: Text('Até 15 min')),
-                          DropdownMenuItem(value: '30 min', child: Text('Até 30 min')),
-                          DropdownMenuItem(value: '45 min', child: Text('Até 45 min')),
-                          DropdownMenuItem(value: '60 min', child: Text('Até 60 min')),
+                          DropdownMenuItem(
+                              value: 'Qualquer', child: Text('Qualquer')),
+                          DropdownMenuItem(
+                              value: '15 min', child: Text('Até 15 min')),
+                          DropdownMenuItem(
+                              value: '30 min', child: Text('Até 30 min')),
+                          DropdownMenuItem(
+                              value: '45 min', child: Text('Até 45 min')),
+                          DropdownMenuItem(
+                              value: '60 min', child: Text('Até 60 min')),
                         ],
-                        onChanged: (v) => setState(() => _maxTime = v ?? 'Qualquer'),
+                        onChanged: (v) =>
+                            setState(() => _maxTime = v ?? 'Qualquer'),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -274,16 +307,24 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
                       child: DropdownButtonFormField<String>(
                         initialValue: _diet,
                         dropdownColor: AppColors.darkCard,
-                        decoration: const InputDecoration(labelText: 'Restrição', isDense: true),
+                        decoration: const InputDecoration(
+                            labelText: 'Restrição', isDense: true),
                         items: const [
-                          DropdownMenuItem(value: 'Nenhuma', child: Text('Nenhuma')),
-                          DropdownMenuItem(value: 'Vegetariano', child: Text('Vegetariano')),
-                          DropdownMenuItem(value: 'Vegano', child: Text('Vegano')),
-                          DropdownMenuItem(value: 'Sem Glúten', child: Text('Sem Glúten')),
-                          DropdownMenuItem(value: 'Sem Lactose', child: Text('Sem Lactose')),
-                          DropdownMenuItem(value: 'Low Carb', child: Text('Low Carb')),
+                          DropdownMenuItem(
+                              value: 'Nenhuma', child: Text('Nenhuma')),
+                          DropdownMenuItem(
+                              value: 'Vegetariano', child: Text('Vegetariano')),
+                          DropdownMenuItem(
+                              value: 'Vegano', child: Text('Vegano')),
+                          DropdownMenuItem(
+                              value: 'Sem Glúten', child: Text('Sem Glúten')),
+                          DropdownMenuItem(
+                              value: 'Sem Lactose', child: Text('Sem Lactose')),
+                          DropdownMenuItem(
+                              value: 'Low Carb', child: Text('Low Carb')),
                         ],
-                        onChanged: (v) => setState(() => _diet = v ?? 'Nenhuma'),
+                        onChanged: (v) =>
+                            setState(() => _diet = v ?? 'Nenhuma'),
                       ),
                     ),
                   ],
@@ -304,7 +345,8 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: ActionChip(
-                  avatar: const Icon(Icons.auto_awesome_rounded, size: 14, color: AppColors.accent),
+                  avatar: const Icon(Icons.auto_awesome_rounded,
+                      size: 14, color: AppColors.accent),
                   label: Text(s, style: const TextStyle(fontSize: 12)),
                   backgroundColor: AppColors.darkCard,
                   onPressed: () => _sendMessage(s),
@@ -337,7 +379,8 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
                         SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppColors.accent),
                         ),
                         SizedBox(width: 10),
                         Text('O Chef IA está elaborando sua receita...'),
@@ -376,7 +419,8 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
               ElevatedButton(
                 onPressed: _sending ? null : () => _sendMessage(),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
                 ),
                 child: const Icon(Icons.send_rounded, size: 20),
               ),
@@ -438,7 +482,8 @@ class _ChefIaScreenState extends State<ChefIaScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.restaurant_menu_rounded, color: AppColors.accent, size: 20),
+              const Icon(Icons.restaurant_menu_rounded,
+                  color: AppColors.accent, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(rec.titulo, style: AppTextStyles.headingSm),

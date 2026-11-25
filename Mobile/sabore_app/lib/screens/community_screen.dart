@@ -772,31 +772,38 @@ class _CommunityScreenState extends State<CommunityScreen> {
           ),
           const SizedBox(height: 10),
 
-          // Hashtags em Alta com contagem 🔥
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _api.trendingHashtags.map((tag) {
-                final normalized = tag.startsWith('#') ? tag : '#$tag';
-                final count = _api.trendingHashtagCounts[normalized];
-                final label = count != null && count > 0 ? '$normalized 🔥$count' : normalized;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: ActionChip(
-                    label: Text(
-                      label,
-                      style: const TextStyle(color: AppColors.secondary, fontSize: 12),
+          if (_api.trendingHashtags.isNotEmpty) ...[
+            // Hashtags em Alta com contagem 🔥
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _api.trendingHashtags.map((tag) {
+                  final normalized = tag.startsWith('#') ? tag : '#$tag';
+                  final count = _api.trendingHashtagCounts[normalized];
+                  final label = count != null && count > 0
+                      ? '$normalized 🔥$count'
+                      : normalized;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: ActionChip(
+                      label: Text(
+                        label,
+                        style: const TextStyle(
+                          color: AppColors.secondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      backgroundColor: AppColors.darkCard,
+                      onPressed: () => setState(
+                        () => _searchCtrl.text = normalized.replaceAll('#', ''),
+                      ),
                     ),
-                    backgroundColor: AppColors.darkCard,
-                    onPressed: () {
-                      setState(() => _searchCtrl.text = normalized.replaceAll('#', ''));
-                    },
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
+            const SizedBox(height: 10),
+          ],
 
           // Filtro de Categorias
           SingleChildScrollView(

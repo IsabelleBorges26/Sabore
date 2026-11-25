@@ -63,10 +63,12 @@ class _LandingScreenState extends State<LandingScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.mail_outline_rounded, color: AppColors.accent),
+                        const Icon(Icons.mail_outline_rounded,
+                            color: AppColors.accent),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Text('Fale Conosco — Saboré', style: AppTextStyles.headingMd),
+                          child: Text('Fale Conosco — Saboré',
+                              style: AppTextStyles.headingMd),
                         ),
                         IconButton(
                           onPressed: () => Navigator.of(ctx).pop(),
@@ -104,14 +106,25 @@ class _LandingScreenState extends State<LandingScreen> {
                         prefixIcon: Icon(Icons.topic_outlined),
                       ),
                       items: const [
-                        DropdownMenuItem(value: 'suporte', child: Text('Suporte Técnico')),
-                        DropdownMenuItem(value: 'conta', child: Text('Minha Conta & Acesso')),
-                        DropdownMenuItem(value: 'planos', child: Text('Ranking PRO & Planos')),
-                        DropdownMenuItem(value: 'sugestao', child: Text('Sugestão de Recurso')),
-                        DropdownMenuItem(value: 'parceria', child: Text('Parcerias Comerciais')),
-                        DropdownMenuItem(value: 'outro', child: Text('Outro Assunto')),
+                        DropdownMenuItem(
+                            value: 'suporte', child: Text('Suporte Técnico')),
+                        DropdownMenuItem(
+                            value: 'conta',
+                            child: Text('Minha Conta & Acesso')),
+                        DropdownMenuItem(
+                            value: 'planos',
+                            child: Text('Ranking PRO & Planos')),
+                        DropdownMenuItem(
+                            value: 'sugestao',
+                            child: Text('Sugestão de Recurso')),
+                        DropdownMenuItem(
+                            value: 'parceria',
+                            child: Text('Parcerias Comerciais')),
+                        DropdownMenuItem(
+                            value: 'outro', child: Text('Outro Assunto')),
                       ],
-                      onChanged: (v) => setModalState(() => assunto = v ?? 'suporte'),
+                      onChanged: (v) =>
+                          setModalState(() => assunto = v ?? 'suporte'),
                     ),
                     const SizedBox(height: 12),
                     TextField(
@@ -126,7 +139,8 @@ class _LandingScreenState extends State<LandingScreen> {
                       const SizedBox(height: 8),
                       Text(
                         errorMsg!,
-                        style: const TextStyle(color: AppColors.danger, fontSize: 12.5),
+                        style: const TextStyle(
+                            color: AppColors.danger, fontSize: 12.5),
                       ),
                     ],
                     const SizedBox(height: 18),
@@ -137,11 +151,13 @@ class _LandingScreenState extends State<LandingScreen> {
                             ? null
                             : () async {
                                 if (nomeCtrl.text.trim().length < 2) {
-                                  setModalState(() => errorMsg = 'Informe seu nome completo.');
+                                  setModalState(() =>
+                                      errorMsg = 'Informe seu nome completo.');
                                   return;
                                 }
                                 if (!emailCtrl.text.contains('@')) {
-                                  setModalState(() => errorMsg = 'Informe um e-mail válido.');
+                                  setModalState(() =>
+                                      errorMsg = 'Informe um e-mail válido.');
                                   return;
                                 }
                                 if (msgCtrl.text.trim().length < 10) {
@@ -183,7 +199,8 @@ class _LandingScreenState extends State<LandingScreen> {
                                 ),
                               )
                             : const Icon(Icons.send_rounded, size: 18),
-                        label: Text(sending ? 'Enviando...' : 'Enviar Mensagem'),
+                        label:
+                            Text(sending ? 'Enviando...' : 'Enviar Mensagem'),
                       ),
                     ),
                   ],
@@ -202,14 +219,16 @@ class _LandingScreenState extends State<LandingScreen> {
       listenable: _api,
       builder: (context, _) {
         final stats = _api.publicStats;
-        final receitasCount = stats['receitas'] ?? stats['totalReceitas'] ?? 120;
-        final usuariosCount = stats['usuarios'] ?? stats['totalUsuarios'] ?? 45;
-        final avalCount = stats['totalAvaliacoes'] ?? 310;
-        final mediaAval = stats['avaliacaoMedia'] ?? stats['mediaSatisfacao'] ?? 4.9;
+        final receitasCount = stats['receitas'] ?? stats['totalReceitas'];
+        final usuariosCount = stats['usuarios'] ?? stats['totalUsuarios'];
+        final avalCount = stats['totalAvaliacoes'];
+        final mediaAval = stats['avaliacaoMedia'] ?? stats['mediaSatisfacao'];
+        final statsAvailable = _api.publicStatsLoaded;
 
         return Scaffold(
           body: Container(
-            decoration: const BoxDecoration(gradient: AppColors.darkBackgroundGradient),
+            decoration:
+                const BoxDecoration(gradient: AppColors.darkBackgroundGradient),
             child: SafeArea(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
@@ -231,7 +250,8 @@ class _LandingScreenState extends State<LandingScreen> {
                               gradient: AppColors.accentGradient,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.restaurant_menu_rounded, color: Colors.white),
+                            child: const Icon(Icons.restaurant_menu_rounded,
+                                color: Colors.white),
                           ),
                         ),
                       ),
@@ -243,24 +263,28 @@ class _LandingScreenState extends State<LandingScreen> {
                             Text('Saboré', style: AppTextStyles.headingMd),
                             Text(
                               'Saboreie novas possibilidades',
-                              style: AppTextStyles.bodyMuted.copyWith(fontSize: 11),
+                              style: AppTextStyles.bodyMuted
+                                  .copyWith(fontSize: 11),
                             ),
                           ],
                         ),
                       ),
                       TextButton(
                         onPressed: () => showAboutSaboreModal(context),
-                        child: const Text('Sobre', style: TextStyle(color: AppColors.secondary)),
+                        child: const Text('Sobre',
+                            style: TextStyle(color: AppColors.secondary)),
                       ),
                       TextButton(
                         onPressed: _openContactModal,
-                        child: const Text('Contato', style: TextStyle(color: AppColors.secondary)),
+                        child: const Text('Contato',
+                            style: TextStyle(color: AppColors.secondary)),
                       ),
                       const SizedBox(width: 4),
                       OutlinedButton(
                         onPressed: widget.onNavigateToLogin,
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
                         ),
                         child: const Text('Entrar'),
                       ),
@@ -273,7 +297,8 @@ class _LandingScreenState extends State<LandingScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppColors.accent.withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(999),
@@ -282,7 +307,8 @@ class _LandingScreenState extends State<LandingScreen> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.auto_awesome_rounded, color: AppColors.accent, size: 15),
+                          Icon(Icons.auto_awesome_rounded,
+                              color: AppColors.accent, size: 15),
                           SizedBox(width: 6),
                           Text(
                             'GASTRONOMIA INTELIGENTE COM IA',
@@ -307,7 +333,8 @@ class _LandingScreenState extends State<LandingScreen> {
                   const SizedBox(height: 14),
                   Text(
                     'Organize seus livros de receitas, gere pratos personalizados com o Chef IA, identifique ingredientes por foto, importe vídeos do YouTube e dispute o Ranking PRO na comunidade Saboré.',
-                    style: AppTextStyles.bodyLg.copyWith(color: AppColors.textMuted),
+                    style: AppTextStyles.bodyLg
+                        .copyWith(color: AppColors.textMuted),
                   ),
                   const SizedBox(height: 24),
 
@@ -320,7 +347,8 @@ class _LandingScreenState extends State<LandingScreen> {
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          icon: const Icon(Icons.rocket_launch_rounded, size: 18),
+                          icon:
+                              const Icon(Icons.rocket_launch_rounded, size: 18),
                           label: const Text('Começar Gratuitamente'),
                         ),
                       ),
@@ -351,16 +379,37 @@ class _LandingScreenState extends State<LandingScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _statColumn('$receitasCount+', 'Receitas'),
-                        _statColumn('$usuariosCount+', 'Chefs Ativos'),
-                        _statColumn('$avalCount+', 'Avaliações'),
-                        _statColumn('$mediaAval ★', 'Satisfação'),
+                        _statColumn(
+                          statsAvailable && receitasCount != null
+                              ? '$receitasCount+'
+                              : '—',
+                          'Receitas',
+                        ),
+                        _statColumn(
+                          statsAvailable && usuariosCount != null
+                              ? '$usuariosCount+'
+                              : '—',
+                          'Chefs Ativos',
+                        ),
+                        _statColumn(
+                          statsAvailable && avalCount != null
+                              ? '$avalCount+'
+                              : '—',
+                          'Avaliações',
+                        ),
+                        _statColumn(
+                          statsAvailable && mediaAval != null
+                              ? '$mediaAval ★'
+                              : '—',
+                          'Satisfação',
+                        ),
                       ],
                     ),
                   ),
 
                   const SizedBox(height: 30),
-                  Text('Tudo o que sua cozinha precisa', style: AppTextStyles.headingLg),
+                  Text('Tudo o que sua cozinha precisa',
+                      style: AppTextStyles.headingLg),
                   const SizedBox(height: 14),
 
                   _featureCard(
@@ -397,7 +446,8 @@ class _LandingScreenState extends State<LandingScreen> {
                   const SizedBox(height: 28),
 
                   // Seção Oficial de Perguntas Frequentes (FAQ da Landing Page Web)
-                  Text('Perguntas Frequentes (FAQ)', style: AppTextStyles.headingLg),
+                  Text('Perguntas Frequentes (FAQ)',
+                      style: AppTextStyles.headingLg),
                   const SizedBox(height: 12),
                   ...kSaboreFaqItems.map(
                     (item) => Container(
@@ -412,11 +462,15 @@ class _LandingScreenState extends State<LandingScreen> {
                         collapsedIconColor: AppColors.secondary,
                         title: Text(
                           item.q,
-                          style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+                          style: AppTextStyles.body
+                              .copyWith(fontWeight: FontWeight.w700),
                         ),
-                        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                        childrenPadding:
+                            const EdgeInsets.fromLTRB(16, 0, 16, 14),
                         children: [
-                          Text(item.a, style: AppTextStyles.bodyMuted.copyWith(height: 1.5)),
+                          Text(item.a,
+                              style: AppTextStyles.bodyMuted
+                                  .copyWith(height: 1.5)),
                         ],
                       ),
                     ),
@@ -450,7 +504,8 @@ class _LandingScreenState extends State<LandingScreen> {
                           children: [
                             OutlinedButton.icon(
                               onPressed: _openContactModal,
-                              icon: const Icon(Icons.mail_outline_rounded, size: 18),
+                              icon: const Icon(Icons.mail_outline_rounded,
+                                  size: 18),
                               label: const Text('Enviar Mensagem'),
                             ),
                             ElevatedButton(
@@ -475,23 +530,32 @@ class _LandingScreenState extends State<LandingScreen> {
                     children: [
                       TextButton(
                         onPressed: () => showAboutSaboreModal(context),
-                        child: const Text('Sobre Nós', style: TextStyle(fontSize: 12)),
+                        child: const Text('Sobre Nós',
+                            style: TextStyle(fontSize: 12)),
                       ),
                       TextButton(
-                        onPressed: () => showLegalDocsModal(context, initialTab: 0),
-                        child: const Text('Termos de Uso', style: TextStyle(fontSize: 12)),
+                        onPressed: () =>
+                            showLegalDocsModal(context, initialTab: 0),
+                        child: const Text('Termos de Uso',
+                            style: TextStyle(fontSize: 12)),
                       ),
                       TextButton(
-                        onPressed: () => showLegalDocsModal(context, initialTab: 1),
-                        child: const Text('Privacidade', style: TextStyle(fontSize: 12)),
+                        onPressed: () =>
+                            showLegalDocsModal(context, initialTab: 1),
+                        child: const Text('Privacidade',
+                            style: TextStyle(fontSize: 12)),
                       ),
                       TextButton(
-                        onPressed: () => showLegalDocsModal(context, initialTab: 2),
-                        child: const Text('Política de Cookies', style: TextStyle(fontSize: 12)),
+                        onPressed: () =>
+                            showLegalDocsModal(context, initialTab: 2),
+                        child: const Text('Política de Cookies',
+                            style: TextStyle(fontSize: 12)),
                       ),
                       TextButton(
-                        onPressed: () => showLegalDocsModal(context, initialTab: 3),
-                        child: const Text('LGPD', style: TextStyle(fontSize: 12)),
+                        onPressed: () =>
+                            showLegalDocsModal(context, initialTab: 3),
+                        child:
+                            const Text('LGPD', style: TextStyle(fontSize: 12)),
                       ),
                     ],
                   ),
@@ -515,7 +579,8 @@ class _LandingScreenState extends State<LandingScreen> {
       children: [
         Text(
           number,
-          style: AppTextStyles.monoLg.copyWith(color: AppColors.accent, fontSize: 20),
+          style: AppTextStyles.monoLg
+              .copyWith(color: AppColors.accent, fontSize: 20),
         ),
         const SizedBox(height: 4),
         Text(label, style: AppTextStyles.bodyMuted.copyWith(fontSize: 11.5)),
@@ -553,7 +618,8 @@ class _LandingScreenState extends State<LandingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTextStyles.headingSm.copyWith(fontSize: 16)),
+                Text(title,
+                    style: AppTextStyles.headingSm.copyWith(fontSize: 16)),
                 const SizedBox(height: 4),
                 Text(description, style: AppTextStyles.bodyMuted),
               ],

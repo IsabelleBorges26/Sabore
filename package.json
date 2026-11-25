@@ -6,7 +6,8 @@
   "scripts": {
     "build": "prisma generate --schema=./Back-End/prisma/schema.prisma",
     "start": "node Back-End/server.js",
-    "dev": "node --watch Back-End/server.js"
+    "dev": "node --watch Back-End/server.js",
+    "fluuter": "node Mobile/run_flutter_web.js"
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",

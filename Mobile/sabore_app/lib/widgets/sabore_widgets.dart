@@ -38,8 +38,12 @@ class SaboreAvatar extends StatelessWidget {
   LinearGradient? get _frameGradient {
     final f = (frameId ?? '').toLowerCase();
     if (f.contains('natal')) return AppColors.frameNatalGradient;
-    if (f.contains('reveillon') || f.contains('virada')) return AppColors.frameReveillonGradient;
-    if (f.contains('mestre') || f.contains('semanal')) return AppColors.proGoldGradient;
+    if (f.contains('reveillon') || f.contains('virada')) {
+      return AppColors.frameReveillonGradient;
+    }
+    if (f.contains('mestre') || f.contains('semanal')) {
+      return AppColors.proGoldGradient;
+    }
     if (isPro) return AppColors.proGoldGradient;
     return null;
   }
@@ -158,7 +162,8 @@ class SaborePlanBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.workspace_premium, size: compact ? 12 : 14, color: AppColors.darkDeep),
+            Icon(Icons.workspace_premium,
+                size: compact ? 12 : 14, color: AppColors.darkDeep),
             const SizedBox(width: 3),
             Text(
               'PRO',
@@ -278,7 +283,8 @@ class SaboreImage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.restaurant_menu_rounded, color: AppColors.accent, size: 32),
+          const Icon(Icons.restaurant_menu_rounded,
+              color: AppColors.accent, size: 32),
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -324,7 +330,8 @@ class SaboreCreditBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.workspace_premium, color: AppColors.proGold, size: 22),
+            const Icon(Icons.workspace_premium,
+                color: AppColors.proGold, size: 22),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -350,7 +357,9 @@ class SaboreCreditBanner extends StatelessWidget {
             : AppColors.darkCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: exhausted ? AppColors.danger.withValues(alpha: 0.5) : AppColors.accentBorder,
+          color: exhausted
+              ? AppColors.danger.withValues(alpha: 0.5)
+              : AppColors.accentBorder,
         ),
       ),
       child: Row(
@@ -389,7 +398,8 @@ class SaboreCreditBanner extends StatelessWidget {
               backgroundColor: AppColors.proGold.withValues(alpha: 0.16),
               foregroundColor: AppColors.proGold,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text(
               'Ver Ranking',
@@ -420,15 +430,25 @@ class PickedImageData {
 Future<String> ensureBase64DataUri(String source) async {
   if (source.startsWith('data:image')) return source;
   if (source.startsWith('http')) {
-    try {
-      final res = await http.get(Uri.parse(source)).timeout(const Duration(seconds: 12));
-      if (res.statusCode >= 200 && res.statusCode < 300 && res.bodyBytes.isNotEmpty) {
-        final b64 = base64Encode(res.bodyBytes);
-        return 'data:image/jpeg;base64,$b64';
-      }
-    } catch (_) {}
+    final res =
+        await http.get(Uri.parse(source)).timeout(const Duration(seconds: 20));
+    if (res.statusCode < 200 ||
+        res.statusCode >= 300 ||
+        res.bodyBytes.isEmpty) {
+      throw Exception('Não foi possível baixar a imagem para análise.');
+    }
+    if (res.bodyBytes.length > 10 * 1024 * 1024) {
+      throw Exception('A imagem excede o limite de 10 MB.');
+    }
+    final mimeType =
+        res.headers['content-type']?.split(';').first ?? 'image/jpeg';
+    if (!mimeType.startsWith('image/')) {
+      throw Exception('O endereço informado não retornou uma imagem válida.');
+    }
+    return 'data:$mimeType;base64,${base64Encode(res.bodyBytes)}';
   }
-  return source;
+  throw Exception(
+      'Formato da imagem inválido. Escolha uma imagem JPG, PNG ou WEBP.');
 }
 
 /// Modal Seletor de Arquivos/Imagens Multiplataforma:
@@ -446,27 +466,32 @@ Future<PickedImageData?> showSaboreImagePicker(
     (
       name: 'risoto_camarao_trufado.jpg',
       label: 'Risoto Cremoso de Camarão & Limão Siciliano',
-      url: 'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=800&q=80',
     ),
     (
       name: 'nhoque_artesanal_sugo.jpg',
       label: 'Nhoque Artesanal ao Molho Rústico de Tomates',
-      url: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80',
     ),
     (
       name: 'salmao_grelhado_ervas.jpg',
       label: 'Salmão Grelhado com Crosta de Ervas Finas',
-      url: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
     ),
     (
       name: 'torta_chocolate_belga.jpg',
       label: 'Torta Ganache de Chocolate Belga 70% & Frutas',
-      url: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
     ),
     (
       name: 'bowl_mediterraneo_fit.jpg',
       label: 'Bowl Mediterrâneo de Quinoa, Abacate & Grão-de-Bico',
-      url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80',
     ),
   ];
 
@@ -475,10 +500,33 @@ Future<PickedImageData?> showSaboreImagePicker(
     builder: (ctx) {
       return StatefulBuilder(
         builder: (ctx, setState) {
+          Future<void> selectDeviceImage({bool fromCamera = false}) async {
+            setState(() {
+              pickingDeviceFile = true;
+              errorText = null;
+            });
+            final picked = await pickImageFromDevice(fromCamera: fromCamera);
+            if (!ctx.mounted) return;
+            setState(() => pickingDeviceFile = false);
+            if (picked == null) return;
+            if (picked.error != null) {
+              setState(() => errorText = picked.error);
+              return;
+            }
+            Navigator.of(ctx).pop(
+              PickedImageData(
+                dataUri: picked.dataUrl,
+                fileName: picked.fileName,
+                sizeKb: picked.fileSizeBytes / 1024.0,
+              ),
+            );
+          }
+
           return AlertDialog(
             title: Row(
               children: [
-                const Icon(Icons.add_photo_alternate_rounded, color: AppColors.accent),
+                const Icon(Icons.add_photo_alternate_rounded,
+                    color: AppColors.accent),
                 const SizedBox(width: 10),
                 Expanded(child: Text(title, style: AppTextStyles.headingSm)),
               ],
@@ -508,30 +556,8 @@ Future<PickedImageData?> showSaboreImagePicker(
                           ),
                           const SizedBox(height: 10),
                           ElevatedButton.icon(
-                            onPressed: pickingDeviceFile
-                                ? null
-                                : () async {
-                                    setState(() {
-                                      pickingDeviceFile = true;
-                                      errorText = null;
-                                    });
-                                    final picked = await pickImageFromDevice();
-                                    if (!ctx.mounted) return;
-                                    setState(() => pickingDeviceFile = false);
-                                    if (picked != null) {
-                                      if (picked.error != null) {
-                                        setState(() => errorText = picked.error);
-                                        return;
-                                      }
-                                      Navigator.of(ctx).pop(
-                                        PickedImageData(
-                                          dataUri: picked.dataUrl,
-                                          fileName: picked.fileName,
-                                          sizeKb: picked.fileSizeBytes / 1024.0,
-                                        ),
-                                      );
-                                    }
-                                  },
+                            onPressed:
+                                pickingDeviceFile ? null : selectDeviceImage,
                             icon: pickingDeviceFile
                                 ? const SizedBox(
                                     width: 16,
@@ -541,18 +567,35 @@ Future<PickedImageData?> showSaboreImagePicker(
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Icon(Icons.folder_open_rounded, size: 18),
+                                : const Icon(Icons.folder_open_rounded,
+                                    size: 18),
                             label: Text(
                               pickingDeviceFile
                                   ? 'Abrindo seletor de arquivos...'
                                   : 'Escolher arquivo do dispositivo (JPG, PNG, WEBP)',
                             ),
                           ),
+                          if (!kIsWeb &&
+                              (defaultTargetPlatform ==
+                                      TargetPlatform.android ||
+                                  defaultTargetPlatform ==
+                                      TargetPlatform.iOS)) ...[
+                            const SizedBox(height: 8),
+                            OutlinedButton.icon(
+                              onPressed: pickingDeviceFile
+                                  ? null
+                                  : () => selectDeviceImage(fromCamera: true),
+                              icon: const Icon(Icons.photo_camera_outlined,
+                                  size: 18),
+                              label: const Text('Fotografar com a câmera'),
+                            ),
+                          ],
                           const SizedBox(height: 6),
                           Text(
                             'Tamanho máximo permitido: 10 MB',
                             textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyMuted.copyWith(fontSize: 11),
+                            style:
+                                AppTextStyles.bodyMuted.copyWith(fontSize: 11),
                           ),
                         ],
                       ),
@@ -566,8 +609,11 @@ Future<PickedImageData?> showSaboreImagePicker(
                             child: TextField(
                               controller: pathCtrl,
                               decoration: const InputDecoration(
-                                hintText: 'Ou cole o caminho (ex: C:\\fotos\\prato.jpg)',
-                                prefixIcon: Icon(Icons.insert_drive_file_outlined, size: 18),
+                                hintText:
+                                    'Ou cole o caminho (ex: C:\\fotos\\prato.jpg)',
+                                prefixIcon: Icon(
+                                    Icons.insert_drive_file_outlined,
+                                    size: 18),
                                 isDense: true,
                               ),
                             ),
@@ -575,36 +621,47 @@ Future<PickedImageData?> showSaboreImagePicker(
                           const SizedBox(width: 8),
                           OutlinedButton(
                             onPressed: () async {
-                              final p = pathCtrl.text.trim().replaceAll('"', '');
+                              final p =
+                                  pathCtrl.text.trim().replaceAll('"', '');
                               if (p.isEmpty) {
-                                setState(() => errorText = 'Informe o caminho do arquivo.');
+                                setState(() => errorText =
+                                    'Informe o caminho do arquivo.');
                                 return;
                               }
                               try {
                                 final file = File(p);
                                 if (!await file.exists()) {
-                                  setState(() => errorText = 'Arquivo não encontrado nesse caminho.');
+                                  setState(() => errorText =
+                                      'Arquivo não encontrado nesse caminho.');
                                   return;
                                 }
                                 final bytes = await file.readAsBytes();
                                 final kb = bytes.length / 1024.0;
                                 if (kb > 10240) {
-                                  setState(() => errorText = 'A imagem excede o limite de 10 MB.');
+                                  setState(() => errorText =
+                                      'A imagem excede o limite de 10 MB.');
                                   return;
                                 }
                                 final ext = p.split('.').last.toLowerCase();
                                 final mime = ext == 'png'
                                     ? 'image/png'
-                                    : (ext == 'webp' ? 'image/webp' : 'image/jpeg');
-                                final b64 = 'data:$mime;base64,${base64Encode(bytes)}';
+                                    : (ext == 'webp'
+                                        ? 'image/webp'
+                                        : 'image/jpeg');
+                                final b64 =
+                                    'data:$mime;base64,${base64Encode(bytes)}';
                                 final name = p.split(RegExp(r'[\\/]')).last;
                                 if (ctx.mounted) {
                                   Navigator.of(ctx).pop(
-                                    PickedImageData(dataUri: b64, fileName: name, sizeKb: kb),
+                                    PickedImageData(
+                                        dataUri: b64,
+                                        fileName: name,
+                                        sizeKb: kb),
                                   );
                                 }
                               } catch (e) {
-                                setState(() => errorText = 'Erro ao ler imagem: $e');
+                                setState(
+                                    () => errorText = 'Erro ao ler imagem: $e');
                               }
                             },
                             child: const Text('Carregar'),
@@ -617,7 +674,8 @@ Future<PickedImageData?> showSaboreImagePicker(
                       const SizedBox(height: 8),
                       Text(
                         errorText!,
-                        style: const TextStyle(color: AppColors.danger, fontSize: 12),
+                        style: const TextStyle(
+                            color: AppColors.danger, fontSize: 12),
                       ),
                     ],
 
@@ -636,7 +694,8 @@ Future<PickedImageData?> showSaboreImagePicker(
                           border: Border.all(color: AppColors.glassBorder),
                         ),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
                           leading: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: SaboreImage(
@@ -655,9 +714,11 @@ Future<PickedImageData?> showSaboreImagePicker(
                           ),
                           subtitle: Text(
                             '${item.name} • 245 KB',
-                            style: AppTextStyles.bodyMuted.copyWith(fontSize: 11.5),
+                            style: AppTextStyles.bodyMuted
+                                .copyWith(fontSize: 11.5),
                           ),
-                          trailing: const Icon(Icons.check_circle_outline, color: AppColors.accent),
+                          trailing: const Icon(Icons.check_circle_outline,
+                              color: AppColors.accent),
                           onTap: () {
                             Navigator.of(ctx).pop(
                               PickedImageData(
@@ -688,7 +749,8 @@ Future<PickedImageData?> showSaboreImagePicker(
 }
 
 /// Modal para salvar qualquer receita (da Comunidade, Chef IA, IA por Foto ou Vídeo) em um Livro do usuário
-Future<void> showSaveRecipeToBookDialog(BuildContext context, Recipe recipe) async {
+Future<void> showSaveRecipeToBookDialog(
+    BuildContext context, Recipe recipe) async {
   final api = ApiService.instance;
   if (api.books.isEmpty) {
     await api.fetchBooks();
@@ -711,7 +773,8 @@ Future<void> showSaveRecipeToBookDialog(BuildContext context, Recipe recipe) asy
                 const Icon(Icons.menu_book_rounded, color: AppColors.accent),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text('Salvar Receita em um Livro', style: AppTextStyles.headingSm),
+                  child: Text('Salvar Receita em um Livro',
+                      style: AppTextStyles.headingSm),
                 ),
               ],
             ),
@@ -727,7 +790,8 @@ Future<void> showSaveRecipeToBookDialog(BuildContext context, Recipe recipe) asy
                   ),
                   const SizedBox(height: 14),
                   if (api.books.isNotEmpty && !creatingNewBook) ...[
-                    Text('Escolha a coleção de destino:', style: AppTextStyles.label),
+                    Text('Escolha a coleção de destino:',
+                        style: AppTextStyles.label),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<int>(
                       initialValue: selectedBookId,
@@ -736,7 +800,8 @@ Future<void> showSaveRecipeToBookDialog(BuildContext context, Recipe recipe) asy
                           .map(
                             (b) => DropdownMenuItem<int>(
                               value: b.id,
-                              child: Text('${b.icone}  ${b.nome} (${b.totalReceitas})'),
+                              child: Text(
+                                  '${b.icone}  ${b.nome} (${b.totalReceitas})'),
                             ),
                           )
                           .toList(),
@@ -761,7 +826,8 @@ Future<void> showSaveRecipeToBookDialog(BuildContext context, Recipe recipe) asy
                     if (api.books.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       TextButton(
-                        onPressed: () => setState(() => creatingNewBook = false),
+                        onPressed: () =>
+                            setState(() => creatingNewBook = false),
                         child: const Text('Escolher livro já existente'),
                       ),
                     ],
@@ -784,7 +850,8 @@ Future<void> showSaveRecipeToBookDialog(BuildContext context, Recipe recipe) asy
                           final bName = newBookCtrl.text.trim().isEmpty
                               ? 'Minhas Receitas'
                               : newBookCtrl.text.trim();
-                          final bRes = await api.createBook(nome: bName, icone: '📖');
+                          final bRes =
+                              await api.createBook(nome: bName, icone: '📖');
                           targetBookId = bRes.book?.id;
                         }
                         final res = await api.createRecipe(
@@ -794,7 +861,9 @@ Future<void> showSaveRecipeToBookDialog(BuildContext context, Recipe recipe) asy
                           tempoPreparo: recipe.tempoPreparo,
                           porcoes: recipe.porcoes,
                           dificuldade: recipe.dificuldade,
-                          ingredientes: recipe.ingredientes.map((i) => i.toJson()).toList(),
+                          ingredientes: recipe.ingredientes
+                              .map((i) => i.toJson())
+                              .toList(),
                           livroId: targetBookId,
                           publica: false,
                           criadaPorIA: recipe.criadaPorIA,
@@ -811,7 +880,8 @@ Future<void> showSaveRecipeToBookDialog(BuildContext context, Recipe recipe) asy
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(Icons.bookmark_added_rounded, size: 18),
                 label: Text(saving ? 'Salvando...' : 'Salvar no Livro'),
@@ -850,7 +920,9 @@ class SaboreMobileRecipeCard extends StatelessWidget {
   Color _difficultyColor(String diff) {
     final lower = diff.toLowerCase();
     if (lower.contains('dif')) return AppColors.danger;
-    if (lower.contains('méd') || lower.contains('med')) return AppColors.warning;
+    if (lower.contains('méd') || lower.contains('med')) {
+      return AppColors.warning;
+    }
     return AppColors.success;
   }
 
@@ -900,7 +972,8 @@ class SaboreMobileRecipeCard extends StatelessWidget {
                           bottom: 6,
                           left: 6,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 3),
                             decoration: BoxDecoration(
                               color: AppColors.darkDeep.withValues(alpha: 0.88),
                               borderRadius: BorderRadius.circular(8),
@@ -932,7 +1005,8 @@ class SaboreMobileRecipeCard extends StatelessWidget {
                             top: 6,
                             left: 6,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 gradient: AppColors.accentGradient,
                                 borderRadius: BorderRadius.circular(6),
@@ -940,7 +1014,8 @@ class SaboreMobileRecipeCard extends StatelessWidget {
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.auto_awesome_rounded, size: 10, color: Colors.white),
+                                  Icon(Icons.auto_awesome_rounded,
+                                      size: 10, color: Colors.white),
                                   SizedBox(width: 2),
                                   Text(
                                     'IA',
@@ -969,9 +1044,11 @@ class SaboreMobileRecipeCard extends StatelessWidget {
                             runSpacing: 4,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2.5),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accent.withValues(alpha: 0.15),
+                                  color:
+                                      AppColors.accent.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -984,7 +1061,8 @@ class SaboreMobileRecipeCard extends StatelessWidget {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2.5),
                                 decoration: BoxDecoration(
                                   color: diffColor.withValues(alpha: 0.14),
                                   borderRadius: BorderRadius.circular(8),
@@ -1019,7 +1097,8 @@ class SaboreMobileRecipeCard extends StatelessWidget {
                               recipe.descricao,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.bodyMuted.copyWith(fontSize: 12),
+                              style: AppTextStyles.bodyMuted
+                                  .copyWith(fontSize: 12),
                             ),
                           ],
                           const SizedBox(height: 8),
@@ -1085,7 +1164,9 @@ class SaboreMobileRecipeCard extends StatelessWidget {
                                     ? Icons.favorite_rounded
                                     : Icons.favorite_border_rounded,
                                 size: 19,
-                                color: isFavorite ? AppColors.danger : AppColors.textMuted,
+                                color: isFavorite
+                                    ? AppColors.danger
+                                    : AppColors.textMuted,
                               ),
                             ),
                           ),

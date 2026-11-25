@@ -37,6 +37,7 @@ Future<void> openExternalUrl(String url) async {}
 Future<PickedImageFile?> pickImageFromDevice({
   int maxWidth = 900,
   double quality = 0.82,
+  bool fromCamera = false,
 }) async {
   return null;
 }

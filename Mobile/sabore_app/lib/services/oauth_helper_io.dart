@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'oauth_helper_stub.dart';
 
 export 'oauth_helper_stub.dart' show PickedImageFile;
@@ -30,10 +32,18 @@ Future<void> openExternalUrl(String url) async {
 Future<PickedImageFile?> pickImageFromDevice({
   int maxWidth = 900,
   double quality = 0.82,
+  bool fromCamera = false,
 }) async {
   try {
     String? filePath;
-    if (Platform.isWindows) {
+    if (Platform.isAndroid || Platform.isIOS) {
+      final picked = await ImagePicker().pickImage(
+        source: fromCamera ? ImageSource.camera : ImageSource.gallery,
+        maxWidth: maxWidth.toDouble(),
+        imageQuality: (quality * 100).round(),
+      );
+      filePath = picked?.path;
+    } else if (Platform.isWindows) {
       final res = await Process.run('powershell', [
         '-NoProfile',
         '-STA',
@@ -94,8 +104,20 @@ Future<PickedImageFile?> pickImageFromDevice({
       fileName: fileName,
       fileSizeBytes: bytes.length,
     );
-  } catch (_) {
-    return null;
+  } on PlatformException catch (error) {
+    return PickedImageFile(
+      dataUrl: '',
+      fileName: '',
+      fileSizeBytes: 0,
+      error: error.message ?? 'Não foi possível acessar as imagens do dispositivo.',
+    );
+  } catch (error) {
+    return PickedImageFile(
+      dataUrl: '',
+      fileName: '',
+      fileSizeBytes: 0,
+      error: 'Não foi possível abrir a imagem: $error',
+    );
   }
 }
 

@@ -138,3 +138,41 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Flutter e Dart
+**/build/
+**/.dart_tool/
+**/.gradle/
+**/.pub-cache/
+**/.pub/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/android/local.properties
+**/android/.cxx/
+**/android/key.properties
+
+# Arquivos compilados
+*.apk
+*.aab
+*.dex
+*.class
+*.jks
+*.keystore
+
+# Variaveis de ambiente
+**/.env
+**/.env.*
+!**/.env.example
+
+# IDE
+.idea/
+*.iml
+
+# Windows e macOS
+Thumbs.db
+.DS_Store
+
+# Preservar migrations do Prisma
+!Back-End/prisma/migrations/
+!Back-End/prisma/migrations/**

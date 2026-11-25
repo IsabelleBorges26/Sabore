@@ -28,19 +28,23 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
   static const List<({String title, String url})> _sampleDishes = [
     (
       title: 'Pizza Napolitana Artesanal',
-      url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
     ),
     (
       title: 'Hambúrguer Gourmet com Cheddar',
-      url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
     ),
     (
       title: 'Salada Mediterrânea Fresca',
-      url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80',
     ),
     (
       title: 'Combinado de Sushi & Salmão',
-      url: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80',
+      url:
+          'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80',
     ),
   ];
 
@@ -53,21 +57,26 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
       _generatedRecipe = null;
     });
 
-    final base64DataUri = await ensureBase64DataUri(photo.dataUri);
-    final res = await _api.analyzeDishPhoto(
-      imagemBase64: base64DataUri,
-    );
-
-    if (!mounted) return;
-    setState(() {
-      _scanning = false;
-      if (res.ok && res.result != null) {
-        _analysis = res.result;
-        _generatedRecipe = res.result!.receitaSugerida;
-      } else {
-        _errorMsg = res.message;
-      }
-    });
+    try {
+      final base64DataUri = await ensureBase64DataUri(photo.dataUri);
+      final res = await _api.analyzeDishPhoto(imagemBase64: base64DataUri);
+      if (!mounted) return;
+      setState(() {
+        _scanning = false;
+        if (res.ok && res.result != null) {
+          _analysis = res.result;
+          _generatedRecipe = null;
+        } else {
+          _errorMsg = res.message;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _scanning = false;
+        _errorMsg = e.toString();
+      });
+    }
   }
 
   Future<void> _generateRecipeFromDetected() async {
@@ -106,7 +115,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
         ),
         const SizedBox(height: 16),
 
-        Text('Reconhecimento Gastronômico por Foto', style: AppTextStyles.headingLg),
+        Text('Reconhecimento Gastronômico por Foto',
+            style: AppTextStyles.headingLg),
         Text(
           'Envie a foto de um prato ou de ingredientes na bancada para identificar cada item e gerar a receita completa.',
           style: AppTextStyles.bodyMuted,
@@ -132,7 +142,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
                 ),
                 const SizedBox(height: 12),
               ] else ...[
-                const Icon(Icons.camera_enhance_rounded, size: 48, color: AppColors.accent),
+                const Icon(Icons.camera_enhance_rounded,
+                    size: 48, color: AppColors.accent),
                 const SizedBox(height: 10),
                 Text(
                   'Selecione uma imagem da galeria ou câmera',
@@ -163,12 +174,17 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
                             }
                           },
                     icon: const Icon(Icons.add_a_photo_rounded, size: 18),
-                    label: Text(_selectedPhoto == null ? 'Escolher Foto' : 'Trocar Foto'),
+                    label: Text(_selectedPhoto == null
+                        ? 'Escolher Foto'
+                        : 'Trocar Foto'),
                   ),
                   if (_selectedPhoto != null)
                     OutlinedButton.icon(
-                      onPressed: _scanning ? null : () => _analyzePhoto(photo: _selectedPhoto!),
-                      icon: const Icon(Icons.document_scanner_outlined, size: 18),
+                      onPressed: _scanning
+                          ? null
+                          : () => _analyzePhoto(photo: _selectedPhoto!),
+                      icon:
+                          const Icon(Icons.document_scanner_outlined, size: 18),
                       label: const Text('Analisar Novamente'),
                     ),
                 ],
@@ -178,7 +194,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
         ),
 
         const SizedBox(height: 16),
-        Text('Ou teste agora com um prato de demonstração:', style: AppTextStyles.label),
+        Text('Ou teste agora com um prato de demonstração:',
+            style: AppTextStyles.label),
         const SizedBox(height: 8),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -187,7 +204,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
               return Padding(
                 padding: const EdgeInsets.only(right: 10),
                 child: ActionChip(
-                  avatar: const Icon(Icons.restaurant_rounded, size: 15, color: AppColors.accent),
+                  avatar: const Icon(Icons.restaurant_rounded,
+                      size: 15, color: AppColors.accent),
                   label: Text(sample.title),
                   backgroundColor: AppColors.darkCard,
                   onPressed: _scanning
@@ -217,7 +235,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
               children: [
                 const CircularProgressIndicator(color: AppColors.accent),
                 const SizedBox(height: 14),
-                Text('Escaneando texturas, cores e ingredientes...', style: AppTextStyles.subtitle),
+                Text('Escaneando texturas, cores e ingredientes...',
+                    style: AppTextStyles.subtitle),
                 const SizedBox(height: 6),
                 Text(
                   'A Visão Computacional do Saboré está calculando o grau de confiança de cada ingrediente.',
@@ -238,7 +257,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.danger),
             ),
-            child: Text(_errorMsg!, style: const TextStyle(color: AppColors.danger)),
+            child: Text(_errorMsg!,
+                style: const TextStyle(color: AppColors.danger)),
           ),
         ],
 
@@ -256,7 +276,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.verified_rounded, color: AppColors.success),
+                    const Icon(Icons.verified_rounded,
+                        color: AppColors.success),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -287,7 +308,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
                           children: [
                             Text(
                               ing.nome,
-                              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+                              style: AppTextStyles.body
+                                  .copyWith(fontWeight: FontWeight.w600),
                             ),
                             Text(
                               '${ing.confianca}% confiança',
@@ -302,7 +324,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
                             value: ing.confianca / 100.0,
                             minHeight: 6,
                             backgroundColor: AppColors.darkDeep,
-                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColors.accent),
                           ),
                         ),
                       ],
@@ -313,12 +336,14 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: _generatingRecipe ? null : _generateRecipeFromDetected,
+                    onPressed:
+                        _generatingRecipe ? null : _generateRecipeFromDetected,
                     icon: _generatingRecipe
                         ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
                           )
                         : const Icon(Icons.auto_awesome_rounded),
                     label: Text(
@@ -358,7 +383,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
                   ..._generatedRecipe!.ingredientes.map(
                     (i) => Padding(
                       padding: const EdgeInsets.only(bottom: 3),
-                      child: Text('• ${i.displayText}', style: AppTextStyles.body),
+                      child:
+                          Text('• ${i.displayText}', style: AppTextStyles.body),
                     ),
                   ),
                 ],
@@ -367,7 +393,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => showSaveRecipeToBookDialog(context, _generatedRecipe!),
+                        onPressed: () => showSaveRecipeToBookDialog(
+                            context, _generatedRecipe!),
                         icon: const Icon(Icons.bookmark_add_rounded, size: 18),
                         label: const Text('Salvar no Meu Livro'),
                       ),
@@ -375,7 +402,8 @@ class _IaFotosScreenState extends State<IaFotosScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => showRecipeDetailModal(context, _generatedRecipe!),
+                        onPressed: () =>
+                            showRecipeDetailModal(context, _generatedRecipe!),
                         icon: const Icon(Icons.menu_book_rounded, size: 18),
                         label: const Text('Ver Passo a Passo'),
                       ),
